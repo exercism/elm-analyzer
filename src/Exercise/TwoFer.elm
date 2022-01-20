@@ -1,4 +1,4 @@
-module Exercise.TwoFer exposing (config)
+module Exercise.TwoFer exposing (hasFunctionSignature, usesWithDefault)
 
 import Comment exposing (Comment, CommentType(..))
 import Dict
@@ -12,11 +12,6 @@ import Review.Rule as Rule exposing (Error, Rule)
 slug : String
 slug =
     "two-fer"
-
-
-config : List Rule
-config =
-    [ hasFunctionSignature, usesWithDefault ]
 
 
 hasFunctionSignature : Rule
@@ -34,6 +29,7 @@ hasSignatureVisitor node =
                 Nothing ->
                     [ Comment.createError
                         (Comment "has no signature" "elm.two-fer.use_signature" Informative Dict.empty)
+                        (Node.range node)
                     ]
 
                 Just _ ->
@@ -107,6 +103,7 @@ checkUsedWithDefault node context =
                     else
                         [ Comment.createError
                             (Comment "Doesn't use withDefault" "elm.two-fer.use_withDefault" Essential Dict.empty)
+                            (Node.range node)
                         ]
             in
             ( errors, { context | isFunctionDeclaration = False, usesWithDefault = False } )

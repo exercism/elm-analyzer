@@ -3,10 +3,11 @@ module Comment exposing (..)
 -- import Debug
 
 import Dict exposing (Dict)
-import Elm.Syntax.Range as Range
+import Elm.Syntax.Range exposing (Range)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Review.Rule as Rule exposing (Error)
+import Review.Test exposing (ExpectedError)
 
 
 
@@ -135,13 +136,22 @@ emptySummary =
 -- CREATING ERROR FROM COMMENT
 
 
-createError : Comment -> Error {}
-createError comment =
+createError : Comment -> Range -> Error {}
+createError comment range =
     Rule.error
         { message = Encode.encode 0 (encodeComment comment)
-        , details = []
+        , details = [ "" ]
         }
-        Range.emptyRange
+        range
+
+
+createExpectedErrorUnder : Comment -> String -> ExpectedError
+createExpectedErrorUnder comment under =
+    Review.Test.error
+        { message = Encode.encode 0 (encodeComment comment)
+        , details = [ "" ]
+        , under = under
+        }
 
 
 

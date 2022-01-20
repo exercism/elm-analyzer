@@ -1,29 +1,29 @@
 module ReviewConfig exposing (config)
 
-{-| Do not rename the ReviewConfig module or the config function, because
-`elm-review` will look for these.
-
-To add packages that contain rules, add them to this review project using
-
-    `elm install author/packagename`
-
-when inside the directory containing this file.
-
--}
-
-import Common.NoUnused
-import Common.Simplify
 import Exercise.TwoFer
+import NoUnused.CustomTypeConstructorArgs
+import NoUnused.CustomTypeConstructors
+import NoUnused.Dependencies
+import NoUnused.Variables
 import Review.Rule as Rule exposing (Rule)
+import Simplify
 
 
 config : List Rule
 config =
-    [ Common.NoUnused.config
-    , Common.Simplify.config
-    , Exercise.TwoFer.config
+    [ -- Common Checks: NoUnused
+      NoUnused.CustomTypeConstructors.rule []
+    , NoUnused.CustomTypeConstructorArgs.rule
+    , NoUnused.Dependencies.rule
+    , NoUnused.Variables.rule
+
+    -- Common Check: Simplify
+    , Simplify.rule Simplify.defaults
+
+    -- Pratice Exercise: two-fer
+    , Exercise.TwoFer.hasFunctionSignature
+    , Exercise.TwoFer.usesWithDefault
     ]
-        |> List.concat
         |> List.map
             (Rule.ignoreErrorsForDirectories [ "tests/" ]
                 >> Rule.ignoreErrorsForFiles [ "elm.json" ]

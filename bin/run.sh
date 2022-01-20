@@ -15,7 +15,7 @@ OUTPUT_DIR="$3"
 set +e
 elm-review $INPUT_DIR \
         --elmjson $INPUT_DIR/elm.json \
-        --config review \
+        --config . \
         --rules $SLUG \
         --report=json \
         > $OUTPUT_DIR/raw_analysis.json

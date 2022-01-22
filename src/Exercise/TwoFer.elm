@@ -24,12 +24,12 @@ hasFunctionSignature =
 hasSignatureVisitor : Node Declaration -> List (Error {})
 hasSignatureVisitor node =
     case Node.value node of
-        Declaration.FunctionDeclaration { signature } ->
+        Declaration.FunctionDeclaration { declaration, signature } ->
             case signature of
                 Nothing ->
                     [ Comment.createError
                         (Comment "has no signature" "elm.two-fer.use_signature" Informative Dict.empty)
-                        (Node.range node)
+                        (declaration |> Node.value |> .name |> Node.range)
                     ]
 
                 Just _ ->
@@ -103,7 +103,7 @@ checkUsedWithDefault node context =
                     else
                         [ Comment.createError
                             (Comment "Doesn't use withDefault" "elm.two-fer.use_withDefault" Essential Dict.empty)
-                            (Node.range node)
+                            (declaration |> Node.value |> .name |> Node.range)
                         ]
             in
             ( errors, { context | isFunctionDeclaration = False, usesWithDefault = False } )

@@ -72,11 +72,7 @@ noFuctionSignature =
         error =
             Comment.createExpectedErrorUnder
                 (Comment "has no signature" "elm.two-fer.use_signature" Informative Dict.empty)
-                (String.trim """twoFer name =
-    "One for "
-        ++ Maybe.withDefault "you" name
-        ++ ", one for me."
-                """)
+                "twoFer"
     in
     describe "solutions without function signatures" <|
         [ test "no function signature" <|
@@ -90,7 +86,10 @@ twoFer name =
         ++ ", one for me."
 """
                     |> Review.Test.run TwoFer.hasFunctionSignature
-                    |> Review.Test.expectErrors [ error ]
+                    |> Review.Test.expectErrors
+                        [ error
+                            |> Review.Test.atExactly { start = { row = 4, column = 1 }, end = { row = 4, column = 7 } }
+                        ]
         , test "commented function signature" <|
             \() ->
                 """
@@ -103,7 +102,10 @@ twoFer name =
         ++ ", one for me."
 """
                     |> Review.Test.run TwoFer.hasFunctionSignature
-                    |> Review.Test.expectErrors [ error ]
+                    |> Review.Test.expectErrors
+                        [ error
+                            |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 7 } }
+                        ]
         ]
 
 
@@ -130,19 +132,10 @@ twoFer name =
                     |> Review.Test.expectErrors
                         [ Comment.createExpectedErrorUnder
                             (Comment "Doesn't use withDefault" "elm.two-fer.use_withDefault" Essential Dict.empty)
-                            (String.trim """twoFer : Maybe String -> String
-twoFer name =
-    case name of
-        Nothing ->
-            "One for you, one for me."
-
-        Just you ->
-            "One for "
-                ++ you
-                ++ ", one for me."
-                """)
+                            "twoFer"
+                            |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 7 } }
                         ]
-        , test "commented function signature" <|
+        , test "using a function from Maybe.Extra" <|
             \() ->
                 """
 module TwoFer exposing (twoFer)
@@ -159,46 +152,7 @@ twoFer name =
                     |> Review.Test.expectErrors
                         [ Comment.createExpectedErrorUnder
                             (Comment "Doesn't use withDefault" "elm.two-fer.use_withDefault" Essential Dict.empty)
-                            (String.trim """twoFer : Maybe String -> String
-twoFer name =
-    "One for "
-        ++ Maybe.Extra.withDefaultLazy (\\() -> "you") name
-        ++ ", one for me."
-                """)
+                            "twoFer"
+                            |> Review.Test.atExactly { start = { row = 7, column = 1 }, end = { row = 7, column = 7 } }
                         ]
         ]
-
-
-x =
-    test "using a case statement" <|
-        \() ->
-            """
-module TwoFer exposing (twoFer)
-
-twoFer : Maybe String -> String
-twoFer name =
-    case name of
-        Nothing ->
-            "One for you, one for me."
-
-        Just you ->
-            "One for "
-                ++ you
-                ++ ", one for me."
-"""
-                |> Review.Test.run TwoFer.usesWithDefault
-                |> Review.Test.expectErrors
-                    [ Comment.createExpectedErrorUnder
-                        (Comment "Doesn't use withDefault" "elm.two-fer.use_withDefault" Essential Dict.empty)
-                        (String.trim """twoFer : Maybe String -> String
-twoFer name =
-    case name of
-        Nothing ->
-            "One for you, one for me."
-
-        Just you ->
-            "One for "
-                ++ you
-                ++ ", one for me."
-                """)
-                    ]

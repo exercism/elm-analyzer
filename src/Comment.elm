@@ -1,7 +1,5 @@
 module Comment exposing (..)
 
--- import Debug
-
 import Dict exposing (Dict)
 import Elm.Syntax.Range exposing (Range)
 import Json.Decode as Decode exposing (Decoder)

@@ -70,7 +70,7 @@ noFuctionSignature : Test
 noFuctionSignature =
     let
         error =
-            Comment.createExpectedErrorUnder
+            TestHelper.createExpectedErrorUnder
                 (Comment "has no signature" "elm.two-fer.use_signature" Informative Dict.empty)
                 "twoFer"
     in
@@ -130,7 +130,7 @@ twoFer name =
 """
                     |> Review.Test.run TwoFer.usesWithDefault
                     |> Review.Test.expectErrors
-                        [ Comment.createExpectedErrorUnder
+                        [ TestHelper.createExpectedErrorUnder
                             (Comment "Doesn't use withDefault" "elm.two-fer.use_withDefault" Essential Dict.empty)
                             "twoFer"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 7 } }
@@ -150,7 +150,7 @@ twoFer name =
 """
                     |> Review.Test.run TwoFer.usesWithDefault
                     |> Review.Test.expectErrors
-                        [ Comment.createExpectedErrorUnder
+                        [ TestHelper.createExpectedErrorUnder
                             (Comment "Doesn't use withDefault" "elm.two-fer.use_withDefault" Essential Dict.empty)
                             "twoFer"
                             |> Review.Test.atExactly { start = { row = 7, column = 1 }, end = { row = 7, column = 7 } }

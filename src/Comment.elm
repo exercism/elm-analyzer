@@ -5,7 +5,6 @@ import Elm.Syntax.Range exposing (Range)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Review.Rule as Rule exposing (Error)
-import Review.Test exposing (ExpectedError)
 
 
 
@@ -143,12 +142,11 @@ createError comment range =
         range
 
 
-createExpectedErrorUnder : Comment -> String -> ExpectedError
-createExpectedErrorUnder comment under =
-    Review.Test.error
+createGlobalError : Comment -> Error {}
+createGlobalError comment =
+    Rule.globalError
         { message = Encode.encode 0 (encodeComment comment)
         , details = [ "" ]
-        , under = under
         }
 
 

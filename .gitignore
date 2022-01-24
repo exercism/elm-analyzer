@@ -1,4 +1,5 @@
 elm-stuff
 bin/*.js
+src/main.js
 review/src/main.js
 *analysis.json

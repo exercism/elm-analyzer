@@ -18,14 +18,7 @@ elm-review $INPUT_DIR \
         --config . \
         --rules $SLUG \
         --report=json \
-        > $OUTPUT_DIR/raw_analysis.json
-
-cat $OUTPUT_DIR/raw_analysis.json \
-        | jq '[.errors | .[] | .errors | .[] | .message | fromjson]' \
-        > $OUTPUT_DIR/message_analysis.json 
-
-cat $OUTPUT_DIR/message_analysis.json \
-        | node ./bin/cli.js  \
+  | node ./bin/cli.js  \
         > $OUTPUT_DIR/analysis.json
 set -e
 

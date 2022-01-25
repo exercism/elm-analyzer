@@ -15,3 +15,8 @@ main.ports.stdout.subscribe(function (output) {
     // send normalized code to stdout
     console.log(output);
 });
+
+main.ports.stderr.subscribe(function (output) {
+    // send normalized code to stderr
+    console.error(output);
+});

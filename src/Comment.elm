@@ -1,4 +1,4 @@
-module Comment exposing (..)
+module Comment exposing (Comment, CommentType(..), createError, createGlobalError, makeSummary)
 
 import Dict exposing (Dict)
 import Elm.Syntax.Range exposing (Range)
@@ -36,14 +36,12 @@ type CommentType
 -- BUILDING SUMMARY
 
 
-makeSummary : String -> String
-makeSummary input =
-    case Decode.decodeString (Decode.list decodeComment) input of
-        Ok comments ->
-            aggregateComments comments |> encodeSummary |> Encode.encode 0
-
-        Err _ ->
-            emptySummary |> Encode.encode 0
+makeSummary : String -> Result Decode.Error String
+makeSummary =
+    Decode.decodeString
+        (decodeElmReviewComments
+            |> Decode.map (aggregateComments >> encodeSummary >> Encode.encode 0)
+        )
 
 
 aggregateComments : List Comment -> Summary
@@ -124,11 +122,6 @@ minimumBy f list =
             List.foldl getMinimum ( head, f head ) tail |> Tuple.first |> Just
 
 
-emptySummary : Value
-emptySummary =
-    Encode.object [ ( "comments", Encode.list encodeComment [] ) ]
-
-
 
 -- CREATING ERROR FROM COMMENT
 
@@ -179,6 +172,30 @@ encodeComment { name, comment, commentType, params } =
         , ( "type", commentType |> encodeCommentType |> Encode.string )
         , ( "params", Encode.dict identity Encode.string params )
         ]
+
+
+decodeElmReviewComments : Decoder (List Comment)
+decodeElmReviewComments =
+    let
+        decodeErrorsPerFile =
+            Decode.field "errors" (Decode.list decodeMessage)
+
+        decodeMessage =
+            Decode.string
+                |> Decode.andThen
+                    (\message ->
+                        case Decode.decodeString decodeComment message of
+                            Ok comment ->
+                                Decode.succeed comment
+
+                            Err err ->
+                                Decode.fail (Decode.errorToString err)
+                    )
+                |> Decode.field "message"
+    in
+    Decode.list decodeErrorsPerFile
+        |> Decode.map List.concat
+        |> Decode.field "errors"
 
 
 decodeComment : Decoder Comment

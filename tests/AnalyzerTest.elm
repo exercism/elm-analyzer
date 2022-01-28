@@ -35,13 +35,20 @@ allRules =
                     |> List.concatMap
                         (\( findFunctionName, findFunctions ) ->
                             finding
-                                |> List.concatMap
+                                |> List.map
                                     (\( findName, find ) ->
                                         let
                                             name =
                                                 String.join ", " [ calledFromName, findFunctionName, findName ]
                                         in
-                                        [ ( name, Analyzer.functionCalls { calledFrom = calledFrom, findFunctions = findFunctions, find = find, comment = quickComment name } ) ]
+                                        ( name
+                                        , Analyzer.functionCalls
+                                            { calledFrom = calledFrom
+                                            , findFunctions = findFunctions
+                                            , find = find
+                                            , comment = quickComment name
+                                            }
+                                        )
                                     )
                         )
             )
@@ -635,4 +642,165 @@ callingFunction param =
                         )
                     |> Review.Test.expectGlobalErrors
                         [ TestHelper.createExpectedGlobalError (quickComment "basics") ]
+        ]
+
+
+indirectCallTest : Test
+indirectCallTest =
+    let
+        rule =
+            "calling function, Ext.ext + internal, all"
+    in
+    describe "functions should be found when used through helper functions"
+        [ test "call in a different function" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+  param
+
+helperOne param =
+  param
+  |> Ext.ext
+  |> internal
+"""
+                    |> Review.Test.run (getRule rule)
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (quickComment rule) "callingFunction" ]
+        , test "direct call" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+  param
+  |> Ext.ext
+  |> internal
+"""
+                    |> Review.Test.run (getRule rule)
+                    |> Review.Test.expectNoErrors
+        , test "indirect call" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+  param
+  |> helperOne
+
+helperOne param =
+  param
+  |> Ext.ext
+  |> internal
+"""
+                    |> Review.Test.run (getRule rule)
+                    |> Review.Test.expectNoErrors
+        , test "some direct, some indirect call" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+  param
+  |> helperOne
+  |> Ext.ext
+
+helperOne param =
+  param
+  |> internal
+"""
+                    |> Review.Test.run (getRule rule)
+                    |> Review.Test.expectNoErrors
+        , test "indirect call twice removed" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+  param
+  |> helperOne
+
+helperOne param =
+  param
+  |> helperTwo
+
+helperTwo param =
+  param
+  |> Ext.ext
+  |> internal
+"""
+                    |> Review.Test.run (getRule rule)
+                    |> Review.Test.expectNoErrors
+        , test "indirect calls at different levels" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+  param
+  |> helperOne
+
+helperOne param =
+  param
+  |> helperTwo
+  |> Ext.ext
+
+helperTwo param =
+  param
+  |> internal
+"""
+                    |> Review.Test.run (getRule rule)
+                    |> Review.Test.expectNoErrors
+        , test "recursive calls are OK" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+  param
+  |> helperOne
+  |> callingFunction
+
+helperOne param =
+  param
+  |> internal
+  |> Ext.ext
+  |> helperOne
+"""
+                    |> Review.Test.run (getRule rule)
+                    |> Review.Test.expectNoErrors
+        , test "co-recursive calls are OK" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+  param
+  |> helperOne
+  |> internal
+
+helperOne param =
+  param
+  |> callingFunction
+  |> Ext.ext
+"""
+                    |> Review.Test.run (getRule rule)
+                    |> Review.Test.expectNoErrors
         ]

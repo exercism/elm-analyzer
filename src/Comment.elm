@@ -1,4 +1,4 @@
-module Comment exposing (Comment, CommentType(..), createError, createGlobalError, makeSummary)
+module Comment exposing (Comment, CommentType(..), createError, createGlobalError, encodeComment, makeSummary)
 
 import Dict exposing (Dict)
 import Elm.Syntax.Range exposing (Range)

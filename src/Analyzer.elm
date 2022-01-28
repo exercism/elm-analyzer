@@ -1,10 +1,11 @@
 module Analyzer exposing (CalledFunction(..), Find(..), functionCalls)
 
 import Comment exposing (Comment, CommentType(..))
+import Dict exposing (Dict)
 import Elm.Syntax.Declaration as Declaration exposing (Declaration)
 import Elm.Syntax.Expression as Expression exposing (Expression)
 import Elm.Syntax.ModuleName exposing (ModuleName)
-import Elm.Syntax.Node as Node exposing (Node)
+import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Range exposing (Range)
 import Review.ModuleNameLookupTable as LookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
@@ -23,10 +24,11 @@ type Find
 
 
 type alias Context =
-    { isFunctionDeclaration : Bool
+    { functionDeclaration : Maybe String
     , calledFromRange : Maybe Range
     , functionsFound : List ( CalledFunction, Maybe Range )
     , lookupTable : ModuleNameLookupTable
+    , callTree : Dict String (List ( Maybe ModuleName, String, Range ))
     }
 
 
@@ -37,8 +39,8 @@ type alias Context =
    TODO:
    - add documentation
      - Basic functions must be explicit
-   - recognize operators
-   - indirect calls
+     - indirect calls
+   - recognize operators, let, case, if...
 
 
 -}
@@ -56,7 +58,7 @@ functionCalls { calledFrom, findFunctions, find, comment } =
         |> Rule.withDeclarationEnterVisitor (annotateFunctionDeclaration calledFrom)
         |> Rule.withExpressionEnterVisitor expressionCallsFunction
         |> Rule.withDeclarationExitVisitor annotateLeaveDeclaration
-        |> Rule.withFinalModuleEvaluation (checkForError find comment)
+        |> Rule.withFinalModuleEvaluation (flattenTree calledFrom >> checkForError find comment)
         |> Rule.fromModuleRuleSchema
 
 
@@ -65,9 +67,10 @@ initialContext functions =
     Rule.initContextCreator
         (\lookupTable () ->
             { lookupTable = lookupTable
-            , isFunctionDeclaration = False
+            , functionDeclaration = Nothing
             , calledFromRange = Nothing
             , functionsFound = List.map (\function -> ( function, Nothing )) functions
+            , callTree = Dict.empty
             }
         )
         |> Rule.withModuleNameLookupTable
@@ -75,56 +78,114 @@ initialContext functions =
 
 annotateFunctionDeclaration : Maybe String -> Node Declaration -> Context -> ( List (Error {}), Context )
 annotateFunctionDeclaration calledFrom node context =
-    case ( Node.value node, calledFrom ) of
-        ( Declaration.FunctionDeclaration _, Nothing ) ->
-            ( [], { context | isFunctionDeclaration = True } )
+    case Node.value node of
+        Declaration.FunctionDeclaration { declaration } ->
+            let
+                (Node range functionName) =
+                    Node.value declaration |> .name
+            in
+            ( []
+            , { context
+                | functionDeclaration = Just functionName
+                , calledFromRange =
+                    if calledFrom == Just functionName then
+                        Just range
 
-        ( Declaration.FunctionDeclaration { declaration }, Just functionName ) ->
-            if functionName == (Node.value declaration |> .name |> Node.value) then
-                ( []
-                , { context
-                    | isFunctionDeclaration = True
-                    , calledFromRange = Just (declaration |> Node.value |> .name |> Node.range)
-                  }
-                )
-
-            else
-                ( [], context )
+                    else
+                        context.calledFromRange
+              }
+            )
 
         _ ->
             ( [], context )
 
 
 expressionCallsFunction : Node Expression -> Context -> ( List (Error {}), Context )
-expressionCallsFunction expression ({ lookupTable, isFunctionDeclaration, functionsFound } as context) =
+expressionCallsFunction expression ({ lookupTable, functionDeclaration, callTree } as context) =
     case Node.value expression of
-        Expression.FunctionOrValue _ function ->
-            if isFunctionDeclaration then
-                let
-                    functionModule =
-                        LookupTable.moduleNameFor lookupTable expression
-                in
-                ( []
-                , { context
-                    | functionsFound =
-                        List.map (matchFunction functionModule function (Node.range expression)) functionsFound
-                  }
-                )
+        Expression.FunctionOrValue _ name ->
+            let
+                moduleName =
+                    LookupTable.moduleNameFor lookupTable expression
 
-            else
-                ( [], context )
+                addfunctionCall =
+                    Maybe.withDefault [] >> (::) ( moduleName, name, Node.range expression ) >> Just
+            in
+            ( []
+            , { context
+                | callTree =
+                    case functionDeclaration of
+                        Just function ->
+                            Dict.update function addfunctionCall callTree
+
+                        Nothing ->
+                            callTree
+              }
+            )
 
         _ ->
             ( [], context )
 
 
+annotateLeaveDeclaration : Node Declaration -> Context -> ( List (Error {}), Context )
+annotateLeaveDeclaration node context =
+    case Node.value node of
+        Declaration.FunctionDeclaration _ ->
+            ( [], { context | functionDeclaration = Nothing } )
+
+        _ ->
+            ( [], context )
+
+
+flattenTree : Maybe String -> Context -> Context
+flattenTree calledFrom ({ callTree } as context) =
+    let
+        allExpressions =
+            case calledFrom of
+                Nothing ->
+                    Dict.values callTree |> List.concat
+
+                Just topFunction ->
+                    traverseTreeFrom topFunction callTree
+
+        functionsFound =
+            List.map (\function -> List.foldl matchFunction function allExpressions) context.functionsFound
+    in
+    { context | functionsFound = functionsFound }
+
+
+traverseTreeFrom :
+    String
+    -> Dict String (List ( Maybe ModuleName, String, Range ))
+    -> List ( Maybe ModuleName, String, Range )
+traverseTreeFrom root tree =
+    case Dict.get root tree of
+        Nothing ->
+            []
+
+        Just expressions ->
+            let
+                keepModuleFunction ( moduleName, function, _ ) =
+                    if moduleName == Just [] then
+                        Just function
+
+                    else
+                        Nothing
+
+                modulefunctions =
+                    List.filterMap keepModuleFunction expressions
+
+                trimmedTree =
+                    Dict.remove root tree
+            in
+            expressions ++ List.concatMap (\branch -> traverseTreeFrom branch trimmedTree) modulefunctions
+
+
 matchFunction :
-    Maybe ModuleName
-    -> String
-    -> Range
+    ( Maybe ModuleName, String, Range )
     -> ( CalledFunction, Maybe Range )
     -> ( CalledFunction, Maybe Range )
-matchFunction functionModule functionName range ( calledFunction, found ) =
+matchFunction ( functionModule, functionName, range ) ( calledFunction, found ) =
     let
         getRange match =
             if match then
@@ -145,16 +206,6 @@ matchFunction functionModule functionName range ( calledFunction, found ) =
 
         ( FromSameModule name, Nothing ) ->
             ( calledFunction, ( Just [], name ) == ( functionModule, functionName ) |> getRange )
-
-
-annotateLeaveDeclaration : Node Declaration -> Context -> ( List (Error {}), Context )
-annotateLeaveDeclaration node context =
-    case Node.value node of
-        Declaration.FunctionDeclaration _ ->
-            ( [], { context | isFunctionDeclaration = False } )
-
-        _ ->
-            ( [], context )
 
 
 checkForError : Find -> Comment -> Context -> List (Error {})

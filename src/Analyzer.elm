@@ -11,41 +11,99 @@ import Review.ModuleNameLookupTable as LookupTable exposing (ModuleNameLookupTab
 import Review.Rule as Rule exposing (Error, Rule)
 
 
+{-| Functions that can be searched for.
+
+`AnyFromExternalModule ["List", "Extra"]` means that we are looking for any function from the
+`List.Extra` module.
+
+`FromExternalModule ["List", "Extra"] "find"` means that we a looking for a call to
+`List.Extra.find`.
+
+Note that for searching for function that are automatically imported, like `round`, the module
+must be explicitely stated: `FromExternalModule ["Basics"] "round"`.
+
+`FromSameModule "solve"` means that we are looking for a call to a top-level function defined
+in the same module.
+
+-}
+
+
+
+-- TODO: also search for operators, let, case, if, or any expression?
+
+
 type CalledFunction
     = AnyFromExternalModule ModuleName
     | FromExternalModule ModuleName String
     | FromSameModule String
 
 
+{-| Type of search.
+
+When searching for a list of functions, we can specify what constitutes a success.
+
+Use `All` to make sure all functions are called, `None` to make sure no function is called,
+and `Some` to make sure at least one function is called.
+
+-}
 type Find
     = All
     | None
     | Some
 
 
-type alias Context =
-    { functionDeclaration : Maybe String
-    , calledFromRange : Maybe Range
-    , functionsFound : List ( CalledFunction, Maybe Range )
-    , lookupTable : ModuleNameLookupTable
-    , callTree : Dict String (List ( Maybe ModuleName, String, Range ))
-    }
+type Context
+    = Context
+        { functionDeclaration : Maybe String
+        , calledFromRange : Maybe Range
+        , functionsFound : List ( CalledFunction, Maybe Range )
+        , lookupTable : ModuleNameLookupTable
+        , callTree : Dict String (List ( Maybe ModuleName, String, Range ))
+        }
 
 
+{-| Check if a list of functions are called from a module or a top-level function.
 
-{-
+`calledFrom` indicates if the functions should be searched through the whole module (`Nothing`)
+or within a particular function (`Just functionA`).
 
+`findFunctions` specifies the list of functions that we are looking for, for example
+`functions = [FromExternalModule ["List", "Extra"] "find", FromExternalModule ["List", "Extra"] "findIndex"]`.
 
-   TODO:
-   - add documentation
-     - Basic functions must be explicit
-     - indirect calls
-   - recognize operators, let, case, if...
+`find` specifies the type of search. For example, we might want to forbid the use of
+`List.Extra.find` and `List.Extra.findIndex`, or maybe we want to make sure that one of these
+is being called, or even both.
 
+`comment` is the comment that will be returned if the module doesn't satisfy the specifications.
+
+Let's consider an example:
+
+    module A exposing (..)
+
+    functionA param = param
+        |> functionB
+        |> List.Extra.find List.isEmpty
+
+    functionB param =
+        |> List.Extra.findIndex (\(i, _) -> i > 0)
+        |> List.map Tuple.second
+
+The rule `functionCalls {calledFrom = Nothing, findFunctions = functions, find = All, comment = comment}`
+would succeed since `List.Extra.find` and `List.Extra.findIndex` are both called somewhere in the
+module. Changing to `calledFrom = Just "functionB"` would fail, since `functionB` only calls one of
+the two, and `comment` would be thrown.
+
+`functionCalls` can keep track of imports and aliases. If module `A` was using
+`import List.Extra exposing (find, findIndex)` or `import List.Extra as List`, the rule would
+behave the same.
+
+`functionCalls` searches recursively through internal top-level functions calls.
+This is particularly useful when helper functions are defined. For example, the rule above with
+`calledFrom = Just "functionA"` would succeed, since `functionA` calls `List.Extra.find` directly,
+also calls `functionB` that itself calls `List.Extra.findIndex`, therefore we consider that
+`functionA` calls both functions.
 
 -}
-
-
 functionCalls :
     { calledFrom : Maybe String
     , findFunctions : List CalledFunction
@@ -66,18 +124,19 @@ initialContext : List CalledFunction -> Rule.ContextCreator () Context
 initialContext functions =
     Rule.initContextCreator
         (\lookupTable () ->
-            { lookupTable = lookupTable
-            , functionDeclaration = Nothing
-            , calledFromRange = Nothing
-            , functionsFound = List.map (\function -> ( function, Nothing )) functions
-            , callTree = Dict.empty
-            }
+            Context
+                { lookupTable = lookupTable
+                , functionDeclaration = Nothing
+                , calledFromRange = Nothing
+                , functionsFound = List.map (\function -> ( function, Nothing )) functions
+                , callTree = Dict.empty
+                }
         )
         |> Rule.withModuleNameLookupTable
 
 
 annotateFunctionDeclaration : Maybe String -> Node Declaration -> Context -> ( List (Error {}), Context )
-annotateFunctionDeclaration calledFrom node context =
+annotateFunctionDeclaration calledFrom node (Context context) =
     case Node.value node of
         Declaration.FunctionDeclaration { declaration } ->
             let
@@ -85,23 +144,24 @@ annotateFunctionDeclaration calledFrom node context =
                     Node.value declaration |> .name
             in
             ( []
-            , { context
-                | functionDeclaration = Just functionName
-                , calledFromRange =
-                    if calledFrom == Just functionName then
-                        Just range
+            , Context
+                { context
+                    | functionDeclaration = Just functionName
+                    , calledFromRange =
+                        if calledFrom == Just functionName then
+                            Just range
 
-                    else
-                        context.calledFromRange
-              }
+                        else
+                            context.calledFromRange
+                }
             )
 
         _ ->
-            ( [], context )
+            ( [], Context context )
 
 
 expressionCallsFunction : Node Expression -> Context -> ( List (Error {}), Context )
-expressionCallsFunction expression ({ lookupTable, functionDeclaration, callTree } as context) =
+expressionCallsFunction expression (Context ({ lookupTable, functionDeclaration, callTree } as context)) =
     case Node.value expression of
         Expression.FunctionOrValue _ name ->
             let
@@ -112,33 +172,34 @@ expressionCallsFunction expression ({ lookupTable, functionDeclaration, callTree
                     Maybe.withDefault [] >> (::) ( moduleName, name, Node.range expression ) >> Just
             in
             ( []
-            , { context
-                | callTree =
-                    case functionDeclaration of
-                        Just function ->
-                            Dict.update function addfunctionCall callTree
+            , Context
+                { context
+                    | callTree =
+                        case functionDeclaration of
+                            Just function ->
+                                Dict.update function addfunctionCall callTree
 
-                        Nothing ->
-                            callTree
-              }
+                            Nothing ->
+                                callTree
+                }
             )
 
         _ ->
-            ( [], context )
+            ( [], Context context )
 
 
 annotateLeaveDeclaration : Node Declaration -> Context -> ( List (Error {}), Context )
-annotateLeaveDeclaration node context =
+annotateLeaveDeclaration node (Context context) =
     case Node.value node of
         Declaration.FunctionDeclaration _ ->
-            ( [], { context | functionDeclaration = Nothing } )
+            ( [], Context { context | functionDeclaration = Nothing } )
 
         _ ->
-            ( [], context )
+            ( [], Context context )
 
 
 flattenTree : Maybe String -> Context -> Context
-flattenTree calledFrom ({ callTree } as context) =
+flattenTree calledFrom (Context ({ callTree } as context)) =
     let
         allExpressions =
             case calledFrom of
@@ -151,7 +212,7 @@ flattenTree calledFrom ({ callTree } as context) =
         functionsFound =
             List.map (\function -> List.foldl matchFunction function allExpressions) context.functionsFound
     in
-    { context | functionsFound = functionsFound }
+    Context { context | functionsFound = functionsFound }
 
 
 traverseTreeFrom :
@@ -209,7 +270,7 @@ matchFunction ( functionModule, functionName, range ) ( calledFunction, found ) 
 
 
 checkForError : Find -> Comment -> Context -> List (Error {})
-checkForError find comment { functionsFound, calledFromRange } =
+checkForError find comment (Context { functionsFound, calledFromRange }) =
     case find of
         All ->
             case ( List.filter (Tuple.second >> isNothing) functionsFound, calledFromRange ) of

@@ -1,4 +1,4 @@
-module AnalyzerTest exposing (..)
+module AnalyzerTest exposing (calledFromTest, findFunctionsTest, findTest, indirectCallTest)
 
 import Analyzer exposing (CalledFunction(..), Find(..))
 import Comment exposing (Comment, CommentType(..))
@@ -574,6 +574,66 @@ callingFunction param =
                     |> Review.Test.run (getRule allThreeRule)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder (quickComment allThreeRule) "callingFunction" ]
+        , test "should detect imported functions" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext exposing (other, ext)
+
+callingFunction param =
+  param
+  |> ext
+  |> other
+  |> internal
+"""
+                    |> Review.Test.run (getRule allThreeRule)
+                    |> Review.Test.expectNoErrors
+        , test "should detect aliased module" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext as NotExt
+
+callingFunction param =
+  param
+  |> NotExt.ext
+  |> NotExt.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule allThreeRule)
+                    |> Review.Test.expectNoErrors
+        , test "should detect aliased module with conflicting name" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext as List
+
+callingFunction param =
+  param
+  |> List.ext
+  |> List.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule allThreeRule)
+                    |> Review.Test.expectNoErrors
+        , test "should detect imported functions from aliased module" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext as NotExt exposing (ext, other)
+
+callingFunction param =
+  param
+  |> ext
+  |> other
+  |> internal
+"""
+                    |> Review.Test.run (getRule allThreeRule)
+                    |> Review.Test.expectNoErrors
         , test "should detect composite module" <|
             \() ->
                 """
@@ -584,27 +644,6 @@ import Ext.Sub
 callingFunction param =
   param
   |> Ext.Sub.ext
-  |> internal
-"""
-                    |> Review.Test.run
-                        (Analyzer.functionCalls
-                            { calledFrom = Nothing
-                            , findFunctions = [ AnyFromExternalModule [ "Ext", "Sub" ] ]
-                            , find = All
-                            , comment = quickComment "Ext.Sub"
-                            }
-                        )
-                    |> Review.Test.expectNoErrors
-        , test "should detect aliased module" <|
-            \() ->
-                """
-module A exposing (..)
-
-import Ext.Sub as List
-
-callingFunction param =
-  param
-  |> List.ext
   |> internal
 """
                     |> Review.Test.run

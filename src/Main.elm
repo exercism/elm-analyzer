@@ -2,6 +2,7 @@ port module Main exposing (main)
 
 import Comment
 import Json.Decode as Decode
+import ReviewConfig
 
 
 port stdin : (String -> msg) -> Sub msg
@@ -24,18 +25,21 @@ main =
 
 update : String -> () -> ( (), Cmd msg )
 update input () =
-    case Comment.makeSummary input of
+    let
+        highjackingDecoders =
+            List.concatMap .highjackErrorDecoders ReviewConfig.ruleConfigs
+    in
+    case Comment.makeSummary highjackingDecoders input of
         Ok output ->
             ( (), stdout output )
 
         Err err ->
-            let
-                output =
-                    [ "Input could not be parsed. \nError:"
-                    , Decode.errorToString err
-                    , "Input:"
-                    , input
-                    ]
-                        |> String.join "\n"
-            in
-            ( (), stderr output )
+            ( ()
+            , [ "Input could not be parsed. \nError:"
+              , Decode.errorToString err
+              , "Input:"
+              , input
+              ]
+                |> String.join "\n"
+                |> stderr
+            )

@@ -1,30 +1,29 @@
-module ReviewConfig exposing (config)
+module ReviewConfig exposing (config, ruleConfigs)
 
+import Common.NoUnused
+import Common.Simplify
 import Exercise.TwoFer
-import NoUnused.CustomTypeConstructorArgs
-import NoUnused.CustomTypeConstructors
-import NoUnused.Dependencies
-import NoUnused.Variables
 import Review.Rule as Rule exposing (Rule)
-import Simplify
+import RuleConfig exposing (RuleConfig)
+
+
+ruleConfigs : List RuleConfig
+ruleConfigs =
+    [ -- Common Rules
+      Common.NoUnused.ruleConfig
+    , Common.Simplify.ruleConfig
+
+    -- Concept Exercise
+    -- Practice Exercise
+    , Exercise.TwoFer.ruleConfig
+    ]
 
 
 config : List Rule
 config =
-    [ -- Common Checks: NoUnused
-      NoUnused.CustomTypeConstructors.rule []
-    , NoUnused.CustomTypeConstructorArgs.rule
-    , NoUnused.Dependencies.rule
-    , NoUnused.Variables.rule
-
-    -- Common Check: Simplify
-    , Simplify.rule Simplify.defaults
-
-    -- Pratice Exercise: two-fer
-    , Exercise.TwoFer.hasFunctionSignature
-    , Exercise.TwoFer.usesWithDefault
-    ]
+    RuleConfig.makeConfig ruleConfigs
         |> List.map
             (Rule.ignoreErrorsForDirectories [ "tests/" ]
+                -- elm.json is standardized
                 >> Rule.ignoreErrorsForFiles [ "elm.json" ]
             )

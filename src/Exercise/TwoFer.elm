@@ -1,4 +1,4 @@
-module Exercise.TwoFer exposing (hasFunctionSignature, usesWithDefault)
+module Exercise.TwoFer exposing (hasFunctionSignature, ruleConfig, usesWithDefault)
 
 import Analyzer exposing (CalledFunction(..), Find(..))
 import Comment exposing (Comment, CommentType(..))
@@ -6,16 +6,21 @@ import Dict
 import Elm.Syntax.Declaration as Declaration exposing (Declaration)
 import Elm.Syntax.Node as Node exposing (Node)
 import Review.Rule as Rule exposing (Error, Rule)
+import RuleConfig exposing (RuleConfig)
 
 
-slug : String
-slug =
-    "two-fer"
+ruleConfig : RuleConfig
+ruleConfig =
+    { slug = Just "two-fer"
+    , restrictToFiles = Just [ "src/TwoFer.elm" ]
+    , rules = [ hasFunctionSignature, usesWithDefault ]
+    , highjackErrorDecoders = []
+    }
 
 
 hasFunctionSignature : Rule
 hasFunctionSignature =
-    Rule.newModuleRuleSchema slug ()
+    Rule.newModuleRuleSchema "elm.two-fer.use_signature" ()
         |> Rule.withSimpleDeclarationVisitor hasSignatureVisitor
         |> Rule.fromModuleRuleSchema
 
@@ -44,5 +49,5 @@ usesWithDefault =
         { calledFrom = Just "twoFer"
         , findFunctions = [ FromExternalModule [ "Maybe" ] "withDefault" ]
         , find = All
-        , comment = Comment "Doesn't use withDefault" "elm.two-fer.use_withDefault" Essential Dict.empty
+        , comment = Comment "Doesn't use withDefault" "elm.two-fer.use_withDefault" Informative Dict.empty
         }

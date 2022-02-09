@@ -1,4 +1,14 @@
-module Comment exposing (Comment, CommentType(..), createError, createGlobalError, encodeComment, makeSummary)
+module Comment exposing
+    ( Comment
+    , CommentType(..)
+    , Summary
+    , aggregateComments
+    , createError
+    , createGlobalError
+    , decodeComment
+    , encodeComment
+    , makeSummary
+    )
 
 import Dict exposing (Dict)
 import Elm.Syntax.Range exposing (Range)
@@ -36,12 +46,11 @@ type CommentType
 -- BUILDING SUMMARY
 
 
-makeSummary : String -> Result Decode.Error String
-makeSummary =
-    Decode.decodeString
-        (decodeElmReviewComments
-            |> Decode.map (aggregateComments >> encodeSummary >> Encode.encode 0)
-        )
+makeSummary : List (Decoder Comment) -> String -> Result Decode.Error String
+makeSummary decoders =
+    decodeElmReviewComments decoders
+        |> Decode.map (aggregateComments >> encodeSummary >> Encode.encode 0)
+        |> Decode.decodeString
 
 
 aggregateComments : List Comment -> Summary
@@ -159,7 +168,7 @@ encodeSummaryComment : Comment -> Value
 encodeSummaryComment { comment, commentType, params } =
     Encode.object
         [ ( "comment", Encode.string comment )
-        , ( "type", commentType |> encodeCommentType |> Encode.string )
+        , ( "type", commentType |> encodeCommentType )
         , ( "params", Encode.dict identity Encode.string params )
         ]
 
@@ -169,16 +178,18 @@ encodeComment { name, comment, commentType, params } =
     Encode.object
         [ ( "name", Encode.string name )
         , ( "comment", Encode.string comment )
-        , ( "type", commentType |> encodeCommentType |> Encode.string )
+        , ( "type", commentType |> encodeCommentType )
         , ( "params", Encode.dict identity Encode.string params )
         ]
 
 
-decodeElmReviewComments : Decoder (List Comment)
-decodeElmReviewComments =
+decodeElmReviewComments : List (Decoder Comment) -> Decoder (List Comment)
+decodeElmReviewComments highjackingDecoders =
     let
         decodeErrorsPerFile =
-            Decode.field "errors" (Decode.list decodeMessage)
+            Decode.oneOf (decodeMessage :: highjackingDecoders)
+                |> Decode.list
+                |> Decode.field "errors"
 
         decodeMessage =
             Decode.string
@@ -207,9 +218,9 @@ decodeComment =
         (Decode.field "params" (Decode.dict Decode.string))
 
 
-encodeCommentType : CommentType -> String
+encodeCommentType : CommentType -> Value
 encodeCommentType commentType =
-    case commentType of
+    (case commentType of
         Essential ->
             "essential"
 
@@ -221,6 +232,8 @@ encodeCommentType commentType =
 
         Celebratory ->
             "celebratory"
+    )
+        |> Encode.string
 
 
 decodeCommentType : Decoder CommentType

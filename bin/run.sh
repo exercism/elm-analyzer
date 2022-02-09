@@ -6,7 +6,7 @@ set -u # Exit on usage of undeclared variable.
 set -o pipefail # Catch failures in pipes.
 
 # Command line arguments
-SLUG="$1"
+# SLUG="$1"
 INPUT_DIR="$2"
 OUTPUT_DIR="$3"
 
@@ -16,7 +16,6 @@ set +e
 elm-review $INPUT_DIR \
         --elmjson $INPUT_DIR/elm.json \
         --config . \
-        --rules $SLUG \
         --report=json \
   | node ./bin/cli.js  \
         > $OUTPUT_DIR/analysis.json

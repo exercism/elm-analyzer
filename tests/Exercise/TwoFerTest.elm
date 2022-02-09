@@ -131,7 +131,7 @@ twoFer name =
                     |> Review.Test.run TwoFer.usesWithDefault
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder
-                            (Comment "Doesn't use withDefault" "elm.two-fer.use_withDefault" Essential Dict.empty)
+                            (Comment "Doesn't use withDefault" "elm.two-fer.use_withDefault" Informative Dict.empty)
                             "twoFer"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 7 } }
                         ]
@@ -151,7 +151,7 @@ twoFer name =
                     |> Review.Test.run TwoFer.usesWithDefault
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder
-                            (Comment "Doesn't use withDefault" "elm.two-fer.use_withDefault" Essential Dict.empty)
+                            (Comment "Doesn't use withDefault" "elm.two-fer.use_withDefault" Informative Dict.empty)
                             "twoFer"
                             |> Review.Test.atExactly { start = { row = 7, column = 1 }, end = { row = 7, column = 7 } }
                         ]

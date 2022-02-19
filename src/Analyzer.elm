@@ -29,17 +29,13 @@ type CalledFrom
 
 {-| Functions that can be searched for.
 
-`AnyFromExternalModule ["List", "Extra"]` means that we are looking for any function from the
-`List.Extra` module.
+`AnyFromExternalModule ["List", "Extra"]` means that we are looking for any function from the `List.Extra` module.
 
-`FromExternalModule ["List", "Extra"] "find"` means that we a looking for a call to
-`List.Extra.find`.
+`FromExternalModule ["List", "Extra"] "find"` means that we a looking for a call to `List.Extra.find`.
 
-Note that for searching for function that are automatically imported, like `round`, the module
-must be explicitely stated: `FromExternalModule ["Basics"] "round"`.
+Note that for searching for function that are automatically imported, like `round`, the module must be explicitely stated: `FromExternalModule ["Basics"] "round"`.
 
-`FromSameModule "solve"` means that we are looking for a call to a top-level function defined
-in the same module.
+`FromSameModule "solve"` means that we are looking for a call to a top-level function defined in the same module.
 
 -}
 
@@ -58,8 +54,7 @@ type CalledFunction
 
 When searching for a list of functions, we can specify what constitutes a success.
 
-Use `All` to make sure all functions are called, `None` to make sure no function is called,
-and `Some` to make sure at least one function is called.
+Use `All` to make sure all functions are called, `None` to make sure no function is called, and `Some` to make sure at least one function is called.
 
 -}
 type Find
@@ -80,15 +75,11 @@ type Context
 
 {-| Check if a list of functions are called from a module or a top-level function.
 
-`calledFrom` indicates if the functions should be searched through the whole module (`Anywhere`)
-or within a particular function (`TopFunction functionA`).
+`calledFrom` indicates if the functions should be searched through the whole module (`Anywhere`) or within a particular function (`TopFunction functionA`).
 
-`findFunctions` specifies the list of functions that we are looking for, for example
-`functions = [FromExternalModule ["List", "Extra"] "find", FromExternalModule ["List", "Extra"] "findIndex"]`.
+`findFunctions` specifies the list of functions that we are looking for, for example `functions = [FromExternalModule ["List", "Extra"] "find", FromExternalModule ["List", "Extra"] "findIndex"]`.
 
-`find` specifies the type of search. For example, we might want to forbid the use of
-`List.Extra.find` and `List.Extra.findIndex`, or maybe we want to make sure that one of these
-is being called, or even both.
+`find` specifies the type of search. For example, we might want to forbid the use of `List.Extra.find` and `List.Extra.findIndex`, or maybe we want to make sure that one of these is being called, or even both.
 
 `comment` is the comment that will be returned if the module doesn't satisfy the specifications.
 
@@ -104,20 +95,14 @@ Let's consider an example:
         |> List.Extra.findIndex (\(i, _) -> i > 0)
         |> List.map Tuple.second
 
-The rule `functionCalls {calledFrom = Anywhere, findFunctions = functions, find = All, comment = comment}`
-would succeed since `List.Extra.find` and `List.Extra.findIndex` are both called somewhere in the
-module. Changing to `calledFrom = TopFunction "functionB"` would fail, since `functionB` only calls one of
-the two, and `comment` would be thrown.
+The rule `functionCalls {calledFrom = Anywhere, findFunctions = functions, find = All, comment = comment}` would succeed since `List.Extra.find` and `List.Extra.findIndex` are both called somewhere in the module. Changing to `calledFrom = TopFunction "functionB"` would fail, since `functionB` only calls one of the two, and `comment` would be thrown.
 
-`functionCalls` can keep track of imports and aliases. If module `A` was using
-`import List.Extra exposing (find, findIndex)` or `import List.Extra as List`, the rule would
-behave the same.
+`functionCalls` can keep track of imports and aliases.
+If module `A` was using `import List.Extra exposing (find, findIndex)` or `import List.Extra as List`, the rule would behave the same.
 
 `functionCalls` searches recursively through internal top-level functions calls.
-This is particularly useful when helper functions are defined. For example, the rule above with
-`calledFrom = TopFunction "functionA"` would succeed, since `functionA` calls `List.Extra.find` directly,
-also calls `functionB` that itself calls `List.Extra.findIndex`, therefore we consider that
-`functionA` calls both functions.
+This is particularly useful when helper functions are defined.
+For example, the rule above with `calledFrom = TopFunction "functionA"` would succeed, since `functionA` calls `List.Extra.find` directly, also calls `functionB` that itself calls `List.Extra.findIndex`, therefore we consider that `functionA` calls both functions.
 
 -}
 functionCalls :

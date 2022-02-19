@@ -14,6 +14,7 @@ import Dict exposing (Dict)
 import Elm.Syntax.Range exposing (Range)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
+import List.Extra
 import Review.Rule as Rule exposing (Error)
 
 
@@ -60,7 +61,7 @@ aggregateComments comments =
             List.sortBy (.commentType >> commentTypeShowOrder) comments
 
         message =
-            case List.map .commentType comments |> minimumBy commentTypeSummaryOrder of
+            case List.map .commentType comments |> List.Extra.minimumBy commentTypeSummaryOrder of
                 Nothing ->
                     "No suggestions found."
 
@@ -111,24 +112,6 @@ commentTypeSummaryOrder commentType =
 
         Celebratory ->
             3
-
-
-minimumBy : (a -> comparable) -> List a -> Maybe a
-minimumBy f list =
-    let
-        getMinimum element ( currentMin, currentMinValue ) =
-            if f element < currentMinValue then
-                ( element, f element )
-
-            else
-                ( currentMin, currentMinValue )
-    in
-    case list of
-        [] ->
-            Nothing
-
-        head :: tail ->
-            List.foldl getMinimum ( head, f head ) tail |> Tuple.first |> Just
 
 
 

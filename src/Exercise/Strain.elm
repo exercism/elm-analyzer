@@ -12,7 +12,7 @@ ruleConfig =
     { slug = Just "strain"
     , restrictToFiles = Just [ "src/Strain.elm" ]
     , rules = [ doNotUseFilter ]
-    , highjackErrorDecoders = []
+    , elmReviewErrorDecoders = []
     }
 
 

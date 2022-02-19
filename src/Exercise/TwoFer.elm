@@ -14,7 +14,7 @@ ruleConfig =
     { slug = Just "two-fer"
     , restrictToFiles = Just [ "src/TwoFer.elm" ]
     , rules = [ hasFunctionSignature, usesWithDefault ]
-    , highjackErrorDecoders = []
+    , elmReviewErrorDecoders = []
     }
 
 

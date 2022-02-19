@@ -36,7 +36,7 @@ ruleConfig =
         ]
 
     -- TODO: Add unit tests for decoders
-    , highjackErrorDecoders =
+    , elmReviewErrorDecoders =
         [ makeDecoder "NoUnused.Variables"
             "You should either use it somewhere, or remove it."
         , makeDecoder "NoUnused.CustomTypeConstructors"

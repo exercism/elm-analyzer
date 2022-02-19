@@ -27,7 +27,7 @@ update : String -> () -> ( (), Cmd msg )
 update input () =
     let
         highjackingDecoders =
-            List.concatMap .highjackErrorDecoders ReviewConfig.ruleConfigs
+            List.concatMap .elmReviewErrorDecoders ReviewConfig.ruleConfigs
     in
     case Comment.makeSummary highjackingDecoders input of
         Ok output ->

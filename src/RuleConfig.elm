@@ -9,7 +9,7 @@ type alias RuleConfig =
     { slug : Maybe String
     , restrictToFiles : Maybe (List String)
     , rules : List Rule
-    , highjackErrorDecoders : List (Decoder Comment)
+    , elmReviewErrorDecoders : List (Decoder Comment)
     }
 
 

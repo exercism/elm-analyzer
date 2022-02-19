@@ -20,7 +20,7 @@ ruleConfig =
     { slug = Nothing
     , restrictToFiles = Nothing
     , rules = [ Simplify.rule Simplify.defaults ]
-    , highjackErrorDecoders = [ decodeSimplify ]
+    , elmReviewErrorDecoders = [ decodeSimplify ]
     }
 
 

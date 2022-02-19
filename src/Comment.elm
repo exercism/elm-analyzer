@@ -47,9 +47,25 @@ type CommentType
 -- BUILDING SUMMARY
 
 
+{-| Transform `elm-review` JSON output into an exercism compliant `analysis.json`.
+
+`elm-review` outputs the errors in a JSON format unsuited for Exercism specifications.
+The output is therefore fed into `makeSummary` to be transformed.
+
+`elm-review` rule errors are string-only, so the analyzer custom rules encode `Comment`s into JSON strings.
+Those strings are extracted in `decodeElmReviewComments`, and decoded into `Comment`s again.
+
+For using existing rules from the Elm community on every solution, custom decoders must be provided.
+Those decoders are the `elmReviewErrorDecoders`, custom-made to transform the `elm-review` raw outputs into `Comment`s.
+It is unfortunate that for some of them, the easy solution is to directly pass the `elm-review` output via a parameter.
+This should be avoided as much as possible, and removed in the long term.
+
+After gathering all the `Comment`s, they are reordered according to their type, a suitable summary is created and the final JSON is exported.
+
+-}
 makeSummary : List (Decoder Comment) -> String -> Result Decode.Error String
-makeSummary decoders =
-    decodeElmReviewComments decoders
+makeSummary elmReviewErrorDecoders =
+    decodeElmReviewComments elmReviewErrorDecoders
         |> Decode.map (aggregateComments >> encodeSummary >> Encode.encode 0)
         |> Decode.decodeString
 
@@ -167,10 +183,10 @@ encodeComment { name, comment, commentType, params } =
 
 
 decodeElmReviewComments : List (Decoder Comment) -> Decoder (List Comment)
-decodeElmReviewComments highjackingDecoders =
+decodeElmReviewComments elmReviewErrorDecoders =
     let
         decodeErrorsPerFile =
-            Decode.oneOf (decodeMessage :: highjackingDecoders)
+            Decode.oneOf (decodeMessage :: elmReviewErrorDecoders)
                 |> Decode.list
                 |> Decode.field "errors"
 

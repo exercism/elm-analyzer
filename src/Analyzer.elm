@@ -1,4 +1,4 @@
-module Analyzer exposing (CalledFunction(..), Find(..), functionCalls)
+module Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..), functionCalls)
 
 import Comment exposing (Comment, CommentType(..))
 import Dict exposing (Dict)
@@ -9,6 +9,22 @@ import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Range exposing (Range)
 import Review.ModuleNameLookupTable as LookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
+
+
+type alias FunctionName =
+    String
+
+
+{-| Specifies where the functions are called from.
+
+`Anywhere` means the functions are searched through the whole module.
+
+`TopFunction "functionA"` means the functions are searched only within `functionA` and the functions called by `functionA`.
+
+-}
+type CalledFrom
+    = Anywhere
+    | TopFunction FunctionName
 
 
 {-| Functions that can be searched for.
@@ -34,8 +50,8 @@ in the same module.
 
 type CalledFunction
     = AnyFromExternalModule ModuleName
-    | FromExternalModule ModuleName String
-    | FromSameModule String
+    | FromExternalModule ModuleName FunctionName
+    | FromSameModule FunctionName
 
 
 {-| Type of search.
@@ -54,18 +70,18 @@ type Find
 
 type Context
     = Context
-        { functionDeclaration : Maybe String
+        { functionDeclaration : Maybe FunctionName
         , calledFromRange : Maybe Range
         , functionsFound : List ( CalledFunction, Maybe Range )
         , lookupTable : ModuleNameLookupTable
-        , callTree : Dict String (List ( Maybe ModuleName, String, Range ))
+        , callTree : Dict FunctionName (List ( Maybe ModuleName, FunctionName, Range ))
         }
 
 
 {-| Check if a list of functions are called from a module or a top-level function.
 
-`calledFrom` indicates if the functions should be searched through the whole module (`Nothing`)
-or within a particular function (`Just functionA`).
+`calledFrom` indicates if the functions should be searched through the whole module (`Anywhere`)
+or within a particular function (`TopFunction functionA`).
 
 `findFunctions` specifies the list of functions that we are looking for, for example
 `functions = [FromExternalModule ["List", "Extra"] "find", FromExternalModule ["List", "Extra"] "findIndex"]`.
@@ -88,9 +104,9 @@ Let's consider an example:
         |> List.Extra.findIndex (\(i, _) -> i > 0)
         |> List.map Tuple.second
 
-The rule `functionCalls {calledFrom = Nothing, findFunctions = functions, find = All, comment = comment}`
+The rule `functionCalls {calledFrom = Anywhere, findFunctions = functions, find = All, comment = comment}`
 would succeed since `List.Extra.find` and `List.Extra.findIndex` are both called somewhere in the
-module. Changing to `calledFrom = Just "functionB"` would fail, since `functionB` only calls one of
+module. Changing to `calledFrom = TopFunction "functionB"` would fail, since `functionB` only calls one of
 the two, and `comment` would be thrown.
 
 `functionCalls` can keep track of imports and aliases. If module `A` was using
@@ -99,13 +115,13 @@ behave the same.
 
 `functionCalls` searches recursively through internal top-level functions calls.
 This is particularly useful when helper functions are defined. For example, the rule above with
-`calledFrom = Just "functionA"` would succeed, since `functionA` calls `List.Extra.find` directly,
+`calledFrom = TopFunction "functionA"` would succeed, since `functionA` calls `List.Extra.find` directly,
 also calls `functionB` that itself calls `List.Extra.findIndex`, therefore we consider that
 `functionA` calls both functions.
 
 -}
 functionCalls :
-    { calledFrom : Maybe String
+    { calledFrom : CalledFrom
     , findFunctions : List CalledFunction
     , find : Find
     , comment : Comment
@@ -135,7 +151,7 @@ initialContext functions =
         |> Rule.withModuleNameLookupTable
 
 
-annotateFunctionDeclaration : Maybe String -> Node Declaration -> Context -> ( List (Error {}), Context )
+annotateFunctionDeclaration : CalledFrom -> Node Declaration -> Context -> ( List nothing, Context )
 annotateFunctionDeclaration calledFrom node (Context context) =
     case Node.value node of
         Declaration.FunctionDeclaration { declaration } ->
@@ -148,7 +164,7 @@ annotateFunctionDeclaration calledFrom node (Context context) =
                 { context
                     | functionDeclaration = Just functionName
                     , calledFromRange =
-                        if calledFrom == Just functionName then
+                        if calledFrom == TopFunction functionName then
                             Just range
 
                         else
@@ -160,7 +176,7 @@ annotateFunctionDeclaration calledFrom node (Context context) =
             ( [], Context context )
 
 
-expressionCallsFunction : Node Expression -> Context -> ( List (Error {}), Context )
+expressionCallsFunction : Node Expression -> Context -> ( List nothing, Context )
 expressionCallsFunction expression (Context ({ lookupTable, functionDeclaration, callTree } as context)) =
     case Node.value expression of
         Expression.FunctionOrValue _ name ->
@@ -188,7 +204,7 @@ expressionCallsFunction expression (Context ({ lookupTable, functionDeclaration,
             ( [], Context context )
 
 
-annotateLeaveDeclaration : Node Declaration -> Context -> ( List (Error {}), Context )
+annotateLeaveDeclaration : Node Declaration -> Context -> ( List nothing, Context )
 annotateLeaveDeclaration node (Context context) =
     case Node.value node of
         Declaration.FunctionDeclaration _ ->
@@ -198,15 +214,15 @@ annotateLeaveDeclaration node (Context context) =
             ( [], Context context )
 
 
-flattenTree : Maybe String -> Context -> Context
+flattenTree : CalledFrom -> Context -> Context
 flattenTree calledFrom (Context ({ callTree } as context)) =
     let
         allExpressions =
             case calledFrom of
-                Nothing ->
+                Anywhere ->
                     Dict.values callTree |> List.concat
 
-                Just topFunction ->
+                TopFunction topFunction ->
                     traverseTreeFrom topFunction callTree
 
         functionsFound =
@@ -216,9 +232,9 @@ flattenTree calledFrom (Context ({ callTree } as context)) =
 
 
 traverseTreeFrom :
-    String
-    -> Dict String (List ( Maybe ModuleName, String, Range ))
-    -> List ( Maybe ModuleName, String, Range )
+    FunctionName
+    -> Dict FunctionName (List ( Maybe ModuleName, FunctionName, Range ))
+    -> List ( Maybe ModuleName, FunctionName, Range )
 traverseTreeFrom root tree =
     case Dict.get root tree of
         Nothing ->
@@ -243,7 +259,7 @@ traverseTreeFrom root tree =
 
 
 matchFunction :
-    ( Maybe ModuleName, String, Range )
+    ( Maybe ModuleName, FunctionName, Range )
     -> ( CalledFunction, Maybe Range )
     -> ( CalledFunction, Maybe Range )
 matchFunction ( functionModule, functionName, range ) ( calledFunction, found ) =

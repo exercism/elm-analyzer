@@ -1,6 +1,6 @@
 module AnalyzerTest exposing (calledFromTest, findFunctionsTest, findTest, indirectCallTest)
 
-import Analyzer exposing (CalledFunction(..), Find(..))
+import Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..))
 import Comment exposing (Comment, CommentType(..))
 import Dict exposing (Dict)
 import Review.Rule exposing (Rule)
@@ -13,7 +13,7 @@ allRules : Dict String Rule
 allRules =
     let
         called =
-            [ ( "no calling function", Nothing ), ( "calling function", Just "callingFunction" ) ]
+            [ ( "called anywhere", Anywhere ), ( "calling function", TopFunction "callingFunction" ) ]
 
         calling =
             [ ( "Ext._", [ AnyFromExternalModule [ "Ext" ] ] )
@@ -74,7 +74,7 @@ calledFromTest : Test
 calledFromTest =
     let
         noCallingRule =
-            "no calling function, Ext._ + Ext.ext + internal, all"
+            "called anywhere, Ext._ + Ext.ext + internal, all"
 
         callingRule =
             "calling function, Ext._ + Ext.ext + internal, all"
@@ -648,7 +648,7 @@ callingFunction param =
 """
                     |> Review.Test.run
                         (Analyzer.functionCalls
-                            { calledFrom = Nothing
+                            { calledFrom = Anywhere
                             , findFunctions = [ AnyFromExternalModule [ "Ext", "Sub" ] ]
                             , find = All
                             , comment = quickComment "Ext.Sub"
@@ -668,7 +668,7 @@ callingFunction param =
 """
                     |> Review.Test.run
                         (Analyzer.functionCalls
-                            { calledFrom = Nothing
+                            { calledFrom = Anywhere
                             , findFunctions =
                                 [ FromExternalModule [ "Basics" ] "toFloat"
                                 , FromExternalModule [ "Basics" ] "round"
@@ -691,7 +691,7 @@ callingFunction param =
 """
                     |> Review.Test.run
                         (Analyzer.functionCalls
-                            { calledFrom = Nothing
+                            { calledFrom = Anywhere
                             , findFunctions =
                                 [ FromSameModule "toFloat"
                                 , FromSameModule "round"

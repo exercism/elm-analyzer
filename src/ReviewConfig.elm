@@ -2,7 +2,7 @@ module ReviewConfig exposing (config, ruleConfigs)
 
 import Common.NoUnused
 import Common.Simplify
-import Exercise.TwoFer
+import Exercise.Strain
 import Review.Rule as Rule exposing (Rule)
 import RuleConfig exposing (RuleConfig)
 
@@ -15,7 +15,7 @@ ruleConfigs =
 
     -- Concept Exercise
     -- Practice Exercise
-    , Exercise.TwoFer.ruleConfig
+    , Exercise.Strain.ruleConfig
     ]
 
 

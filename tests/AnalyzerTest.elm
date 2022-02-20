@@ -142,6 +142,24 @@ callingFunction param =
                     |> Review.Test.run (getRule callingRule)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder (quickComment callingRule) "callingFunction" ]
+        , test "with calledFrom function, some functions called in let, no error" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+  let
+    fromLet = internal
+  in
+  param
+  |> (\\x -> let z = Ext.ext in z x)
+  |> Ext.other
+  |> fromLet
+"""
+                    |> Review.Test.run (getRule callingRule)
+                    |> Review.Test.expectNoErrors
         ]
 
 

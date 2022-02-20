@@ -3,7 +3,7 @@ module Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..), function
 import Comment exposing (Comment, CommentType(..))
 import Dict exposing (Dict)
 import Elm.Syntax.Declaration as Declaration exposing (Declaration)
-import Elm.Syntax.Expression as Expression exposing (Expression)
+import Elm.Syntax.Expression exposing (Expression(..))
 import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Range exposing (Range)
@@ -63,13 +63,18 @@ type Find
     | Some
 
 
+type FoundFunction
+    = NotFound CalledFunction
+    | FoundAt Range CalledFunction
+
+
 type Context
     = Context
         { functionDeclaration : Maybe FunctionName
         , calledFromRange : Maybe Range
-        , functionsFound : List ( CalledFunction, Maybe Range )
+        , foundFunctions : List FoundFunction
         , lookupTable : ModuleNameLookupTable
-        , callTree : Dict FunctionName (List ( Maybe ModuleName, FunctionName, Range ))
+        , callTree : Dict FunctionName (List (Node Expression))
         }
 
 
@@ -129,7 +134,7 @@ initialContext functions =
                 { lookupTable = lookupTable
                 , functionDeclaration = Nothing
                 , calledFromRange = Nothing
-                , functionsFound = List.map (\function -> ( function, Nothing )) functions
+                , foundFunctions = List.map NotFound functions
                 , callTree = Dict.empty
                 }
         )
@@ -162,15 +167,19 @@ annotateFunctionDeclaration calledFrom node (Context context) =
 
 
 expressionCallsFunction : Node Expression -> Context -> ( List nothing, Context )
-expressionCallsFunction expression (Context ({ lookupTable, functionDeclaration, callTree } as context)) =
-    case Node.value expression of
-        Expression.FunctionOrValue _ name ->
+expressionCallsFunction (Node range expression) (Context ({ lookupTable, functionDeclaration, callTree } as context)) =
+    case expression of
+        FunctionOrValue _ name ->
             let
-                moduleName =
-                    LookupTable.moduleNameFor lookupTable expression
+                addfunctionCall maybeExpressions =
+                    case LookupTable.moduleNameFor lookupTable (Node range expression) of
+                        Nothing ->
+                            maybeExpressions
 
-                addfunctionCall =
-                    Maybe.withDefault [] >> (::) ( moduleName, name, Node.range expression ) >> Just
+                        Just originalModuleName ->
+                            Node range (FunctionOrValue originalModuleName name)
+                                :: Maybe.withDefault [] maybeExpressions
+                                |> Just
             in
             ( []
             , Context
@@ -211,15 +220,15 @@ flattenTree calledFrom (Context ({ callTree } as context)) =
                     traverseTreeFrom topFunction callTree
 
         functionsFound =
-            List.map (\function -> List.foldl matchFunction function allExpressions) context.functionsFound
+            List.map (\function -> List.foldl matchFunction function allExpressions) context.foundFunctions
     in
-    Context { context | functionsFound = functionsFound }
+    Context { context | foundFunctions = functionsFound }
 
 
 traverseTreeFrom :
     FunctionName
-    -> Dict FunctionName (List ( Maybe ModuleName, FunctionName, Range ))
-    -> List ( Maybe ModuleName, FunctionName, Range )
+    -> Dict FunctionName (List (Node Expression))
+    -> List (Node Expression)
 traverseTreeFrom root tree =
     case Dict.get root tree of
         Nothing ->
@@ -227,12 +236,13 @@ traverseTreeFrom root tree =
 
         Just expressions ->
             let
-                keepModuleFunction ( moduleName, function, _ ) =
-                    if moduleName == Just [] then
-                        Just function
+                keepModuleFunction (Node _ expression) =
+                    case expression of
+                        FunctionOrValue [] name ->
+                            Just name
 
-                    else
-                        Nothing
+                        _ ->
+                            Nothing
 
                 modulefunctions =
                     List.filterMap keepModuleFunction expressions
@@ -244,69 +254,97 @@ traverseTreeFrom root tree =
 
 
 matchFunction :
-    ( Maybe ModuleName, FunctionName, Range )
-    -> ( CalledFunction, Maybe Range )
-    -> ( CalledFunction, Maybe Range )
-matchFunction ( functionModule, functionName, range ) ( calledFunction, found ) =
+    Node Expression
+    -> FoundFunction
+    -> FoundFunction
+matchFunction (Node range expression) foundFunction =
     let
-        getRange match =
-            if match then
-                Just range
+        match a b =
+            if a == b then
+                foundAt range foundFunction
 
             else
-                Nothing
+                foundFunction
     in
-    case ( calledFunction, found ) of
-        ( _, Just _ ) ->
-            ( calledFunction, found )
+    case ( expression, foundFunction ) of
+        ( FunctionOrValue exprModule _, NotFound (AnyFromExternalModule extModule) ) ->
+            match exprModule extModule
 
-        ( AnyFromExternalModule externalModule, Nothing ) ->
-            ( calledFunction, functionModule == Just externalModule |> getRange )
+        ( FunctionOrValue exprModule exprName, NotFound (FromExternalModule extModule extName) ) ->
+            match ( exprModule, exprName ) ( extModule, extName )
 
-        ( FromExternalModule externalModule name, Nothing ) ->
-            ( calledFunction, ( Just externalModule, name ) == ( functionModule, functionName ) |> getRange )
+        ( FunctionOrValue [] exprName, NotFound (FromSameModule name) ) ->
+            match exprName name
 
-        ( FromSameModule name, Nothing ) ->
-            ( calledFunction, ( Just [], name ) == ( functionModule, functionName ) |> getRange )
+        -- already found function, or expression that doesn't match
+        _ ->
+            foundFunction
+
+
+foundAt : Range -> FoundFunction -> FoundFunction
+foundAt range foundFunction =
+    case foundFunction of
+        NotFound function ->
+            FoundAt range function
+
+        FoundAt _ _ ->
+            foundFunction
 
 
 checkForError : Find -> Comment -> Context -> List (Error {})
-checkForError find comment (Context { functionsFound, calledFromRange }) =
+checkForError find comment (Context { foundFunctions, calledFromRange }) =
+    --  errors do not actually export a range at this point, but they could
     case find of
         All ->
-            case ( List.filter (Tuple.second >> isNothing) functionsFound, calledFromRange ) of
+            -- looking at functions not found
+            case ( List.filter (functionWasFound >> not) foundFunctions, calledFromRange ) of
+                -- all were found, no error
                 ( [], _ ) ->
                     []
 
+                -- some were not found, searching with TopFunction, return error with the range of the TopFunction
                 ( _ :: _, Just range ) ->
                     -- Head is the function not found, could be included in the message / parameters
                     [ Comment.createError comment range ]
 
+                -- some were not found, searching with Anywhere, return global error since no range exists
                 ( _ :: _, Nothing ) ->
                     -- Head is the function not found, could be included in the message / parameters
                     [ Comment.createGlobalError comment ]
 
         None ->
-            case List.filter (Tuple.second >> isNothing >> not) functionsFound of
-                ( _, Just range ) :: _ ->
+            -- looking at found functions
+            case List.filter functionWasFound foundFunctions of
+                -- some were found, return error with range of the first one
+                (FoundAt range _) :: _ ->
                     -- Head is the function not found, could be included in the message / parameters
                     [ Comment.createError comment range ]
 
+                -- none were found, no error
                 _ ->
                     []
 
         Some ->
-            case ( List.filter (Tuple.second >> isNothing >> not) functionsFound, calledFromRange ) of
+            -- looking at found functions
+            case ( List.filter functionWasFound foundFunctions, calledFromRange ) of
+                -- none were found, searching with TopFunction, return error with the range of the TopFunction
                 ( [], Just range ) ->
                     [ Comment.createError comment range ]
 
+                -- none were found, searching with Anywhere, return global error since no range exists
                 ( [], Nothing ) ->
                     [ Comment.createGlobalError comment ]
 
+                -- some were found, no error
                 _ ->
                     []
 
 
-isNothing : Maybe a -> Bool
-isNothing =
-    (==) Nothing
+functionWasFound : FoundFunction -> Bool
+functionWasFound foundFunction =
+    case foundFunction of
+        NotFound _ ->
+            False
+
+        FoundAt _ _ ->
+            True

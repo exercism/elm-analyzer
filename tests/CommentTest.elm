@@ -1,12 +1,13 @@
 module CommentTest exposing (aggregateCommentsTest, encoderDecoderTest, makeSummaryTest)
 
 import Comment exposing (Comment, CommentType(..), Summary)
+import Common.NoUnused as NoUnused
+import Common.Simplify as Simplify
 import Dict exposing (Dict)
 import Expect
 import Fuzz exposing (Fuzzer)
 import Json.Decode as Decode exposing (Error(..))
 import Json.Encode as Encode
-import ReviewConfig
 import Test exposing (Test, describe, test)
 
 
@@ -125,26 +126,24 @@ makeSummaryTest =
     describe "makeSummary should take in raw json output from elm-review and make a json summary"
         [ test "no comments" <|
             \() ->
-                Expect.equal (Ok "{\"summary\":\"No suggestions found.\",\"comments\":[]}")
-                    (Comment.makeSummary [] "{\"type\":\"review-errors\",\"errors\":[]}")
+                Comment.makeSummary [] "{\"type\":\"review-errors\",\"errors\":[]}"
+                    |> Expect.equal (Ok "{\"summary\":\"No suggestions found.\",\"comments\":[]}")
         , test "exercise comment" <|
             \() ->
-                Expect.equal
-                    (Ok
-                        "{\"summary\":\"Check the comments for some things to learn.\u{202F}📖\",\"comments\":[{\"comment\":\"elm.two-fer.use_signature\",\"type\":\"informative\",\"params\":{}}]}"
-                    )
-                    (Comment.makeSummary []
-                        "{\"type\":\"review-errors\",\"errors\":[{\"path\":\"src/TwoFer.elm\",\"errors\":[{\"rule\":\"elm.two-fer.use_signature\",\"message\":\"{\\\"name\\\":\\\"has no signature\\\",\\\"comment\\\":\\\"elm.two-fer.use_signature\\\",\\\"type\\\":\\\"informative\\\",\\\"params\\\":{}}\",\"details\":[\"\"],\"region\":{\"start\":{\"line\":4,\"column\":1},\"end\":{\"line\":4,\"column\":7}},\"formatted\":[{\"string\":\"elm.two-fer.use_signature\",\"color\":\"#FF0000\"},\": {\\\"name\\\":\\\"has no signature\\\",\\\"comment\\\":\\\"elm.two-fer.use_signature\\\",\\\"type\\\":\\\"informative\\\",\\\"params\\\":{}}\\n\\n3| --twoFer : Maybe String -> String\\n4| twoFer name =\\n   \",{\"string\":\"^^^^^^\",\"color\":\"#FF0000\"},\"\\n5|     \\\"One for \\\"\\n\\n\"],\"suppressed\":false,\"originallySuppressed\":false}]}]}"
-                    )
+                Comment.makeSummary []
+                    "{\"type\":\"review-errors\",\"errors\":[{\"path\":\"src/TwoFer.elm\",\"errors\":[{\"rule\":\"elm.two-fer.use_signature\",\"message\":\"{\\\"name\\\":\\\"has no signature\\\",\\\"comment\\\":\\\"elm.two-fer.use_signature\\\",\\\"type\\\":\\\"informative\\\",\\\"params\\\":{}}\",\"details\":[\"\"],\"region\":{\"start\":{\"line\":4,\"column\":1},\"end\":{\"line\":4,\"column\":7}},\"formatted\":[{\"string\":\"elm.two-fer.use_signature\",\"color\":\"#FF0000\"},\": {\\\"name\\\":\\\"has no signature\\\",\\\"comment\\\":\\\"elm.two-fer.use_signature\\\",\\\"type\\\":\\\"informative\\\",\\\"params\\\":{}}\\n\\n3| --twoFer : Maybe String -> String\\n4| twoFer name =\\n   \",{\"string\":\"^^^^^^\",\"color\":\"#FF0000\"},\"\\n5|     \\\"One for \\\"\\n\\n\"],\"suppressed\":false,\"originallySuppressed\":false}]}]}"
+                    |> Expect.equal
+                        (Ok
+                            "{\"summary\":\"Check the comments for some things to learn.\u{202F}📖\",\"comments\":[{\"comment\":\"elm.two-fer.use_signature\",\"type\":\"informative\",\"params\":{}}]}"
+                        )
         , test "common rule comment" <|
             \() ->
-                Expect.equal
-                    (Ok
-                        "{\"summary\":\"Check the comments for some things to learn.\u{202F}📖\",\"comments\":[{\"comment\":\"elm.common.simplify\",\"type\":\"informative\",\"params\":{\"message\":\"Simplify: Unnecessary concatenation with an empty string\\n\\n5|     \\\"One for \\\"\\n6|         ++ Maybe.withDefault (\\\"\\\" ++ \\\"you\\\") name\\n                                 ^^\\n7|         ++ \\\", one for me.\\\"\\n\\nYou should remove the concatenation with the empty string.\"}}]}"
-                    )
-                    (Comment.makeSummary (List.concatMap .elmReviewErrorDecoders ReviewConfig.ruleConfigs)
-                        "{\"type\":\"review-errors\",\"errors\":[{\"path\":\"src/TwoFer.elm\",\"errors\":[{\"rule\":\"Simplify\",\"message\":\"Unnecessary concatenation with an empty string\",\"ruleLink\":\"https://package.elm-lang.org/packages/jfmengels/elm-review-simplify/2.0.7/Simplify\",\"details\":[\"You should remove the concatenation with the empty string.\"],\"region\":{\"start\":{\"line\":6,\"column\":31},\"end\":{\"line\":6,\"column\":33}},\"fix\":[{\"range\":{\"start\":{\"line\":6,\"column\":31},\"end\":{\"line\":6,\"column\":37}},\"string\":\"\"}],\"formatted\":[{\"string\":\"(fix) \",\"color\":\"#33BBC8\"},{\"string\":\"Simplify\",\"color\":\"#FF0000\",\"href\":\"https://package.elm-lang.org/packages/jfmengels/elm-review-simplify/2.0.7/Simplify\"},\": Unnecessary concatenation with an empty string\\n\\n5|     \\\"One for \\\"\\n6|         ++ Maybe.withDefault (\\\"\\\" ++ \\\"you\\\") name\\n                                 \",{\"string\":\"^^\",\"color\":\"#FF0000\"},\"\\n7|         ++ \\\", one for me.\\\"\\n\\nYou should remove the concatenation with the empty string.\"],\"suppressed\":false,\"originallySuppressed\":false}]}]}"
-                    )
+                Comment.makeSummary (List.concatMap .elmReviewErrorDecoders [ NoUnused.ruleConfig, Simplify.ruleConfig ])
+                    "{\"type\":\"review-errors\",\"errors\":[{\"path\":\"src/TwoFer.elm\",\"errors\":[{\"rule\":\"Simplify\",\"message\":\"Unnecessary concatenation with an empty string\",\"ruleLink\":\"https://package.elm-lang.org/packages/jfmengels/elm-review-simplify/2.0.7/Simplify\",\"details\":[\"You should remove the concatenation with the empty string.\"],\"region\":{\"start\":{\"line\":6,\"column\":31},\"end\":{\"line\":6,\"column\":33}},\"fix\":[{\"range\":{\"start\":{\"line\":6,\"column\":31},\"end\":{\"line\":6,\"column\":37}},\"string\":\"\"}],\"formatted\":[{\"string\":\"(fix) \",\"color\":\"#33BBC8\"},{\"string\":\"Simplify\",\"color\":\"#FF0000\",\"href\":\"https://package.elm-lang.org/packages/jfmengels/elm-review-simplify/2.0.7/Simplify\"},\": Unnecessary concatenation with an empty string\\n\\n5|     \\\"One for \\\"\\n6|         ++ Maybe.withDefault (\\\"\\\" ++ \\\"you\\\") name\\n                                 \",{\"string\":\"^^\",\"color\":\"#FF0000\"},\"\\n7|         ++ \\\", one for me.\\\"\\n\\nYou should remove the concatenation with the empty string.\"],\"suppressed\":false,\"originallySuppressed\":false}]}]}"
+                    |> Expect.equal
+                        (Ok
+                            "{\"summary\":\"Check the comments for some things to learn.\u{202F}📖\",\"comments\":[{\"comment\":\"elm.common.simplify\",\"type\":\"informative\",\"params\":{\"message\":\"Simplify: Unnecessary concatenation with an empty string\\n\\n5|     \\\"One for \\\"\\n6|         ++ Maybe.withDefault (\\\"\\\" ++ \\\"you\\\") name\\n                                 ^^\\n7|         ++ \\\", one for me.\\\"\\n\\nYou should remove the concatenation with the empty string.\"}}]}"
+                        )
         , test "invalid input fails" <|
             \() ->
                 Comment.makeSummary [] "I am invalid"

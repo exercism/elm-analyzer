@@ -1,7 +1,8 @@
 module ReviewConfig exposing (config, ruleConfigs)
 
-import Common.NoUnused
-import Common.Simplify
+-- import Common.NoUnused
+-- import Common.Simplify
+
 import Exercise.Strain
 import Review.Rule as Rule exposing (Rule)
 import RuleConfig exposing (RuleConfig)
@@ -10,12 +11,11 @@ import RuleConfig exposing (RuleConfig)
 ruleConfigs : List RuleConfig
 ruleConfigs =
     [ -- Common Rules
-      Common.NoUnused.ruleConfig
-    , Common.Simplify.ruleConfig
-
-    -- Concept Exercise
-    -- Practice Exercise
-    , Exercise.Strain.ruleConfig
+      --   Common.NoUnused.ruleConfig
+      -- , Common.Simplify.ruleConfig
+      -- Concept Exercises
+      -- Practice Exercises
+      Exercise.Strain.ruleConfig
     ]
 
 

@@ -3,6 +3,7 @@ port module Main exposing (main)
 import Comment
 import Json.Decode as Decode
 import ReviewConfig
+import RuleConfig
 
 
 port stdin : (String -> msg) -> Sub msg
@@ -26,10 +27,10 @@ main =
 update : String -> () -> ( (), Cmd msg )
 update input () =
     let
-        highjackingDecoders =
-            List.concatMap .elmReviewErrorDecoders ReviewConfig.ruleConfigs
+        elmReviewErrorDecoders =
+            List.concatMap RuleConfig.getDecoders ReviewConfig.ruleConfigs
     in
-    case Comment.makeSummary highjackingDecoders input of
+    case Comment.makeSummary elmReviewErrorDecoders input of
         Ok output ->
             ( (), stdout output )
 

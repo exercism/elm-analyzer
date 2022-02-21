@@ -6,15 +6,14 @@ import Dict
 import Elm.Syntax.Declaration as Declaration exposing (Declaration)
 import Elm.Syntax.Node as Node exposing (Node)
 import Review.Rule as Rule exposing (Error, Rule)
-import RuleConfig exposing (RuleConfig)
+import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 
 ruleConfig : RuleConfig
 ruleConfig =
     { slug = Just "two-fer"
     , restrictToFiles = Just [ "src/TwoFer.elm" ]
-    , rules = [ hasFunctionSignature, usesWithDefault ]
-    , elmReviewErrorDecoders = []
+    , rules = [ CustomRule hasFunctionSignature, CustomRule usesWithDefault ]
     }
 
 

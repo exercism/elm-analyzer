@@ -3,7 +3,7 @@ module Common.Simplify exposing (ruleConfig)
 import Comment exposing (Comment, CommentType(..))
 import Dict
 import Json.Decode as Decode exposing (Decoder)
-import RuleConfig exposing (RuleConfig)
+import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 import Simplify
 
 
@@ -19,8 +19,7 @@ ruleConfig : RuleConfig
 ruleConfig =
     { slug = Nothing
     , restrictToFiles = Nothing
-    , rules = [ Simplify.rule Simplify.defaults ]
-    , elmReviewErrorDecoders = [ decodeSimplify ]
+    , rules = [ ImportedRule (Simplify.rule Simplify.defaults) decodeSimplify ]
     }
 
 

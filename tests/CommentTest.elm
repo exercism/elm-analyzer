@@ -8,6 +8,7 @@ import Expect
 import Fuzz exposing (Fuzzer)
 import Json.Decode as Decode exposing (Error(..))
 import Json.Encode as Encode
+import RuleConfig
 import Test exposing (Test, describe, test)
 
 
@@ -138,7 +139,7 @@ makeSummaryTest =
                         )
         , test "common rule comment" <|
             \() ->
-                Comment.makeSummary (List.concatMap .elmReviewErrorDecoders [ NoUnused.ruleConfig, Simplify.ruleConfig ])
+                Comment.makeSummary (List.concatMap RuleConfig.getDecoders [ NoUnused.ruleConfig, Simplify.ruleConfig ])
                     "{\"type\":\"review-errors\",\"errors\":[{\"path\":\"src/TwoFer.elm\",\"errors\":[{\"rule\":\"Simplify\",\"message\":\"Unnecessary concatenation with an empty string\",\"ruleLink\":\"https://package.elm-lang.org/packages/jfmengels/elm-review-simplify/2.0.7/Simplify\",\"details\":[\"You should remove the concatenation with the empty string.\"],\"region\":{\"start\":{\"line\":6,\"column\":31},\"end\":{\"line\":6,\"column\":33}},\"fix\":[{\"range\":{\"start\":{\"line\":6,\"column\":31},\"end\":{\"line\":6,\"column\":37}},\"string\":\"\"}],\"formatted\":[{\"string\":\"(fix) \",\"color\":\"#33BBC8\"},{\"string\":\"Simplify\",\"color\":\"#FF0000\",\"href\":\"https://package.elm-lang.org/packages/jfmengels/elm-review-simplify/2.0.7/Simplify\"},\": Unnecessary concatenation with an empty string\\n\\n5|     \\\"One for \\\"\\n6|         ++ Maybe.withDefault (\\\"\\\" ++ \\\"you\\\") name\\n                                 \",{\"string\":\"^^\",\"color\":\"#FF0000\"},\"\\n7|         ++ \\\", one for me.\\\"\\n\\nYou should remove the concatenation with the empty string.\"],\"suppressed\":false,\"originallySuppressed\":false}]}]}"
                     |> Expect.equal
                         (Ok

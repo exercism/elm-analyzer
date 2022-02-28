@@ -15,17 +15,20 @@ jobs:
         with:
           elm-version: 0.19.1
 
-      - name: Install elm-test and elm-format
+      - name: Install elm-test, elm-format and elm-review
         run: |
           npm config set prefix $HOME/.npm-global
           echo "$HOME/.npm-global/bin" >> $GITHUB_PATH
-          npm install -g elm-test elm-format
+          npm install -g elm-test elm-format elm-review
 
       - name: Run Tests
         run: elm-test
 
       - name: Check formatting
-        run: elm-format --validate src/ tests/
+        run: elm-format --validate src/ tests/ review/
+
+      - name: Run elm-review on source code
+        run: elm-review
 
       - name: Run Tests in Docker
         run: bin/run-tests-in-docker.sh

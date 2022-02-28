@@ -46,7 +46,7 @@ decodeSimplify =
                     Informative
                     (Dict.singleton "message"
                         (formatted
-                            |> String.join ""
+                            |> String.concat
                             |> String.replace "(fix) " ""
                         )
                     )

@@ -1,6 +1,6 @@
 module Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..), functionCalls)
 
-import Comment exposing (Comment, CommentType(..))
+import Comment exposing (Comment)
 import Dict exposing (Dict)
 import Elm.Syntax.Declaration as Declaration exposing (Declaration)
 import Elm.Syntax.Expression exposing (Expression(..))
@@ -65,7 +65,7 @@ type Find
 
 type FoundFunction
     = NotFound CalledFunction
-    | FoundAt Range CalledFunction
+    | FoundAt Range
 
 
 type Context
@@ -284,10 +284,10 @@ matchFunction (Node range expression) foundFunction =
 foundAt : Range -> FoundFunction -> FoundFunction
 foundAt range foundFunction =
     case foundFunction of
-        NotFound function ->
-            FoundAt range function
+        NotFound _ ->
+            FoundAt range
 
-        FoundAt _ _ ->
+        FoundAt _ ->
             foundFunction
 
 
@@ -316,7 +316,7 @@ checkForError find comment (Context { foundFunctions, calledFromRange }) =
             -- looking at found functions
             case List.filter functionWasFound foundFunctions of
                 -- some were found, return error with range of the first one
-                (FoundAt range _) :: _ ->
+                (FoundAt range) :: _ ->
                     -- Head is the function not found, could be included in the message / parameters
                     [ Comment.createError comment range ]
 
@@ -346,5 +346,5 @@ functionWasFound foundFunction =
         NotFound _ ->
             False
 
-        FoundAt _ _ ->
+        FoundAt _ ->
             True

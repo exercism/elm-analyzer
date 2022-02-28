@@ -17,6 +17,11 @@ function die {
 }
 
 function main {
+  if [[ ! -f "${exercise}/expected_analysis.json" ]]; then
+    echo "🔥 ${exercise}: expected expected_analysis.json to exist 🔥"
+    exit 1
+  fi
+
   if [[ ! -f "${exercise}/analysis.json" ]]; then
     echo "🔥 ${exercise}: expected analysis.json to exist on successful run 🔥"
     exit 1

@@ -1,0 +1,4 @@
+elm-stuff
+bin/*.js
+src/main.js
+*analysis.json

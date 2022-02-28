@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 set -euo pipefail
 
@@ -17,16 +17,14 @@ function die {
 }
 
 function main {
-  expected_files=(analysis.json)
+  if [[ ! -f "${exercise}/analysis.json" ]]; then
+    echo "🔥 ${exercise}: expected analysis.json to exist on successful run 🔥"
+    exit 1
+  fi
 
-  for file in ${expected_files[@]}; do
-    if [[ ! -f "${exercise}/${file}" ]]; then
-      echo "🔥 ${exercise}: expected ${file} to exist on successful run 🔥"
-      exit 1
-    fi
-  done
-
-  if ! diff <(jq -S . ${exercise}/expected_analysis.json) <(jq -S . ${exercise}/analysis.json); then
+  jq -S . ${exercise}/expected_analysis.json > /tmp/expected.json
+  jq -S . ${exercise}/analysis.json > /tmp/actual.json
+  if ! diff /tmp/expected.json /tmp/actual.json ;then
     echo "🔥 ${exercise}: expected ${exercise}/analysis.json to equal ${exercise}/expected_analysis.json on successful run 🔥"
     exit 1
   fi
@@ -35,8 +33,7 @@ function main {
 }
 
 # Check for all required dependencies
-deps=(diff jq)
-for dep in "${deps[@]}"; do
+for dep in diff jq; do
   installed "${dep}" || die "Missing '${dep}'"
 done
 

@@ -7,18 +7,13 @@ set -o pipefail # Catch failures in pipes.
 
 # Temporarily disable -e mode
 set +e
-# running the analysis
-./bin/run.sh two-fer ./test_data/two-fer/perfect_solution ./test_data/two-fer/perfect_solution > /dev/null
-./bin/run.sh two-fer ./test_data/two-fer/imperfect_solution ./test_data/two-fer/imperfect_solution > /dev/null
-./bin/run.sh strain ./test_data/strain/perfect_solution ./test_data/strain/perfect_solution > /dev/null
-./bin/run.sh strain ./test_data/strain/imperfect_solution ./test_data/strain/imperfect_solution > /dev/null
-
-# checking the results
-./bin/check_files.sh ./test_data/two-fer/perfect_solution
-./bin/check_files.sh ./test_data/two-fer/imperfect_solution
-./bin/check_files.sh ./test_data/strain/perfect_solution
-./bin/check_files.sh ./test_data/strain/imperfect_solution
-
+for solution in test_data/*/* ; do
+  slug=$(basename $(dirname $solution))
+  # run analysis
+  bin/run.sh $slug $solution $solution
+  # check result
+  bin/check_files.sh $solution
+done
 set -e
 
 echo Finished

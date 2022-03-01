@@ -53,7 +53,7 @@ The Elm Analyzer source code should be formatted with `elm-format`.
 
 The Elm Analyzer itself can be analyzed by running `elm-review`. The rules are specified in the `review` folder.
 
-As a rule of thumb, if we expect the students to follow specific rules when writing their solutions, we should be hold ourselves to the same standards in our source code.
+As a rule of thumb, if we expect the students to follow specific rules when writing their solutions, we should hold ourselves to the same standards in our source code.
 
 ## Design
 

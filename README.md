@@ -43,7 +43,7 @@ An overall check of the analyzer can be ran with
 
 This will run the Analyzer on a predefined set of exercises in `test_data` and compare the outputs to expected outputs.
 
-More tests are defined in the `tests` folder and can be ran with `elm-test`.
+More tests are defined in the `tests` folder and can be run with `elm-test`.
 
 ## Formatting
 

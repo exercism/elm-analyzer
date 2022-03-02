@@ -3,14 +3,14 @@ FROM node:lts-alpine AS builder
 # Working directory as specified by exercism
 WORKDIR /opt/analyzer
 
-# Copy source code
-COPY . .
-
 # Add binaries to path
 ENV PATH="/opt/analyzer/bin:${PATH}"
 
 # Install curl to download executables
 RUN apk add --update --no-cache curl
+
+# Create bin directory
+RUN mkdir -p bin
 
 # Install jq
 RUN curl -L -o bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 \
@@ -24,6 +24,9 @@ RUN curl -L -o elm.gz https://github.com/elm/compiler/releases/download/0.19.1/b
 # Install elm-review
 ENV ELM_HOME="/opt/analyzer/.elm"
 RUN npm install --global elm-review --prefix /opt/analyzer
+
+# Copy source code
+COPY . .
 
 # Build cache in .elm, elm-stuff, solution/elm.json and solution/elm-stuff
 # For the solution

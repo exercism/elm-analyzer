@@ -7,7 +7,7 @@ WORKDIR /opt/analyzer
 ENV PATH="/opt/analyzer/bin:${PATH}"
 
 # Install curl to download executables
-RUN apk add --update --no-cache curl
+RUN apk add --update --no-cache curl=7.81
 
 # Create bin directory
 RUN mkdir -p bin
@@ -23,17 +23,18 @@ RUN curl -L -o elm.gz https://github.com/elm/compiler/releases/download/0.19.1/b
 
 # Install elm-review
 ENV ELM_HOME="/opt/analyzer/.elm"
-RUN npm install --global elm-review --prefix /opt/analyzer
+RUN npm install --global elm-review@2.7.0 --prefix /opt/analyzer
 
 # Copy source code
 COPY . .
 
 # Build cache in .elm, elm-stuff, solution/elm.json and solution/elm-stuff
 # For the solution
-RUN cd test_data/two-fer/perfect_solution \
-  && mkdir -p elm-stuff && rm -rf elm-stuff \
+WORKDIR /opt/analyzer/test_data/two-fer/perfect_solution
+RUN mkdir -p elm-stuff && rm -rf elm-stuff \
   && elm make src/TwoFer.elm --output=/dev/null
 # For the analyzer
+WORKDIR /opt/analyzer/
 RUN bin/build.sh \
   && bin/run.sh two-fer test_data/two-fer/perfect_solution test_data/two-fer/perfect_solution \
   && tar cf /opt/analyzer/solution_cache.tar -C test_data/two-fer/perfect_solution elm-stuff elm.json

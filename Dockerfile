@@ -7,7 +7,7 @@ WORKDIR /opt/analyzer
 ENV PATH="/opt/analyzer/bin:${PATH}"
 
 # Install curl to download executables
-RUN apk add --update --no-cache curl=7.81
+RUN apk add --update --no-cache curl=7.80
 
 # Create bin directory
 RUN mkdir -p bin

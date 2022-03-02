@@ -7,10 +7,8 @@ WORKDIR /opt/analyzer
 ENV PATH="/opt/analyzer/bin:${PATH}"
 
 # Install curl to download executables
-RUN apk add --update --no-cache curl=7.80
-
-# Create bin directory
-RUN mkdir -p bin
+RUN apk add --update --no-cache curl=7.80.0-r0 \
+  && mkdir -p bin
 
 # Install jq
 RUN curl -L -o bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 \

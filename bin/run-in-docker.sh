@@ -36,13 +36,15 @@ INPUT_DIR=$(realpath $2)
 OUTPUT_DIR=$(realpath $3)
 
 # build docker image
-docker build -t elm-analyzer .
+docker build --rm -t elm-analyzer .
 
 # run image passing the arguments
 mkdir -p "$OUTPUT_DIR"
 docker run \
     --rm \
     --network none \
+    --read-only \
     --mount type=bind,src=$INPUT_DIR,dst=/solution \
     --mount type=bind,src=$OUTPUT_DIR,dst=/output \
+    --mount type=tmpfs,dst=/tmp \
     elm-analyzer $SLUG /solution/ /output/

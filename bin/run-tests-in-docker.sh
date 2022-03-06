@@ -18,11 +18,14 @@ set -u # Exit on usage of undeclared variable.
 set -o pipefail # Catch failures in pipes.
 
 # build docker image
-docker build -t elm-analyzer .
+docker build --rm -t elm-analyzer .
 
 # run image passing the arguments
 docker run \
+    --rm \
     --network none \
+    --read-only \
     --mount type=bind,src=$(realpath test_data),dst=/opt/analyzer/test_data \
+    --mount type=tmpfs,dst=/tmp \
     --entrypoint /opt/analyzer/bin/smoke_test.sh \
     elm-analyzer

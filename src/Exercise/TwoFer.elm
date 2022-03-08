@@ -1,4 +1,4 @@
-module Exercise.TwoFer exposing (hasFunctionSignature, ruleConfig, usesWithDefault)
+module Exercise.TwoFer exposing (hasFunctionSignature, usesWithDefault)
 
 import Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..))
 import Comment exposing (Comment, CommentType(..))
@@ -6,15 +6,16 @@ import Dict
 import Elm.Syntax.Declaration as Declaration exposing (Declaration)
 import Elm.Syntax.Node as Node exposing (Node)
 import Review.Rule as Rule exposing (Error, Rule)
-import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 
-ruleConfig : RuleConfig
-ruleConfig =
-    { slug = Just "two-fer"
-    , restrictToFiles = Just [ "src/TwoFer.elm" ]
-    , rules = [ CustomRule hasFunctionSignature, CustomRule usesWithDefault ]
-    }
+
+-- import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
+-- ruleConfig : RuleConfig
+-- ruleConfig =
+--     { slug = Just "two-fer"
+--     , restrictToFiles = Just [ "src/TwoFer.elm" ]
+--     , rules = [ CustomRule hasFunctionSignature, CustomRule usesWithDefault ]
+--     }
 
 
 hasFunctionSignature : Rule

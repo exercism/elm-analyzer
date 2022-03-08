@@ -6,7 +6,7 @@ import Common.Simplify as Simplify
 import Dict exposing (Dict)
 import Expect
 import Fuzz exposing (Fuzzer)
-import Json.Decode as Decode exposing (Error(..))
+import Json.Decode as Decode
 import Json.Encode as Encode
 import RuleConfig
 import Test exposing (Test, describe, test)

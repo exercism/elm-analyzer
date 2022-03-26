@@ -5,9 +5,9 @@ import Maybe exposing (withDefault)
 -- unused imported module
 import Parser.Advanced
 
--- unused type constructor Nope
+-- unused type constructor TwoFerUnused
 -- unused type constructor argument String 
-type Unused = Nope String
+type TwoFer = TwoFerUnused String
 
 twoFer : Maybe String -> String
 twoFer name =

@@ -1,4 +1,11 @@
-module Common.NoUnused exposing (ruleConfig)
+module Common.NoUnused exposing
+    ( customTypeConstructorArgsDecoder
+    , customTypeConstructorsDecoder
+    , parametersDecoder
+    , patternsDecoder
+    , ruleConfig
+    , variablesDecoder
+    )
 
 import Comment exposing (Comment, CommentType(..))
 import Dict
@@ -28,43 +35,71 @@ ruleConfig =
         -- do not include Modules.rule since exercise modules are always unused
         -- do not include Exports.rule since exported functions are always unused
         -- do not include Dependencies.rule since elm.json is standardized
-        -- TODO: Add unit tests for decoders
-        [ ImportedRule (NoUnused.CustomTypeConstructors.rule [])
-            (makeDecoder "NoUnused.CustomTypeConstructors"
-                "It might be handled everywhere it might appear, but there is no location where this value actually gets created."
-            )
-
-        -- TODO: message doesn't contain the argument name or location
-        , ImportedRule NoUnused.CustomTypeConstructorArgs.rule
-            (makeDecoder "NoUnused.CustomTypeConstructorArgs"
-                "You should either use it somewhere, or remove it."
-            )
-        , ImportedRule NoUnused.Variables.rule
-            (makeDecoder "NoUnused.Variables"
-                "You should either use it somewhere, or remove it."
-            )
-        , ImportedRule NoUnused.Parameters.rule
-            (makeDecoder "NoUnused.Parameters"
-                "You should either use it somewhere, or remove it."
-            )
-        , ImportedRule NoUnused.Patterns.rule
-            (makeDecoder "NoUnused.Patterns"
-                "You should either use this value somewhere or replace it with '_'."
-            )
+        [ ImportedRule (NoUnused.CustomTypeConstructors.rule []) customTypeConstructorsDecoder
+        , ImportedRule NoUnused.CustomTypeConstructorArgs.rule customTypeConstructorArgsDecoder
+        , ImportedRule NoUnused.Variables.rule variablesDecoder
+        , ImportedRule NoUnused.Parameters.rule parametersDecoder
+        , ImportedRule NoUnused.Patterns.rule patternsDecoder
         ]
     }
 
 
+customTypeConstructorsDecoder : Decoder Comment
+customTypeConstructorsDecoder =
+    makeDecoder "NoUnused.CustomTypeConstructors" "elm.common.no_unused.custom_type_constructors"
+
+
+variablesDecoder : Decoder Comment
+variablesDecoder =
+    makeDecoder "NoUnused.Variables" "elm.common.no_unused.variables"
+
+
+parametersDecoder : Decoder Comment
+parametersDecoder =
+    makeDecoder "NoUnused.Parameters" "elm.common.no_unused.parameters"
+
+
+patternsDecoder : Decoder Comment
+patternsDecoder =
+    makeDecoder "NoUnused.Patterns" "elm.common.no_unused.patterns"
+
+
+customTypeConstructorArgsDecoder : Decoder Comment
+customTypeConstructorArgsDecoder =
+    makeDecoder "NoUnused.CustomTypeConstructorArgs" "elm.common.no_unused.custom_type_constructor_args"
+
+
 makeDecoder : String -> String -> Decoder Comment
-makeDecoder rule details =
+makeDecoder rule path =
     let
+        formattedStringsDecoder : Decoder String
+        formattedStringsDecoder =
+            Decode.oneOf [ Decode.string, Decode.field "string" Decode.string ]
+                |> Decode.list
+                |> Decode.map String.concat
+
+        extractCodeLines : String -> String
+        extractCodeLines =
+            String.split "\n"
+                >> List.filter (\line -> startsWithLineNumber line || String.endsWith "^" line)
+                >> String.join "\n"
+
+        startsWithLineNumber : String -> Bool
+        startsWithLineNumber line =
+            case line |> String.trimLeft |> String.split "|" of
+                number :: _ ->
+                    String.toInt number /= Nothing
+
+                _ ->
+                    False
+
         toComment : ( String, String ) -> Decoder Comment
-        toComment ( errorRule, message ) =
+        toComment ( errorRule, formatted ) =
             if errorRule == rule then
                 Comment rule
-                    "elm.common.no_unused"
-                    Informative
-                    (Dict.singleton "message" (message ++ "\n\n" ++ details))
+                    path
+                    Actionable
+                    (Dict.singleton "definition" (extractCodeLines formatted))
                     |> Decode.succeed
 
             else
@@ -72,5 +107,5 @@ makeDecoder rule details =
     in
     Decode.map2 Tuple.pair
         (Decode.field "rule" Decode.string)
-        (Decode.field "message" Decode.string)
+        (Decode.field "formatted" formattedStringsDecoder)
         |> Decode.andThen toComment

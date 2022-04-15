@@ -1,4 +1,4 @@
-module Common.Simplify exposing (ruleConfig)
+module Common.Simplify exposing (ruleConfig, simplifyDecoder)
 
 import Comment exposing (Comment, CommentType(..))
 import Dict
@@ -19,16 +19,12 @@ ruleConfig : RuleConfig
 ruleConfig =
     { slug = Nothing
     , restrictToFiles = Nothing
-    , rules = [ ImportedRule (Simplify.rule Simplify.defaults) decodeSimplify ]
+    , rules = [ ImportedRule (Simplify.rule Simplify.defaults) simplifyDecoder ]
     }
 
 
-
--- TODO: Add unit tests for decoder
-
-
-decodeSimplify : Decoder Comment
-decodeSimplify =
+simplifyDecoder : Decoder Comment
+simplifyDecoder =
     let
         decodeFormatted : Decoder (List String)
         decodeFormatted =
@@ -43,7 +39,7 @@ decodeSimplify =
             if errorRule == "Simplify" then
                 Comment "Simplify"
                     "elm.common.simplify"
-                    Informative
+                    Actionable
                     (Dict.singleton "message"
                         (formatted
                             |> String.concat

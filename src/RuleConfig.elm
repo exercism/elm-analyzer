@@ -55,5 +55,4 @@ getDecoders { rules } =
 makeConfig : List RuleConfig -> List Rule
 makeConfig ruleConfigs =
     ruleConfigs
-        |> List.map getRules
-        |> List.concat
+        |> List.concatMap getRules

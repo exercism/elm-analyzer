@@ -1,8 +1,9 @@
-module Exercise.BettysBikeShop exposing (hasFunctionSignatures, ruleConfig)
+module Exercise.BettysBikeShop exposing (hasFunctionSignatures, importString, ruleConfig)
 
 import Comment exposing (Comment, CommentType(..))
 import Dict
 import Elm.Syntax.Declaration as Declaration exposing (Declaration)
+import Elm.Syntax.Import exposing (Import)
 import Elm.Syntax.Node as Node exposing (Node)
 import Review.Rule as Rule exposing (Error, Rule)
 import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
@@ -12,15 +13,22 @@ ruleConfig : RuleConfig
 ruleConfig =
     { slug = Just "bettys-bike-shop"
     , restrictToFiles = Just [ "src/BettysBikeShop.elm" ]
-    , rules = [ CustomRule hasFunctionSignatures ]
+    , rules =
+        [ CustomRule hasFunctionSignatures
+        , CustomRule importString
+        ]
     }
+
+
+
+{- All top-level functions must use type signatures -}
 
 
 hasFunctionSignatures : Rule
 hasFunctionSignatures =
     Rule.newModuleRuleSchema "elm.bettys-bike-shop.use_signature" []
         |> Rule.withDeclarationEnterVisitor hasSignatureVisitor
-        |> Rule.withFinalModuleEvaluation finalEvaluation
+        |> Rule.withFinalModuleEvaluation hasSignatureFinalEvaluation
         |> Rule.fromModuleRuleSchema
 
 
@@ -58,6 +66,47 @@ hasSignatureVisitor node errors =
 -}
 
 
-finalEvaluation : List (Error {}) -> List (Error {})
-finalEvaluation =
+hasSignatureFinalEvaluation : List (Error {}) -> List (Error {})
+hasSignatureFinalEvaluation =
     List.take 1
+
+
+
+{- String module must be imported -}
+
+
+importString : Rule
+importString =
+    Rule.newModuleRuleSchema "elm.bettys-bike-shop.import_string" False
+        |> Rule.withImportVisitor importStringVisitor
+        |> Rule.withFinalModuleEvaluation importStringFinalEvaluation
+        |> Rule.fromModuleRuleSchema
+
+
+
+{- Keeping tracks of imports in the context (Bool) -}
+
+
+importStringVisitor : Node Import -> Bool -> ( List empty, Bool )
+importStringVisitor node importedString =
+    case node |> Node.value |> .moduleName |> Node.value of
+        [ "String" ] ->
+            ( [], True )
+
+        _ ->
+            ( [], importedString )
+
+
+
+{- Emit error if String was not imported -}
+
+
+importStringFinalEvaluation : Bool -> List (Error {})
+importStringFinalEvaluation importedString =
+    if importedString then
+        []
+
+    else
+        [ Comment.createGlobalError
+            (Comment "does not import String" "elm.bettys-bike-shop.import_string" Essential Dict.empty)
+        ]

@@ -11,7 +11,7 @@ import TestHelper
 
 rules : List Rule
 rules =
-    [ BettysBikeShop.hasFunctionSignatures ]
+    [ BettysBikeShop.hasFunctionSignatures, BettysBikeShop.importString ]
 
 
 exemplar : Test
@@ -37,21 +37,7 @@ poundsToString pounds =
 otherSolutions : Test
 otherSolutions =
     describe "other solutions that are also valid" <|
-        [ test "without the import String" <|
-            \() ->
-                TestHelper.expectNoErrorsForRules rules
-                    """
-module BettysBikeShop exposing (penceToPounds, poundsToString)
-
-penceToPounds : Int -> Float
-penceToPounds pence =
-    toFloat pence / 100.0
-
-poundsToString : Float -> String
-poundsToString pounds =
-    "£" ++ String.fromFloat pounds
-"""
-        , test "importing String.fromFloat" <|
+        [ test "importing String.fromFloat" <|
             \() ->
                 TestHelper.expectNoErrorsForRules rules
                     """
@@ -66,6 +52,22 @@ penceToPounds pence =
 poundsToString : Float -> String
 poundsToString pounds =
     "£" ++ fromFloat pounds
+"""
+        , test "importing String with an alias" <|
+            \() ->
+                TestHelper.expectNoErrorsForRules rules
+                    """
+module BettysBikeShop exposing (penceToPounds, poundsToString)
+
+import String as S
+
+penceToPounds : Int -> Float
+penceToPounds pence =
+    toFloat pence / 100.0
+
+poundsToString : Float -> String
+poundsToString pounds =
+    "£" ++ S.fromFloat pounds
 """
         , test "with a helper function" <|
             \() ->
@@ -181,5 +183,29 @@ addPoundsSymbol =
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder comment "addPoundsSymbol"
                             |> Review.Test.atExactly { start = { row = 15, column = 1 }, end = { row = 15, column = 16 } }
+                        ]
+        ]
+
+
+noImportString : Test
+noImportString =
+    describe "solutions that do no import String" <|
+        [ test "without the import String" <|
+            \() ->
+                """
+module BettysBikeShop exposing (penceToPounds, poundsToString)
+
+penceToPounds : Int -> Float
+penceToPounds pence =
+    toFloat pence / 100.0
+
+poundsToString : Float -> String
+poundsToString pounds =
+    "£" ++ String.fromFloat pounds
+"""
+                    |> Review.Test.run BettysBikeShop.importString
+                    |> Review.Test.expectGlobalErrors
+                        [ TestHelper.createExpectedGlobalError
+                            (Comment "does not import String" "elm.bettys-bike-shop.import_string" Essential Dict.empty)
                         ]
         ]

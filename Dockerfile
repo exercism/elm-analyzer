@@ -7,7 +7,7 @@ WORKDIR /opt/analyzer
 ENV PATH="/opt/analyzer/bin:${PATH}"
 
 # Install curl to download executables
-RUN apk add --update --no-cache curl=7.80.0-r0 \
+RUN apk add --update --no-cache curl \
   && mkdir -p bin
 
 # Install jq

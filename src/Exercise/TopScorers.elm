@@ -13,6 +13,7 @@ ruleConfig =
     , restrictToFiles = Just [ "src/TopScorers.elm" ]
     , rules =
         [ CustomRule removeInsignificantPlayersMustUseFilter
+        , CustomRule resetPlayerGoalCountMustUseInsert
         ]
     }
 
@@ -24,4 +25,14 @@ removeInsignificantPlayersMustUseFilter =
         , findFunctions = [ FromExternalModule [ "Dict" ] "filter" ]
         , find = Some
         , comment = Comment "Uses the Dict module" "elm.top-scorers.use_filter" Essential Dict.empty
+        }
+
+
+resetPlayerGoalCountMustUseInsert : Rule
+resetPlayerGoalCountMustUseInsert =
+    Analyzer.functionCalls
+        { calledFrom = TopFunction "resetPlayerGoalCount"
+        , findFunctions = [ FromExternalModule [ "Dict" ] "insert" ]
+        , find = Some
+        , comment = Comment "Uses the Dict module" "elm.top-scorers.use_insert" Essential Dict.empty
         }

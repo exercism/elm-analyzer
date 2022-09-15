@@ -34,6 +34,24 @@ removeInsignificantPlayers goalThreshold playerGoalCounts =
                     ]
 
 
+resetPlayerGoalCountMustUseInsert : Test
+resetPlayerGoalCountMustUseInsert =
+    test "should report that Dict.insert must be used" <|
+        \() ->
+            """
+module TopScorers exposing (..)
+
+resetPlayerGoalCount : PlayerName -> Dict PlayerName Int -> Dict PlayerName Int
+resetPlayerGoalCount playerName playerGoalCounts =
+    Debug.todo "implement this function"
+            """
+                |> Review.Test.run TopScorers.resetPlayerGoalCountMustUseInsert
+                |> Review.Test.expectErrors
+                    [ TestHelper.createExpectedErrorUnder (Comment "Uses the Dict module" "elm.top-scorers.use_insert" Essential Dict.empty) "resetPlayerGoalCount"
+                        |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 21 } }
+                    ]
+
+
 exemplar : Test
 exemplar =
     test "should not report anything for the exemplar" <|

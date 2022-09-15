@@ -16,6 +16,7 @@ rules =
     [ TopScorers.removeInsignificantPlayersMustUseFilter
     , TopScorers.resetPlayerGoalCountMustUseInsert
     , TopScorers.formatPlayersCannotUseSort
+    , TopScorers.combineGamesMustUseMerge
     ]
 
 
@@ -63,6 +64,20 @@ formatPlayers players =
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder (Comment "Uses List.sort" "elm.top-scorers.dont_use_sort" Essential Dict.empty) "List.sort"
                             |> Review.Test.atExactly { start = { row = 6, column = 26 }, end = { row = 6, column = 35 } }
+                        ]
+        , test "should report that Dict.merge must be used" <|
+            \() ->
+                """
+module TopScorers exposing (..)
+
+combineGames : Dict PlayerName Int -> Dict PlayerName Int -> Dict PlayerName Int
+combineGames game1 game2 =
+    Debug.todo "implement this function"
+            """
+                    |> Review.Test.run TopScorers.combineGamesMustUseMerge
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use Dict.merge" "elm.top-scorers.use_merge" Essential Dict.empty) "combineGames"
+                            |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 13 } }
                         ]
         , test "should not report anything for the exemplar" <|
             \() ->

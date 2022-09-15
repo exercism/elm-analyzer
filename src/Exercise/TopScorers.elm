@@ -46,3 +46,13 @@ formatPlayersCannotUseSort =
         , find = None
         , comment = Comment "Uses List.sort" "elm.top-scorers.dont_use_sort" Essential Dict.empty
         }
+
+
+combineGamesMustUseMerge : Rule
+combineGamesMustUseMerge =
+    Analyzer.functionCalls
+        { calledFrom = TopFunction "combineGames"
+        , findFunctions = [ FromExternalModule [ "Dict" ] "merge" ]
+        , find = Some
+        , comment = Comment "Doesn't use Dict.merge" "elm.top-scorers.use_merge" Essential Dict.empty
+        }

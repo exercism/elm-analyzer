@@ -19,6 +19,7 @@ rules =
     , TopScorers.combineGamesMustUseMerge
     , TopScorers.aggregateScorersMustUseFoldl
     , TopScorers.aggregateScorersMustUseUpdateGoalCountForPlayer
+    , TopScorers.formatPlayerMustUseMap
     ]
 
 
@@ -108,6 +109,20 @@ aggregateScorers playerNames =
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use updateGoalCountForPlayer" "elm.top-scorers.use_updateGoalCountForPlayer" Essential Dict.empty) "aggregateScorers"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 17 } }
+                        ]
+        , test "should report that Maybe.map must be used" <|
+            \() ->
+                """
+module TopScorers exposing (..)
+
+formatPlayer : PlayerName -> Dict PlayerName Int -> String
+formatPlayer playerName playerGoalCounts =
+    Debug.todo "implement this function"
+            """
+                    |> Review.Test.run TopScorers.formatPlayerMustUseMap
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use Maybe.map" "elm.top-scorers.use_map" Essential Dict.empty) "formatPlayer"
+                            |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 13 } }
                         ]
         , test "should not report anything for the exemplar" <|
             \() ->

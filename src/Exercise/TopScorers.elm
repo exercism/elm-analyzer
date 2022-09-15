@@ -78,5 +78,15 @@ aggregateScorersMustUseUpdateGoalCountForPlayer =
         }
 
 
+formatPlayerMustUseMap : Rule
+formatPlayerMustUseMap =
+    Analyzer.functionCalls
+        { calledFrom = TopFunction "formatPlayer"
+        , findFunctions = [ FromExternalModule [ "Maybe" ] "map" ]
+        , find = Some
+        , comment = Comment "Doesn't use Maybe.map" "elm.top-scorers.use_map" Essential Dict.empty
+        }
 
--- updateGoalCountForPlayer and List.foldl must be used in aggregateScorers
+
+
+-- Maybe.map and Maybe.withDefault should be used in formatPlayer

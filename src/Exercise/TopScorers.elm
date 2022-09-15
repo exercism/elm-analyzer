@@ -56,3 +56,17 @@ combineGamesMustUseMerge =
         , find = Some
         , comment = Comment "Doesn't use Dict.merge" "elm.top-scorers.use_merge" Essential Dict.empty
         }
+
+
+aggregateScorersMustUseFoldl : Rule
+aggregateScorersMustUseFoldl =
+    Analyzer.functionCalls
+        { calledFrom = TopFunction "aggregateScorers"
+        , findFunctions = [ FromExternalModule [ "List" ] "foldl" ]
+        , find = Some
+        , comment = Comment "Doesn't use List.foldl" "elm.top-scorers.use_foldl" Essential Dict.empty
+        }
+
+
+
+-- updateGoalCountForPlayer and List.foldl must be used in aggregateScorers

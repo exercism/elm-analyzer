@@ -24,7 +24,7 @@ removeInsignificantPlayersMustUseFilter =
         { calledFrom = TopFunction "removeInsignificantPlayers"
         , findFunctions = [ FromExternalModule [ "Dict" ] "filter" ]
         , find = Some
-        , comment = Comment "Uses the Dict module" "elm.top-scorers.use_filter" Essential Dict.empty
+        , comment = Comment "Doesn't use Dict.filter" "elm.top-scorers.use_filter" Essential Dict.empty
         }
 
 
@@ -34,5 +34,15 @@ resetPlayerGoalCountMustUseInsert =
         { calledFrom = TopFunction "resetPlayerGoalCount"
         , findFunctions = [ FromExternalModule [ "Dict" ] "insert" ]
         , find = Some
-        , comment = Comment "Uses the Dict module" "elm.top-scorers.use_insert" Essential Dict.empty
+        , comment = Comment "Doesn't use Dict.insert" "elm.top-scorers.use_insert" Essential Dict.empty
+        }
+
+
+formatPlayersCannotUseSort : Rule
+formatPlayersCannotUseSort =
+    Analyzer.functionCalls
+        { calledFrom = TopFunction "formatPlayers"
+        , findFunctions = [ FromExternalModule [ "List" ] "sort" ]
+        , find = None
+        , comment = Comment "Uses List.sort" "elm.top-scorers.dont_use_sort" Essential Dict.empty
         }

@@ -7,57 +7,67 @@ import Dict
 import Exercise.TopScorers as TopScorers
 import Review.Rule exposing (Rule)
 import Review.Test
-import Test exposing (Test, test)
+import Test exposing (Test, describe, test)
 import TestHelper
 
 
 rules : List Rule
 rules =
-    [ TopScorers.removeInsignificantPlayersMustUseFilter ]
+    [ TopScorers.removeInsignificantPlayersMustUseFilter
+    , TopScorers.resetPlayerGoalCountMustUseInsert
+    , TopScorers.formatPlayersCannotUseSort
+    ]
 
 
-removeInsignificantPlayersMustUseFilter : Test
-removeInsignificantPlayersMustUseFilter =
-    test "should report that Dict.filter must be used" <|
-        \() ->
-            """
+failures : Test
+failures =
+    describe "Analyser"
+        [ test "should report that Dict.filter must be used" <|
+            \() ->
+                """
 module TopScorers exposing (..)
 
 removeInsignificantPlayers : Int -> Dict PlayerName Int -> Dict PlayerName Int
 removeInsignificantPlayers goalThreshold playerGoalCounts =
     Debug.todo "implement this function"
             """
-                |> Review.Test.run TopScorers.removeInsignificantPlayersMustUseFilter
-                |> Review.Test.expectErrors
-                    [ TestHelper.createExpectedErrorUnder (Comment "Uses the Dict module" "elm.top-scorers.use_filter" Essential Dict.empty) "removeInsignificantPlayers"
-                        |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 27 } }
-                    ]
-
-
-resetPlayerGoalCountMustUseInsert : Test
-resetPlayerGoalCountMustUseInsert =
-    test "should report that Dict.insert must be used" <|
-        \() ->
-            """
+                    |> Review.Test.run TopScorers.removeInsignificantPlayersMustUseFilter
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use Dict.filter" "elm.top-scorers.use_filter" Essential Dict.empty) "removeInsignificantPlayers"
+                            |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 27 } }
+                        ]
+        , test "should report that Dict.insert must be used" <|
+            \() ->
+                """
 module TopScorers exposing (..)
 
 resetPlayerGoalCount : PlayerName -> Dict PlayerName Int -> Dict PlayerName Int
 resetPlayerGoalCount playerName playerGoalCounts =
     Debug.todo "implement this function"
             """
-                |> Review.Test.run TopScorers.resetPlayerGoalCountMustUseInsert
-                |> Review.Test.expectErrors
-                    [ TestHelper.createExpectedErrorUnder (Comment "Uses the Dict module" "elm.top-scorers.use_insert" Essential Dict.empty) "resetPlayerGoalCount"
-                        |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 21 } }
-                    ]
-
-
-exemplar : Test
-exemplar =
-    test "should not report anything for the exemplar" <|
-        \() ->
-            TestHelper.expectNoErrorsForRules rules
+                    |> Review.Test.run TopScorers.resetPlayerGoalCountMustUseInsert
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use Dict.insert" "elm.top-scorers.use_insert" Essential Dict.empty) "resetPlayerGoalCount"
+                            |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 21 } }
+                        ]
+        , test "should report that List.sort cannot be used" <|
+            \() ->
                 """
+module TopScorers exposing (..)
+
+formatPlayers : Dict PlayerName Int -> String
+formatPlayers players =
+    Dict.keys players |> List.sort |> String.join ", "
+            """
+                    |> Review.Test.run TopScorers.formatPlayersCannotUseSort
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (Comment "Uses List.sort" "elm.top-scorers.dont_use_sort" Essential Dict.empty) "List.sort"
+                            |> Review.Test.atExactly { start = { row = 6, column = 26 }, end = { row = 6, column = 35 } }
+                        ]
+        , test "should not report anything for the exemplar" <|
+            \() ->
+                TestHelper.expectNoErrorsForRules rules
+                    """
 module TopScorers exposing (..)
 
 import Dict exposing (Dict)
@@ -120,3 +130,4 @@ combineGames game1 game2 =
         game2
         Dict.empty
 """
+        ]

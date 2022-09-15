@@ -68,5 +68,15 @@ aggregateScorersMustUseFoldl =
         }
 
 
+aggregateScorersMustUseUpdateGoalCountForPlayer : Rule
+aggregateScorersMustUseUpdateGoalCountForPlayer =
+    Analyzer.functionCalls
+        { calledFrom = TopFunction "aggregateScorers"
+        , findFunctions = [ FromSameModule "updateGoalCountForPlayer" ]
+        , find = Some
+        , comment = Comment "Doesn't use updateGoalCountForPlayer" "elm.top-scorers.use_updateGoalCountForPlayer" Essential Dict.empty
+        }
+
+
 
 -- updateGoalCountForPlayer and List.foldl must be used in aggregateScorers

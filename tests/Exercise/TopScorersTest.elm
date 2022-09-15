@@ -18,6 +18,7 @@ rules =
     , TopScorers.formatPlayersCannotUseSort
     , TopScorers.combineGamesMustUseMerge
     , TopScorers.aggregateScorersMustUseFoldl
+    , TopScorers.aggregateScorersMustUseUpdateGoalCountForPlayer
     ]
 
 
@@ -92,6 +93,20 @@ aggregateScorers playerNames =
                     |> Review.Test.run TopScorers.aggregateScorersMustUseFoldl
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use List.foldl" "elm.top-scorers.use_foldl" Essential Dict.empty) "aggregateScorers"
+                            |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 17 } }
+                        ]
+        , test "should report that updateGoalCountForPlayer must be used" <|
+            \() ->
+                """
+module TopScorers exposing (..)
+
+aggregateScorers : List PlayerName -> Dict PlayerName Int
+aggregateScorers playerNames =
+    Debug.todo "implement this function"
+            """
+                    |> Review.Test.run TopScorers.aggregateScorersMustUseUpdateGoalCountForPlayer
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use updateGoalCountForPlayer" "elm.top-scorers.use_updateGoalCountForPlayer" Essential Dict.empty) "aggregateScorers"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 17 } }
                         ]
         , test "should not report anything for the exemplar" <|

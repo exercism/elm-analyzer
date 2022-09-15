@@ -20,6 +20,7 @@ rules =
     , TopScorers.aggregateScorersMustUseFoldl
     , TopScorers.aggregateScorersMustUseUpdateGoalCountForPlayer
     , TopScorers.formatPlayerMustUseMap
+    , TopScorers.formatPlayerMustUseWithDefault
     ]
 
 
@@ -122,6 +123,20 @@ formatPlayer playerName playerGoalCounts =
                     |> Review.Test.run TopScorers.formatPlayerMustUseMap
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use Maybe.map" "elm.top-scorers.use_map" Essential Dict.empty) "formatPlayer"
+                            |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 13 } }
+                        ]
+        , test "should report that Maybe.withDefault must be used" <|
+            \() ->
+                """
+module TopScorers exposing (..)
+
+formatPlayer : PlayerName -> Dict PlayerName Int -> String
+formatPlayer playerName playerGoalCounts =
+    Debug.todo "implement this function"
+            """
+                    |> Review.Test.run TopScorers.formatPlayerMustUseWithDefault
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use Maybe.withDefault" "elm.top-scorers.use_withDefault" Essential Dict.empty) "formatPlayer"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 13 } }
                         ]
         , test "should not report anything for the exemplar" <|

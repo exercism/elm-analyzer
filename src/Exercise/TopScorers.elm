@@ -88,5 +88,11 @@ formatPlayerMustUseMap =
         }
 
 
-
--- Maybe.map and Maybe.withDefault should be used in formatPlayer
+formatPlayerMustUseWithDefault : Rule
+formatPlayerMustUseWithDefault =
+    Analyzer.functionCalls
+        { calledFrom = TopFunction "formatPlayer"
+        , findFunctions = [ FromExternalModule [ "Maybe" ] "withDefault" ]
+        , find = Some
+        , comment = Comment "Doesn't use Maybe.withDefault" "elm.top-scorers.use_withDefault" Essential Dict.empty
+        }

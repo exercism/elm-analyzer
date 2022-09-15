@@ -1,12 +1,13 @@
 module Exercise.TopScorersTest exposing (..)
 
+-- import Expect exposing (Expectation)
+
 import Comment exposing (Comment, CommentType(..))
 import Dict
 import Exercise.TopScorers as TopScorers
-import Expect exposing (Expectation)
 import Review.Rule exposing (Rule)
 import Review.Test
-import Test exposing (Test, describe, test)
+import Test exposing (Test, test)
 import TestHelper
 
 

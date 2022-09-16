@@ -14,6 +14,12 @@ ruleConfig =
     , rules =
         [ CustomRule removeInsignificantPlayersMustUseFilter
         , CustomRule resetPlayerGoalCountMustUseInsert
+        , CustomRule formatPlayersCannotUseSort
+        , CustomRule combineGamesMustUseMerge
+        , CustomRule aggregateScorersMustUseFoldl
+        , CustomRule aggregateScorersMustUseUpdateGoalCountForPlayer
+        , CustomRule formatPlayerMustUseMap
+        , CustomRule formatPlayerMustUseWithDefault
         ]
     }
 

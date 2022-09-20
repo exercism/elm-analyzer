@@ -20,8 +20,8 @@ rules =
     ]
 
 
-failures : Test
-failures =
+tests : Test
+tests =
     describe "Analyser"
         [ test "should report that Dict.filter must be used" <|
             \() ->

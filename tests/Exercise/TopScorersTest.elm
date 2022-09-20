@@ -15,10 +15,8 @@ rules =
     , TopScorers.resetPlayerGoalCountMustUseInsert
     , TopScorers.formatPlayersCannotUseSort
     , TopScorers.combineGamesMustUseMerge
-    , TopScorers.aggregateScorersMustUseFoldl
-    , TopScorers.aggregateScorersMustUseUpdateGoalCountForPlayer
-    , TopScorers.formatPlayerMustUseMap
-    , TopScorers.formatPlayerMustUseWithDefault
+    , TopScorers.aggregateScorersMustUseFoldlAndUpdateGoalCountForPlayer
+    , TopScorers.formatPlayerMustUseMapAndWithDefault
     ]
 
 
@@ -81,7 +79,7 @@ combineGames game1 game2 =
                         [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use Dict.merge" "elm.top-scorers.use_merge" Essential Dict.empty) "combineGames"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 13 } }
                         ]
-        , test "should report that List.foldl must be used" <|
+        , test "should report that List.foldl and updateGoalCountForPlayer must be used" <|
             \() ->
                 """
 module TopScorers exposing (..)
@@ -90,26 +88,12 @@ aggregateScorers : List PlayerName -> Dict PlayerName Int
 aggregateScorers playerNames =
     Debug.todo "implement this function"
             """
-                    |> Review.Test.run TopScorers.aggregateScorersMustUseFoldl
+                    |> Review.Test.run TopScorers.aggregateScorersMustUseFoldlAndUpdateGoalCountForPlayer
                     |> Review.Test.expectErrors
-                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use List.foldl" "elm.top-scorers.use_foldl" Essential Dict.empty) "aggregateScorers"
+                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use List.foldl and updateGoalCountForPlayer" "elm.top-scorers.use_foldl_and_updateGoalCountForPlayer" Essential Dict.empty) "aggregateScorers"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 17 } }
                         ]
-        , test "should report that updateGoalCountForPlayer must be used" <|
-            \() ->
-                """
-module TopScorers exposing (..)
-
-aggregateScorers : List PlayerName -> Dict PlayerName Int
-aggregateScorers playerNames =
-    Debug.todo "implement this function"
-            """
-                    |> Review.Test.run TopScorers.aggregateScorersMustUseUpdateGoalCountForPlayer
-                    |> Review.Test.expectErrors
-                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use updateGoalCountForPlayer" "elm.top-scorers.use_updateGoalCountForPlayer" Essential Dict.empty) "aggregateScorers"
-                            |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 17 } }
-                        ]
-        , test "should report that Maybe.map must be used" <|
+        , test "should report that Maybe.map and Maybe.withDefault must be used" <|
             \() ->
                 """
 module TopScorers exposing (..)
@@ -118,23 +102,9 @@ formatPlayer : PlayerName -> Dict PlayerName Int -> String
 formatPlayer playerName playerGoalCounts =
     Debug.todo "implement this function"
             """
-                    |> Review.Test.run TopScorers.formatPlayerMustUseMap
+                    |> Review.Test.run TopScorers.formatPlayerMustUseMapAndWithDefault
                     |> Review.Test.expectErrors
-                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use Maybe.map" "elm.top-scorers.use_map" Essential Dict.empty) "formatPlayer"
-                            |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 13 } }
-                        ]
-        , test "should report that Maybe.withDefault must be used" <|
-            \() ->
-                """
-module TopScorers exposing (..)
-
-formatPlayer : PlayerName -> Dict PlayerName Int -> String
-formatPlayer playerName playerGoalCounts =
-    Debug.todo "implement this function"
-            """
-                    |> Review.Test.run TopScorers.formatPlayerMustUseWithDefault
-                    |> Review.Test.expectErrors
-                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use Maybe.withDefault" "elm.top-scorers.use_withDefault" Essential Dict.empty) "formatPlayer"
+                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use Maybe.map and Maybe.withDefault" "elm.top-scorers.use_map_and_withDefault" Essential Dict.empty) "formatPlayer"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 13 } }
                         ]
         , test "should not report anything for the exemplar" <|

@@ -16,10 +16,8 @@ ruleConfig =
         , CustomRule resetPlayerGoalCountMustUseInsert
         , CustomRule formatPlayersCannotUseSort
         , CustomRule combineGamesMustUseMerge
-        , CustomRule aggregateScorersMustUseFoldl
-        , CustomRule aggregateScorersMustUseUpdateGoalCountForPlayer
-        , CustomRule formatPlayerMustUseMap
-        , CustomRule formatPlayerMustUseWithDefault
+        , CustomRule aggregateScorersMustUseFoldlAndUpdateGoalCountForPlayer
+        , CustomRule formatPlayerMustUseMapAndWithDefault
         ]
     }
 
@@ -64,41 +62,21 @@ combineGamesMustUseMerge =
         }
 
 
-aggregateScorersMustUseFoldl : Rule
-aggregateScorersMustUseFoldl =
+aggregateScorersMustUseFoldlAndUpdateGoalCountForPlayer : Rule
+aggregateScorersMustUseFoldlAndUpdateGoalCountForPlayer =
     Analyzer.functionCalls
         { calledFrom = TopFunction "aggregateScorers"
-        , findFunctions = [ FromExternalModule [ "List" ] "foldl" ]
-        , find = Some
-        , comment = Comment "Doesn't use List.foldl" "elm.top-scorers.use_foldl" Essential Dict.empty
+        , findFunctions = [ FromExternalModule [ "List" ] "foldl", FromSameModule "updateGoalCountForPlayer" ]
+        , find = All
+        , comment = Comment "Doesn't use List.foldl and updateGoalCountForPlayer" "elm.top-scorers.use_foldl_and_updateGoalCountForPlayer" Essential Dict.empty
         }
 
 
-aggregateScorersMustUseUpdateGoalCountForPlayer : Rule
-aggregateScorersMustUseUpdateGoalCountForPlayer =
-    Analyzer.functionCalls
-        { calledFrom = TopFunction "aggregateScorers"
-        , findFunctions = [ FromSameModule "updateGoalCountForPlayer" ]
-        , find = Some
-        , comment = Comment "Doesn't use updateGoalCountForPlayer" "elm.top-scorers.use_updateGoalCountForPlayer" Essential Dict.empty
-        }
-
-
-formatPlayerMustUseMap : Rule
-formatPlayerMustUseMap =
+formatPlayerMustUseMapAndWithDefault : Rule
+formatPlayerMustUseMapAndWithDefault =
     Analyzer.functionCalls
         { calledFrom = TopFunction "formatPlayer"
-        , findFunctions = [ FromExternalModule [ "Maybe" ] "map" ]
+        , findFunctions = [ FromExternalModule [ "Maybe" ] "map", FromExternalModule [ "Maybe" ] "withDefault" ]
         , find = Some
-        , comment = Comment "Doesn't use Maybe.map" "elm.top-scorers.use_map" Essential Dict.empty
-        }
-
-
-formatPlayerMustUseWithDefault : Rule
-formatPlayerMustUseWithDefault =
-    Analyzer.functionCalls
-        { calledFrom = TopFunction "formatPlayer"
-        , findFunctions = [ FromExternalModule [ "Maybe" ] "withDefault" ]
-        , find = Some
-        , comment = Comment "Doesn't use Maybe.withDefault" "elm.top-scorers.use_withDefault" Essential Dict.empty
+        , comment = Comment "Doesn't use Maybe.map and Maybe.withDefault" "elm.top-scorers.use_map_and_withDefault" Essential Dict.empty
         }

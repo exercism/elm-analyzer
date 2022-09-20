@@ -1,7 +1,5 @@
 module Exercise.TopScorersTest exposing (..)
 
--- import Expect exposing (Expectation)
-
 import Comment exposing (Comment, CommentType(..))
 import Dict
 import Exercise.TopScorers as TopScorers

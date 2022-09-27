@@ -46,7 +46,8 @@ module TopScorers exposing (..)
 
 resetPlayerGoalCount : PlayerName -> Dict PlayerName Int -> Dict PlayerName Int
 resetPlayerGoalCount playerName playerGoalCounts =
-    Debug.todo "implement this function"
+    playerGoalCounts
+    |> Dict.update playerName (\\ _ -> Just 0 )
             """
                     |> Review.Test.run TopScorers.resetPlayerGoalCountMustUseInsert
                     |> Review.Test.expectErrors

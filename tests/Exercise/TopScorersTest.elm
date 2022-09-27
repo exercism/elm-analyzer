@@ -30,7 +30,9 @@ module TopScorers exposing (..)
 
 removeInsignificantPlayers : Int -> Dict PlayerName Int -> Dict PlayerName Int
 removeInsignificantPlayers goalThreshold playerGoalCounts =
-    Debug.todo "implement this function"
+    Dict.toList playerGoalCounts
+    |> List.filter (\\t -> Tuple.second t >= goalThreshold)
+    |> Dict.fromList
             """
                     |> Review.Test.run TopScorers.removeInsignificantPlayersMustUseFilter
                     |> Review.Test.expectErrors

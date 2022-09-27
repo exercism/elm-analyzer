@@ -16,7 +16,7 @@ rules =
     , TopScorers.formatPlayersCannotUseSort
     , TopScorers.combineGamesMustUseMerge
     , TopScorers.aggregateScorersMustUseFoldlAndUpdateGoalCountForPlayer
-    , TopScorers.formatPlayerMustUseMapAndWithDefault
+    , TopScorers.formatPlayerMustUseWithDefault
     ]
 
 
@@ -111,7 +111,7 @@ aggregateScorers playerNames =
                         [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use List.foldl and updateGoalCountForPlayer" "elm.top-scorers.use_foldl_and_updateGoalCountForPlayer" Essential Dict.empty) "aggregateScorers"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 17 } }
                         ]
-        , test "should report that Maybe.map and Maybe.withDefault must be used" <|
+        , test "should report that Maybe.withDefault must be used" <|
             \() ->
                 """
 module TopScorers exposing (..)
@@ -122,9 +122,9 @@ formatPlayer playerName playerGoalCounts =
         Just n  -> playerName ++ ": " ++ String.fromInt n
         Nothing -> playerName ++ ": 0"
             """
-                    |> Review.Test.run TopScorers.formatPlayerMustUseMapAndWithDefault
+                    |> Review.Test.run TopScorers.formatPlayerMustUseWithDefault
                     |> Review.Test.expectErrors
-                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use Maybe.map and Maybe.withDefault" "elm.top-scorers.use_map_and_withDefault" Essential Dict.empty) "formatPlayer"
+                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use Maybe.withDefault" "elm.top-scorers.use_withDefault" Essential Dict.empty) "formatPlayer"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 13 } }
                         ]
         , test "should not report anything for the exemplar" <|

@@ -17,7 +17,7 @@ ruleConfig =
         , CustomRule formatPlayersCannotUseSort
         , CustomRule combineGamesMustUseMerge
         , CustomRule aggregateScorersMustUseFoldlAndUpdateGoalCountForPlayer
-        , CustomRule formatPlayerMustUseMapAndWithDefault
+        , CustomRule formatPlayerMustUseWithDefault
         ]
     }
 
@@ -72,11 +72,11 @@ aggregateScorersMustUseFoldlAndUpdateGoalCountForPlayer =
         }
 
 
-formatPlayerMustUseMapAndWithDefault : Rule
-formatPlayerMustUseMapAndWithDefault =
+formatPlayerMustUseWithDefault : Rule
+formatPlayerMustUseWithDefault =
     Analyzer.functionCalls
         { calledFrom = TopFunction "formatPlayer"
-        , findFunctions = [ FromExternalModule [ "Maybe" ] "map", FromExternalModule [ "Maybe" ] "withDefault" ]
+        , findFunctions = [ FromExternalModule [ "Maybe" ] "withDefault" ]
         , find = Some
-        , comment = Comment "Doesn't use Maybe.map and Maybe.withDefault" "elm.top-scorers.use_map_and_withDefault" Essential Dict.empty
+        , comment = Comment "Doesn't use Maybe.withDefault" "elm.top-scorers.use_withDefault" Essential Dict.empty
         }

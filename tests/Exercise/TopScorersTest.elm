@@ -75,7 +75,9 @@ module TopScorers exposing (..)
 
 combineGames : Dict PlayerName Int -> Dict PlayerName Int -> Dict PlayerName Int
 combineGames game1 game2 =
-    Debug.todo "implement this function"
+    game1
+    |> Dict.toList
+    |> List.foldr (\\(name,score) g -> Dict.update name (update score) g) game2
             """
                     |> Review.Test.run TopScorers.combineGamesMustUseMerge
                     |> Review.Test.expectErrors

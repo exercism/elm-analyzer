@@ -91,7 +91,20 @@ module TopScorers exposing (..)
 
 aggregateScorers : List PlayerName -> Dict PlayerName Int
 aggregateScorers playerNames =
-    Debug.todo "implement this function"
+    playerNames
+    |> List.foldr
+        (\\name acc ->
+            Dict.update name
+                (\\existingCount ->
+                    case existingCount of
+                        Just count ->
+                            Just (count + 1)
+                        Nothing ->
+                            Just 1
+                )
+                acc
+        )
+        Dict.empty
             """
                     |> Review.Test.run TopScorers.aggregateScorersMustUseFoldlAndUpdateGoalCountForPlayer
                     |> Review.Test.expectErrors

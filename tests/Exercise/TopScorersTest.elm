@@ -118,7 +118,9 @@ module TopScorers exposing (..)
 
 formatPlayer : PlayerName -> Dict PlayerName Int -> String
 formatPlayer playerName playerGoalCounts =
-    Debug.todo "implement this function"
+    case Dict.get playerName playerGoalCounts of
+        Just n  -> playerName ++ ": " ++ String.fromInt n
+        Nothing -> playerName ++ ": 0"
             """
                     |> Review.Test.run TopScorers.formatPlayerMustUseMapAndWithDefault
                     |> Review.Test.expectErrors

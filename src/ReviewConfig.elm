@@ -4,6 +4,7 @@ import Common.NoUnused
 import Common.Simplify
 import Exercise.BettysBikeShop
 import Exercise.Strain
+import Exercise.TopScorers
 import Review.Rule as Rule exposing (Rule)
 import RuleConfig exposing (RuleConfig)
 
@@ -16,6 +17,7 @@ ruleConfigs =
 
     -- Concept Exercises
     , Exercise.BettysBikeShop.ruleConfig
+    , Exercise.TopScorers.ruleConfig
 
     -- Practice Exercises
     , Exercise.Strain.ruleConfig

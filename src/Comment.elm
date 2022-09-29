@@ -74,7 +74,7 @@ aggregateComments : List Comment -> Summary
 aggregateComments comments =
     let
         sortedComments =
-            List.sortBy (.commentType >> commentTypeShowOrder) comments
+            List.sortBy commentTypeShowOrder comments
 
         message =
             case List.map .commentType comments |> List.Extra.minimumBy commentTypeSummaryOrder of
@@ -98,20 +98,24 @@ aggregateComments comments =
     Summary message sortedComments
 
 
-commentTypeShowOrder : CommentType -> Int
-commentTypeShowOrder commentType =
-    case commentType of
-        Celebratory ->
-            0
+commentTypeShowOrder : Comment -> ( Int, String )
+commentTypeShowOrder { commentType, comment } =
+    let
+        firstOrder =
+            case commentType of
+                Celebratory ->
+                    0
 
-        Essential ->
-            1
+                Essential ->
+                    1
 
-        Actionable ->
-            2
+                Actionable ->
+                    2
 
-        Informative ->
-            3
+                Informative ->
+                    3
+    in
+    ( firstOrder, comment )
 
 
 commentTypeSummaryOrder : CommentType -> Int

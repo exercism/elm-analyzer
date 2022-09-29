@@ -3,6 +3,7 @@ module ReviewConfig exposing (config, ruleConfigs)
 import Common.NoUnused
 import Common.Simplify
 import Exercise.BettysBikeShop
+import Exercise.MariosMarvellousLasagna
 import Exercise.Strain
 import Exercise.TopScorers
 import Review.Rule as Rule exposing (Rule)
@@ -18,6 +19,7 @@ ruleConfigs =
     -- Concept Exercises
     , Exercise.BettysBikeShop.ruleConfig
     , Exercise.TopScorers.ruleConfig
+    , Exercise.MariosMarvellousLasagna.ruleConfig
 
     -- Practice Exercises
     , Exercise.Strain.ruleConfig

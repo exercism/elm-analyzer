@@ -19,6 +19,7 @@ allRules =
             [ ( "Ext._", [ AnyFromExternalModule [ "Ext" ] ] )
             , ( "Ext.ext", [ FromExternalModule [ "Ext" ] "ext" ] )
             , ( "internal", [ FromSameModule "internal" ] )
+            , ( "let", [ LetBlock ] )
             , ( "Ext._ + Ext.ext", [ AnyFromExternalModule [ "Ext" ], FromExternalModule [ "Ext" ] "ext" ] )
             , ( "Ext._ + internal", [ AnyFromExternalModule [ "Ext" ], FromSameModule "internal" ] )
             , ( "Ext.ext + internal", [ FromExternalModule [ "Ext" ] "ext", FromSameModule "internal" ] )
@@ -284,6 +285,9 @@ findFunctionsTest =
         internalRule =
             "calling function, internal, all"
 
+        letRule =
+            "calling function, let, all"
+
         extExtExtRule =
             "calling function, Ext._ + Ext.ext, all"
 
@@ -390,6 +394,43 @@ callingFunction param =
                     |> Review.Test.run (getRule internalRule)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder (quickComment internalRule) "callingFunction" ]
+        , test "calling let expression, no error" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+  let
+    internal = identity
+  in
+  param
+  |> Ext.ext
+  |> Ext.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule letRule)
+                    |> Review.Test.expectNoErrors
+        , test "calling let expression, missing expression" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+--  let
+--    internal = identity
+--  in
+  param
+  |> Ext.ext
+  |> Ext.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule letRule)
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (quickComment letRule) "callingFunction" ]
         , test "any function from Ext and Ext, no error" <|
             \() ->
                 """

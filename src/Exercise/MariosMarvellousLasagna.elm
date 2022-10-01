@@ -15,10 +15,8 @@ ruleConfig =
     }
 
 
-
-{- There should be a `let` use somewhere -}
-
-
+{-| There should be a `let` used in `remainingTimeInMinutes`
+-}
 usesLet : Rule
 usesLet =
     Analyzer.functionCalls

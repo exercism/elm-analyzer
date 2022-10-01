@@ -144,10 +144,8 @@ initialContext functions =
         |> Rule.withModuleNameLookupTable
 
 
-
--- Keep track of top level function
-
-
+{-| Keep track of which top level function we are in
+-}
 annotateFunctionDeclaration : CalledFrom -> Node Declaration -> Context -> ( List nothing, Context )
 annotateFunctionDeclaration calledFrom node (Context context) =
     case Node.value node of
@@ -173,10 +171,8 @@ annotateFunctionDeclaration calledFrom node (Context context) =
             ( [], Context context )
 
 
-
--- Gather relevant expressions from the code
-
-
+{-| Gather all expressions we care about from the code in a tree
+-}
 expressionCallsFunction : Node Expression -> Context -> ( List nothing, Context )
 expressionCallsFunction (Node range expression) (Context ({ lookupTable, functionDeclaration, callTree } as context)) =
     let

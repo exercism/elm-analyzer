@@ -76,26 +76,26 @@ aggregateComments comments =
         sortedComments =
             List.sortBy commentTypeShowOrder comments
 
-        message =
+        ( message, extraComments ) =
             case List.map .commentType comments |> List.Extra.minimumBy commentTypeSummaryOrder of
                 Nothing ->
-                    "No suggestions found."
+                    ( "No suggestions found.", [] )
 
                 Just Essential ->
                     -- \u{202F} is a narrow no-break space
                     -- https://en.wikipedia.org/wiki/Non-breaking_space
-                    "Check the comments for things to fix.\u{202F}🛠 "
+                    ( "Check the comments for things to fix.\u{202F}🛠 ", [ feedbackComment ] )
 
                 Just Actionable ->
-                    "Check the comments for some suggestions.\u{202F}📣"
+                    ( "Check the comments for some suggestions.\u{202F}📣", [ feedbackComment ] )
 
                 Just Informative ->
-                    "Check the comments for some things to learn.\u{202F}📖"
+                    ( "Check the comments for some things to learn.\u{202F}📖", [] )
 
                 Just Celebratory ->
-                    "You're doing something right.\u{202F}🎉"
+                    ( "You're doing something right.\u{202F}🎉", [] )
     in
-    Summary message sortedComments
+    Summary message (sortedComments ++ extraComments)
 
 
 commentTypeShowOrder : Comment -> ( Int, String )
@@ -132,6 +132,11 @@ commentTypeSummaryOrder commentType =
 
         Celebratory ->
             3
+
+
+feedbackComment : Comment
+feedbackComment =
+    Comment "please give us feedback" "elm.feedback_request.md" Informative Dict.empty
 
 
 

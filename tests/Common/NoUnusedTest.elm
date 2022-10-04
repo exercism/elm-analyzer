@@ -300,7 +300,7 @@ f x =
                     |> Review.Test.run NoUnused.Patterns.rule
                     |> Review.Test.expectErrors
                         [ Review.Test.error
-                            { message = "Value `something` is not used."
+                            { message = "Value `something` is not used"
                             , details = [ "You should either use this value somewhere or replace it with '_'." ]
                             , under = "something"
                             }
@@ -311,7 +311,7 @@ f x =
                 Decode.decodeString NoUnused.patternsDecoder """
 {
 "rule": "NoUnused.Patterns",
-"message": "Value `something` is not used.",
+"message": "Value `something` is not used",
 "ruleLink": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.20/NoUnused-Patterns",
 "details": [
 "You should either use this value somewhere or replace it with '_'."
@@ -336,7 +336,7 @@ f x =
     "color": "#FF0000",
     "href": "https://package.elm-lang.org/packages/jfmengels/elm-review-unused/1.1.20/NoUnused-Patterns"
 },
-": Value `something` is not used.\\n\\n34|  case x of\\n35|    Just something -> 1\\n             ",
+": Value `something` is not used\\n\\n34|  case x of\\n35|    Just something -> 1\\n             ",
 { "string": "^^^^^^^^^", "color": "#FF0000" },
 "\\n36|    Nothing -> 0\\n\\nYou should either use this value somewhere or replace it with '_'."
 ],

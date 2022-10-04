@@ -37,17 +37,20 @@ Note that for searching for function that are automatically imported, like `roun
 
 `FromSameModule "solve"` means that we are looking for a call to a top-level function defined in the same module.
 
+`LetBlock` means looking for a `let` expression.
+
 -}
 
 
 
--- TODO: also search for operators, let, case, if, or any expression?
+-- TODO: also search for operators, case, if, or any expression?
 
 
 type CalledFunction
     = AnyFromExternalModule ModuleName
     | FromExternalModule ModuleName FunctionName
     | FromSameModule FunctionName
+    | LetBlock
 
 
 {-| Type of search.
@@ -141,6 +144,8 @@ initialContext functions =
         |> Rule.withModuleNameLookupTable
 
 
+{-| Keep track of which top level function we are in
+-}
 annotateFunctionDeclaration : CalledFrom -> Node Declaration -> Context -> ( List nothing, Context )
 annotateFunctionDeclaration calledFrom node (Context context) =
     case Node.value node of
@@ -166,36 +171,43 @@ annotateFunctionDeclaration calledFrom node (Context context) =
             ( [], Context context )
 
 
+{-| Gather all expressions we care about from the code in a tree
+-}
 expressionCallsFunction : Node Expression -> Context -> ( List nothing, Context )
 expressionCallsFunction (Node range expression) (Context ({ lookupTable, functionDeclaration, callTree } as context)) =
-    case expression of
-        FunctionOrValue _ name ->
-            let
-                addfunctionCall maybeExpressions =
+    let
+        updateFunction treeExpressions =
+            case expression of
+                FunctionOrValue _ name ->
                     case LookupTable.moduleNameFor lookupTable (Node range expression) of
                         Nothing ->
-                            maybeExpressions
+                            treeExpressions
 
                         Just originalModuleName ->
                             Node range (FunctionOrValue originalModuleName name)
-                                :: Maybe.withDefault [] maybeExpressions
+                                :: Maybe.withDefault [] treeExpressions
                                 |> Just
-            in
-            ( []
-            , Context
-                { context
-                    | callTree =
-                        case functionDeclaration of
-                            Just function ->
-                                Dict.update function addfunctionCall callTree
 
-                            Nothing ->
-                                callTree
-                }
-            )
+                LetExpression block ->
+                    Node range (LetExpression block)
+                        :: Maybe.withDefault [] treeExpressions
+                        |> Just
 
-        _ ->
-            ( [], Context context )
+                _ ->
+                    treeExpressions
+    in
+    ( []
+    , Context
+        { context
+            | callTree =
+                case functionDeclaration of
+                    Just function ->
+                        Dict.update function updateFunction callTree
+
+                    Nothing ->
+                        callTree
+        }
+    )
 
 
 annotateLeaveDeclaration : Node Declaration -> Context -> ( List nothing, Context )
@@ -225,10 +237,7 @@ flattenTree calledFrom (Context ({ callTree } as context)) =
     Context { context | foundFunctions = functionsFound }
 
 
-traverseTreeFrom :
-    FunctionName
-    -> Dict FunctionName (List (Node Expression))
-    -> List (Node Expression)
+traverseTreeFrom : FunctionName -> Dict FunctionName (List (Node Expression)) -> List (Node Expression)
 traverseTreeFrom root tree =
     case Dict.get root tree of
         Nothing ->
@@ -253,10 +262,7 @@ traverseTreeFrom root tree =
             expressions ++ List.concatMap (\branch -> traverseTreeFrom branch trimmedTree) modulefunctions
 
 
-matchFunction :
-    Node Expression
-    -> FoundFunction
-    -> FoundFunction
+matchFunction : Node Expression -> FoundFunction -> FoundFunction
 matchFunction (Node range expression) foundFunction =
     let
         match a b =
@@ -275,6 +281,9 @@ matchFunction (Node range expression) foundFunction =
 
         ( FunctionOrValue [] exprName, NotFound (FromSameModule name) ) ->
             match exprName name
+
+        ( LetExpression _, NotFound LetBlock ) ->
+            FoundAt range
 
         -- already found function, or expression that doesn't match
         _ ->

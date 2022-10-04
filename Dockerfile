@@ -21,7 +21,7 @@ RUN curl -L -o elm.gz https://github.com/elm/compiler/releases/download/0.19.1/b
 
 # Install elm-review
 ENV ELM_HOME="/opt/analyzer/.elm"
-RUN npm install --global elm-review@2.7.0 --prefix /opt/analyzer
+RUN npm install --global elm-review@2.7.4 --prefix /opt/analyzer
 
 # Copy source code
 COPY . .

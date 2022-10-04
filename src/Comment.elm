@@ -7,6 +7,7 @@ module Comment exposing
     , createGlobalError
     , decodeComment
     , encodeComment
+    , feedbackComment
     , makeSummary
     )
 

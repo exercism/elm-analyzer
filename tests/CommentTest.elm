@@ -89,14 +89,14 @@ aggregateCommentsTest =
                 Expect.equal
                     (Comment.aggregateComments [ informative, celebratory, essential, actionable ])
                     (Summary "Check the comments for things to fix.\u{202F}🛠 "
-                        [ celebratory, essential, actionable, informative ]
+                        [ celebratory, essential, actionable, informative, Comment.feedbackComment ]
                     )
         , test "no essential, summary is actionable" <|
             \() ->
                 Expect.equal
                     (Comment.aggregateComments [ informative, celebratory, actionable ])
                     (Summary "Check the comments for some suggestions.\u{202F}📣"
-                        [ celebratory, actionable, informative ]
+                        [ celebratory, actionable, informative, Comment.feedbackComment ]
                     )
         , test "no essential, no actionable, summary is informative" <|
             \() ->
@@ -117,7 +117,31 @@ aggregateCommentsTest =
                 Expect.equal
                     (Comment.aggregateComments [ essential, informative, celebratory, actionable, informative ])
                     (Summary "Check the comments for things to fix.\u{202F}🛠 "
-                        [ celebratory, essential, actionable, informative, informative ]
+                        [ celebratory, essential, actionable, informative, informative, Comment.feedbackComment ]
+                    )
+        , test "secondary order is alphabetical, but feedback is always last" <|
+            \() ->
+                Expect.equal
+                    (Comment.aggregateComments
+                        [ essential
+                        , { essential | comment = "a" }
+                        , informative
+                        , { celebratory | comment = "a" }
+                        , actionable
+                        , celebratory
+                        , { actionable | comment = "a" }
+                        ]
+                    )
+                    (Summary "Check the comments for things to fix.\u{202F}🛠 "
+                        [ celebratory
+                        , { celebratory | comment = "a" }
+                        , essential
+                        , { essential | comment = "a" }
+                        , actionable
+                        , { actionable | comment = "a" }
+                        , informative
+                        , Comment.feedbackComment
+                        ]
                     )
         ]
 
@@ -143,7 +167,7 @@ makeSummaryTest =
                     "{\"type\":\"review-errors\",\"errors\":[{\"path\":\"src/TwoFer.elm\",\"errors\":[{\"rule\":\"Simplify\",\"message\":\"Unnecessary concatenation with an empty string\",\"ruleLink\":\"https://package.elm-lang.org/packages/jfmengels/elm-review-simplify/2.0.7/Simplify\",\"details\":[\"You should remove the concatenation with the empty string.\"],\"region\":{\"start\":{\"line\":6,\"column\":31},\"end\":{\"line\":6,\"column\":33}},\"fix\":[{\"range\":{\"start\":{\"line\":6,\"column\":31},\"end\":{\"line\":6,\"column\":37}},\"string\":\"\"}],\"formatted\":[{\"string\":\"(fix) \",\"color\":\"#33BBC8\"},{\"string\":\"Simplify\",\"color\":\"#FF0000\",\"href\":\"https://package.elm-lang.org/packages/jfmengels/elm-review-simplify/2.0.7/Simplify\"},\": Unnecessary concatenation with an empty string\\n\\n5|     \\\"One for \\\"\\n6|         ++ Maybe.withDefault (\\\"\\\" ++ \\\"you\\\") name\\n                                 \",{\"string\":\"^^\",\"color\":\"#FF0000\"},\"\\n7|         ++ \\\", one for me.\\\"\\n\\nYou should remove the concatenation with the empty string.\"],\"suppressed\":false,\"originallySuppressed\":false}]}]}"
                     |> Expect.equal
                         (Ok
-                            "{\"summary\":\"Check the comments for some suggestions.\u{202F}📣\",\"comments\":[{\"comment\":\"elm.common.simplify\",\"type\":\"actionable\",\"params\":{\"message\":\"Simplify: Unnecessary concatenation with an empty string\\n\\n5|     \\\"One for \\\"\\n6|         ++ Maybe.withDefault (\\\"\\\" ++ \\\"you\\\") name\\n                                 ^^\\n7|         ++ \\\", one for me.\\\"\\n\\nYou should remove the concatenation with the empty string.\"}}]}"
+                            "{\"summary\":\"Check the comments for some suggestions.\u{202F}📣\",\"comments\":[{\"comment\":\"elm.common.simplify\",\"type\":\"actionable\",\"params\":{\"message\":\"Simplify: Unnecessary concatenation with an empty string\\n\\n5|     \\\"One for \\\"\\n6|         ++ Maybe.withDefault (\\\"\\\" ++ \\\"you\\\") name\\n                                 ^^\\n7|         ++ \\\", one for me.\\\"\\n\\nYou should remove the concatenation with the empty string.\"}},{\"comment\":\"elm.feedback_request.md\",\"type\":\"informative\",\"params\":{}}]}"
                         )
         , test "invalid input fails" <|
             \() ->

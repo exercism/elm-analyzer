@@ -137,7 +137,7 @@ commentTypeSummaryOrder commentType =
 
 feedbackComment : Comment
 feedbackComment =
-    Comment "please give us feedback" "elm.feedback_request.md" Informative Dict.empty
+    Comment "please give us feedback" "elm.feedback_request" Informative Dict.empty
 
 
 

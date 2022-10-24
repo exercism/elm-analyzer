@@ -20,6 +20,7 @@ allRules =
             , ( "Ext.ext", [ FromExternalModule [ "Ext" ] "ext" ] )
             , ( "internal", [ FromSameModule "internal" ] )
             , ( "let", [ LetBlock ] )
+            , ( "case", [ CaseBlock ] )
             , ( "Ext._ + Ext.ext", [ AnyFromExternalModule [ "Ext" ], FromExternalModule [ "Ext" ] "ext" ] )
             , ( "Ext._ + internal", [ AnyFromExternalModule [ "Ext" ], FromSameModule "internal" ] )
             , ( "Ext.ext + internal", [ FromExternalModule [ "Ext" ] "ext", FromSameModule "internal" ] )
@@ -288,6 +289,9 @@ findFunctionsTest =
         letRule =
             "calling function, let, all"
 
+        caseRule =
+            "calling function, case, all"
+
         extExtExtRule =
             "calling function, Ext._ + Ext.ext, all"
 
@@ -431,6 +435,38 @@ callingFunction param =
                     |> Review.Test.run (getRule letRule)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder (quickComment letRule) "callingFunction" ]
+        , test "calling case expression, no error" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+  case param of
+    1 -> Ext.ext
+    2 -> Ext.other
+    3 -> internal
+"""
+                    |> Review.Test.run (getRule caseRule)
+                    |> Review.Test.expectNoErrors
+        , test "calling case expression, missing expression" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+--  case param of
+  param
+  |> Ext.ext
+  |> Ext.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule caseRule)
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (quickComment caseRule) "callingFunction" ]
         , test "any function from Ext and Ext, no error" <|
             \() ->
                 """

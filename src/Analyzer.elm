@@ -39,11 +39,13 @@ Note that for searching for function that are automatically imported, like `roun
 
 `LetBlock` means looking for a `let` expression.
 
+`CaseBlock` means looking for a `case` expression.
+
 -}
 
 
 
--- TODO: also search for operators, case, if, or any expression?
+-- TODO: also search for operators, if, or any expression?
 
 
 type CalledFunction
@@ -51,6 +53,7 @@ type CalledFunction
     | FromExternalModule ModuleName FunctionName
     | FromSameModule FunctionName
     | LetBlock
+    | CaseBlock
 
 
 {-| Type of search.
@@ -193,6 +196,11 @@ expressionCallsFunction (Node range expression) (Context ({ lookupTable, functio
                         :: Maybe.withDefault [] treeExpressions
                         |> Just
 
+                CaseExpression block ->
+                    Node range (CaseExpression block)
+                        :: Maybe.withDefault [] treeExpressions
+                        |> Just
+
                 _ ->
                     treeExpressions
     in
@@ -283,6 +291,9 @@ matchFunction (Node range expression) foundFunction =
             match exprName name
 
         ( LetExpression _, NotFound LetBlock ) ->
+            FoundAt range
+
+        ( CaseExpression _, NotFound CaseBlock ) ->
             FoundAt range
 
         -- already found function, or expression that doesn't match

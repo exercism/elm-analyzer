@@ -8,7 +8,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
 
       # Re-use node_modules between runs until package.json or package-lock.json changes.
       - name: Cache node_modules
@@ -69,7 +69,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
 
       - name: Run Smoke Tests in Docker
         run: bin/run-tests-in-docker.sh

@@ -20,7 +20,7 @@ config =
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule
     , NoUnused.Modules.rule
-    , NoUnused.Exports.rule
+    , NoUnused.Exports.rule |> Review.Rule.ignoreErrorsForDirectories [ "tests/" ]
     , NoUnused.Dependencies.rule
     , Simplify.rule Simplify.defaults
     ]

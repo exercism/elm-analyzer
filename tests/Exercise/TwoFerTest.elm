@@ -1,4 +1,4 @@
-module Exercise.TwoFerTest exposing (..)
+module Exercise.TwoFerTest exposing (tests)
 
 import Comment exposing (Comment, CommentType(..))
 import Dict
@@ -7,6 +7,15 @@ import Review.Rule exposing (Rule)
 import Review.Test
 import Test exposing (Test, describe, test)
 import TestHelper
+
+
+tests =
+    describe "TwoFerTest"
+        [ exampleSolution
+        , otherSolutions
+        , noFuctionSignature
+        , noWithDefault
+        ]
 
 
 rules : List Rule

@@ -1,4 +1,4 @@
-module Exercise.BettysBikeShopTest exposing (..)
+module Exercise.BettysBikeShopTest exposing (tests)
 
 import Comment exposing (Comment, CommentType(..))
 import Dict
@@ -7,6 +7,15 @@ import Review.Rule exposing (Rule)
 import Review.Test
 import Test exposing (Test, describe, test)
 import TestHelper
+
+
+tests =
+    describe "BettysBikeShopTest"
+        [ exemplar
+        , otherSolutions
+        , noFuctionSignature
+        , noImportString
+        ]
 
 
 rules : List Rule

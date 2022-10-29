@@ -1,4 +1,4 @@
-module CommentTest exposing (aggregateCommentsTest, encoderDecoderTest, makeSummaryTest)
+module CommentTest exposing (tests)
 
 import Comment exposing (Comment, CommentType(..), Summary)
 import Common.NoUnused as NoUnused
@@ -10,6 +10,11 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import RuleConfig
 import Test exposing (Test, describe, test)
+
+
+tests =
+    describe "CommentTest tests"
+        [ aggregateCommentsTest, encoderDecoderTest, makeSummaryTest ]
 
 
 fuzzComment : Fuzzer Comment
@@ -33,7 +38,7 @@ fuzzCommentType =
 
 fuzzDict : Fuzzer comparable -> Fuzzer b -> Fuzzer (Dict comparable b)
 fuzzDict key value =
-    Fuzz.tuple ( key, value )
+    Fuzz.pair key value
         |> Fuzz.list
         |> Fuzz.map Dict.fromList
 

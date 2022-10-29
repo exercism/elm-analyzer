@@ -1,4 +1,4 @@
-module Common.SimplifyTest exposing (..)
+module Common.SimplifyTest exposing (tests)
 
 import Comment exposing (Comment, CommentType(..))
 import Common.Simplify
@@ -10,6 +10,11 @@ import Review.Test
 import Simplify
 import Test exposing (Test, describe, test)
 import TestHelper
+
+
+tests =
+    describe "SimplifyTest"
+        [ adequateCode, simplify ]
 
 
 rules : List Rule

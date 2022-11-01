@@ -1,4 +1,4 @@
-module Exercise.MariosMarvellousLasagnaTest exposing (..)
+module Exercise.MariosMarvellousLasagnaTest exposing (tests)
 
 import Comment exposing (Comment, CommentType(..))
 import Dict
@@ -7,6 +7,14 @@ import Review.Rule exposing (Rule)
 import Review.Test
 import Test exposing (Test, describe, test)
 import TestHelper
+
+
+tests =
+    describe "MariosMarvellousLasagnaTest"
+        [ exemplar
+        , otherSolutions
+        , noLet
+        ]
 
 
 rules : List Rule

@@ -1,4 +1,4 @@
-module Exercise.BlorkemonCardsTest exposing (..)
+module Exercise.BlorkemonCardsTest exposing (tests)
 
 import Comment exposing (Comment, CommentType(..))
 import Dict
@@ -7,6 +7,17 @@ import Review.Rule exposing (Rule)
 import Review.Test
 import Test exposing (Test, describe, test)
 import TestHelper
+
+
+tests =
+    describe "BlorkemonCardsTest"
+        [ exemplar
+        , otherSolutions
+        , noMax
+        , noSortBy
+        , noCompareShinyPower
+        , noCase
+        ]
 
 
 rules : List Rule

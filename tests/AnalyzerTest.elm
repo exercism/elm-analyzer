@@ -1,4 +1,4 @@
-module AnalyzerTest exposing (calledFromTest, findFunctionsTest, findTest, indirectCallTest)
+module AnalyzerTest exposing (tests)
 
 import Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..))
 import Comment exposing (Comment, CommentType(..))
@@ -7,6 +7,11 @@ import Review.Rule exposing (Rule)
 import Review.Test
 import Test exposing (Test, describe, test)
 import TestHelper
+
+
+tests =
+    describe "AnalyzerTest tests"
+        [ calledFromTest, findFunctionsTest, findTest, indirectCallTest ]
 
 
 allRules : Dict String Rule

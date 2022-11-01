@@ -23,7 +23,7 @@ fi
 # Run analysis
 # Temporarily disable -e mode
 set +e
-elm-review $INPUT_DIR \
+npx elm-review $INPUT_DIR \
         --elmjson $INPUT_DIR/elm.json \
         --config . \
         --report=json \

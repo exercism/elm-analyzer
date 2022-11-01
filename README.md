@@ -12,8 +12,12 @@ The Elm Analyzer is built on top of `elm-review` and defines `Rule`s for specifi
 
 ## How to run
 
-To run the Analyzer, you need to have Elm and `elm-review` installed. 
-For development, `elm-format` and `elm-test` are also necessary.
+The Analyzer uses `elm` and `elm-review`.
+For development, `elm-format` and `elm-test-rs` are also necessary.
+These tools can be installed with
+```shell
+npm install
+```
 
 First, compile the Analyzer by running
 ```shell
@@ -43,15 +47,15 @@ An overall check of the analyzer can be ran with
 
 This will run the Analyzer on a predefined set of exercises in `test_data` and compare the outputs to expected outputs.
 
-More tests are defined in the `tests` folder and can be run with `elm-test`.
+More tests are defined in the `tests` folder and can be run with `npx elm-test-rs`.
 
 ## Formatting
 
-The Elm Analyzer source code should be formatted with `elm-format`.
+The Elm Analyzer source code should be formatted with `npx elm-format`.
 
 ## Analyzing the Analyzer
 
-The Elm Analyzer itself can be analyzed by running `elm-review`. The rules are specified in the `review` folder.
+The Elm Analyzer itself can be analyzed by running `npx elm-review`. The rules are specified in the `review` folder.
 
 As a rule of thumb, if we expect the students to follow specific rules when writing their solutions, we should hold ourselves to the same standards in our source code.
 

@@ -1,4 +1,4 @@
-module Common.NoUnusedTest exposing (..)
+module Common.NoUnusedTest exposing (tests)
 
 import Comment exposing (Comment, CommentType(..))
 import Common.NoUnused as NoUnused
@@ -14,6 +14,17 @@ import Review.Rule exposing (Rule)
 import Review.Test
 import Test exposing (Test, describe, test)
 import TestHelper
+
+
+tests =
+    describe "NoUnusedTest"
+        [ adequateCode
+        , customTypeConstructors
+        , customTypeConstructorArgs
+        , variables
+        , parameters
+        , patterns
+        ]
 
 
 rules : List Rule

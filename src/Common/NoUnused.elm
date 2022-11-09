@@ -1,11 +1,4 @@
-module Common.NoUnused exposing
-    ( customTypeConstructorArgsDecoder
-    , customTypeConstructorsDecoder
-    , parametersDecoder
-    , patternsDecoder
-    , ruleConfig
-    , variablesDecoder
-    )
+module Common.NoUnused exposing (makeDecoder, ruleConfig)
 
 import Comment exposing (Comment, CommentType(..))
 import Dict
@@ -35,42 +28,27 @@ ruleConfig =
         -- do not include Modules.rule since exercise modules are always unused
         -- do not include Exports.rule since exported functions are always unused
         -- do not include Dependencies.rule since elm.json is standardized
-        [ ImportedRule (NoUnused.CustomTypeConstructors.rule []) customTypeConstructorsDecoder
-        , ImportedRule NoUnused.CustomTypeConstructorArgs.rule customTypeConstructorArgsDecoder
-        , ImportedRule NoUnused.Variables.rule variablesDecoder
-        , ImportedRule NoUnused.Parameters.rule parametersDecoder
-        , ImportedRule NoUnused.Patterns.rule patternsDecoder
+        [ ImportedRule (NoUnused.CustomTypeConstructors.rule [])
+            makeDecoder
+            (Comment "NoUnused.CustomTypeConstructors" "elm.common.no_unused.custom_type_constructors" Actionable Dict.empty)
+        , ImportedRule NoUnused.CustomTypeConstructorArgs.rule
+            makeDecoder
+            (Comment "NoUnused.CustomTypeConstructorArgs" "elm.common.no_unused.custom_type_constructor_args" Actionable Dict.empty)
+        , ImportedRule NoUnused.Variables.rule
+            makeDecoder
+            (Comment "NoUnused.Variables" "elm.common.no_unused.variables" Actionable Dict.empty)
+        , ImportedRule NoUnused.Parameters.rule
+            makeDecoder
+            (Comment "NoUnused.Parameters" "elm.common.no_unused.parameters" Actionable Dict.empty)
+        , ImportedRule NoUnused.Patterns.rule
+            makeDecoder
+            (Comment "NoUnused.Patterns" "elm.common.no_unused.patterns" Actionable Dict.empty)
         ]
     }
 
 
-customTypeConstructorsDecoder : Decoder Comment
-customTypeConstructorsDecoder =
-    makeDecoder "NoUnused.CustomTypeConstructors" "elm.common.no_unused.custom_type_constructors"
-
-
-variablesDecoder : Decoder Comment
-variablesDecoder =
-    makeDecoder "NoUnused.Variables" "elm.common.no_unused.variables"
-
-
-parametersDecoder : Decoder Comment
-parametersDecoder =
-    makeDecoder "NoUnused.Parameters" "elm.common.no_unused.parameters"
-
-
-patternsDecoder : Decoder Comment
-patternsDecoder =
-    makeDecoder "NoUnused.Patterns" "elm.common.no_unused.patterns"
-
-
-customTypeConstructorArgsDecoder : Decoder Comment
-customTypeConstructorArgsDecoder =
-    makeDecoder "NoUnused.CustomTypeConstructorArgs" "elm.common.no_unused.custom_type_constructor_args"
-
-
-makeDecoder : String -> String -> Decoder Comment
-makeDecoder rule path =
+makeDecoder : Comment -> Decoder Comment
+makeDecoder ({ name } as comment) =
     let
         formattedStringsDecoder : Decoder String
         formattedStringsDecoder =
@@ -95,15 +73,11 @@ makeDecoder rule path =
 
         toComment : ( String, String ) -> Decoder Comment
         toComment ( errorRule, formatted ) =
-            if errorRule == rule then
-                Comment rule
-                    path
-                    Actionable
-                    (Dict.singleton "definition" (extractCodeLines formatted))
-                    |> Decode.succeed
+            if errorRule == name then
+                Decode.succeed { comment | params = Dict.singleton "definition" (extractCodeLines formatted) }
 
             else
-                Decode.fail ("not " ++ rule)
+                Decode.fail ("not " ++ name)
     in
     Decode.map2 Tuple.pair
         (Decode.field "rule" Decode.string)

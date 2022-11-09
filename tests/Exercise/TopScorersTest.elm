@@ -5,6 +5,7 @@ import Dict
 import Exercise.TopScorers as TopScorers
 import Review.Rule exposing (Rule)
 import Review.Test
+import RuleConfig
 import Test exposing (Test, describe, test)
 import TestHelper
 
@@ -18,13 +19,7 @@ tests =
 
 rules : List Rule
 rules =
-    [ TopScorers.removeInsignificantPlayersMustUseFilter
-    , TopScorers.resetPlayerGoalCountMustUseInsert
-    , TopScorers.formatPlayersCannotUseSort
-    , TopScorers.combineGamesMustUseMerge
-    , TopScorers.aggregateScorersMustUseFoldlAndUpdateGoalCountForPlayer
-    , TopScorers.formatPlayerMustUseWithDefault
-    ]
+    TopScorers.ruleConfig |> .rules |> List.map RuleConfig.analyzerRuleToRule
 
 
 exemplar : Test
@@ -102,6 +97,10 @@ ruleTests =
     describe "code that violates the rules"
         [ test "should report that Dict.filter must be used" <|
             \() ->
+                let
+                    comment =
+                        Comment "Doesn't use Dict.filter" "elm.top-scorers.use_filter" Essential Dict.empty
+                in
                 """
 module TopScorers exposing (..)
 
@@ -111,13 +110,17 @@ removeInsignificantPlayers goalThreshold playerGoalCounts =
     |> List.filter (\\t -> Tuple.second t >= goalThreshold)
     |> Dict.fromList
             """
-                    |> Review.Test.run TopScorers.removeInsignificantPlayersMustUseFilter
+                    |> Review.Test.run (TopScorers.removeInsignificantPlayersMustUseFilter comment)
                     |> Review.Test.expectErrors
-                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use Dict.filter" "elm.top-scorers.use_filter" Essential Dict.empty) "removeInsignificantPlayers"
+                        [ TestHelper.createExpectedErrorUnder comment "removeInsignificantPlayers"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 27 } }
                         ]
         , test "should report that Dict.insert must be used" <|
             \() ->
+                let
+                    comment =
+                        Comment "Doesn't use Dict.insert" "elm.top-scorers.use_insert" Essential Dict.empty
+                in
                 """
 module TopScorers exposing (..)
 
@@ -126,13 +129,17 @@ resetPlayerGoalCount playerName playerGoalCounts =
     playerGoalCounts
     |> Dict.update playerName (\\ _ -> Just 0 )
             """
-                    |> Review.Test.run TopScorers.resetPlayerGoalCountMustUseInsert
+                    |> Review.Test.run (TopScorers.resetPlayerGoalCountMustUseInsert comment)
                     |> Review.Test.expectErrors
-                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use Dict.insert" "elm.top-scorers.use_insert" Essential Dict.empty) "resetPlayerGoalCount"
+                        [ TestHelper.createExpectedErrorUnder comment "resetPlayerGoalCount"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 21 } }
                         ]
         , test "should report that List.sort cannot be used" <|
             \() ->
+                let
+                    comment =
+                        Comment "Uses List.sort" "elm.top-scorers.dont_use_sort" Essential Dict.empty
+                in
                 """
 module TopScorers exposing (..)
 
@@ -140,13 +147,17 @@ formatPlayers : Dict PlayerName Int -> String
 formatPlayers players =
     Dict.keys players |> List.sort |> String.join ", "
             """
-                    |> Review.Test.run TopScorers.formatPlayersCannotUseSort
+                    |> Review.Test.run (TopScorers.formatPlayersCannotUseSort comment)
                     |> Review.Test.expectErrors
-                        [ TestHelper.createExpectedErrorUnder (Comment "Uses List.sort" "elm.top-scorers.dont_use_sort" Essential Dict.empty) "List.sort"
+                        [ TestHelper.createExpectedErrorUnder comment "List.sort"
                             |> Review.Test.atExactly { start = { row = 6, column = 26 }, end = { row = 6, column = 35 } }
                         ]
         , test "should report that Dict.merge must be used" <|
             \() ->
+                let
+                    comment =
+                        Comment "Doesn't use Dict.merge" "elm.top-scorers.use_merge" Essential Dict.empty
+                in
                 """
 module TopScorers exposing (..)
 
@@ -156,13 +167,17 @@ combineGames game1 game2 =
     |> Dict.toList
     |> List.foldr (\\(name,score) g -> Dict.update name (update score) g) game2
             """
-                    |> Review.Test.run TopScorers.combineGamesMustUseMerge
+                    |> Review.Test.run (TopScorers.combineGamesMustUseMerge comment)
                     |> Review.Test.expectErrors
-                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use Dict.merge" "elm.top-scorers.use_merge" Essential Dict.empty) "combineGames"
+                        [ TestHelper.createExpectedErrorUnder comment "combineGames"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 13 } }
                         ]
         , test "should report that List.foldl and updateGoalCountForPlayer must be used" <|
             \() ->
+                let
+                    comment =
+                        Comment "Doesn't use List.foldl and updateGoalCountForPlayer" "elm.top-scorers.use_foldl_and_updateGoalCountForPlayer" Essential Dict.empty
+                in
                 """
 module TopScorers exposing (..)
 
@@ -183,13 +198,17 @@ aggregateScorers playerNames =
         )
         Dict.empty
             """
-                    |> Review.Test.run TopScorers.aggregateScorersMustUseFoldlAndUpdateGoalCountForPlayer
+                    |> Review.Test.run (TopScorers.aggregateScorersMustUseFoldlAndUpdateGoalCountForPlayer comment)
                     |> Review.Test.expectErrors
-                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use List.foldl and updateGoalCountForPlayer" "elm.top-scorers.use_foldl_and_updateGoalCountForPlayer" Essential Dict.empty) "aggregateScorers"
+                        [ TestHelper.createExpectedErrorUnder comment "aggregateScorers"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 17 } }
                         ]
         , test "should report that Maybe.withDefault must be used" <|
             \() ->
+                let
+                    comment =
+                        Comment "Doesn't use Maybe.withDefault" "elm.top-scorers.use_withDefault" Essential Dict.empty
+                in
                 """
 module TopScorers exposing (..)
 
@@ -199,9 +218,9 @@ formatPlayer playerName playerGoalCounts =
         Just n  -> playerName ++ ": " ++ String.fromInt n
         Nothing -> playerName ++ ": 0"
             """
-                    |> Review.Test.run TopScorers.formatPlayerMustUseWithDefault
+                    |> Review.Test.run (TopScorers.formatPlayerMustUseWithDefault comment)
                     |> Review.Test.expectErrors
-                        [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use Maybe.withDefault" "elm.top-scorers.use_withDefault" Essential Dict.empty) "formatPlayer"
+                        [ TestHelper.createExpectedErrorUnder comment "formatPlayer"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 13 } }
                         ]
         ]

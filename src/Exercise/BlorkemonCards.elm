@@ -13,48 +13,48 @@ ruleConfig =
     , restrictToFiles = Just [ "src/BlorkemonCards.elm" ]
     , rules =
         [ CustomRule maxPowerUsesMax
+            (Comment "maxPower doesn't use max" "elm.blorkemon-cards.use_max" Essential Dict.empty)
         , CustomRule sortByMonsterNameUsesSortBy
+            (Comment "sortByMonsterName doesn't use List.sortBy" "elm.blorkemon-cards.use_sort_by" Essential Dict.empty)
         , CustomRule expectedWinnerUsesCompareShinyPower
+            (Comment "expectedWinner doesn't use compareShinyPower" "elm.blorkemon-cards.use_shiny_power" Essential Dict.empty)
         , CustomRule expectedWinnerUsesCase
+            (Comment "Doesn't use a case expression" "elm.blorkemon-cards.use_case" Essential Dict.empty)
         ]
     }
 
 
-maxPowerUsesMax : Rule
+maxPowerUsesMax : Comment -> Rule
 maxPowerUsesMax =
     Analyzer.functionCalls
         { calledFrom = TopFunction "maxPower"
         , findFunctions = [ FromExternalModule [ "Basics" ] "max" ]
         , find = Some
-        , comment = Comment "maxPower doesn't use max" "elm.blorkemon-cards.use_max" Essential Dict.empty
         }
 
 
-sortByMonsterNameUsesSortBy : Rule
+sortByMonsterNameUsesSortBy : Comment -> Rule
 sortByMonsterNameUsesSortBy =
     Analyzer.functionCalls
         { calledFrom = TopFunction "sortByMonsterName"
         , findFunctions = [ FromExternalModule [ "List" ] "sortBy" ]
         , find = Some
-        , comment = Comment "sortByMonsterName doesn't use List.sortBy" "elm.blorkemon-cards.use_sort_by" Essential Dict.empty
         }
 
 
-expectedWinnerUsesCompareShinyPower : Rule
+expectedWinnerUsesCompareShinyPower : Comment -> Rule
 expectedWinnerUsesCompareShinyPower =
     Analyzer.functionCalls
         { calledFrom = TopFunction "expectedWinner"
         , findFunctions = [ FromSameModule "compareShinyPower" ]
         , find = Some
-        , comment = Comment "expectedWinner doesn't use compareShinyPower" "elm.blorkemon-cards.use_shiny_power" Essential Dict.empty
         }
 
 
-expectedWinnerUsesCase : Rule
+expectedWinnerUsesCase : Comment -> Rule
 expectedWinnerUsesCase =
     Analyzer.functionCalls
         { calledFrom = TopFunction "expectedWinner"
         , findFunctions = [ CaseBlock ]
         , find = Some
-        , comment = Comment "Doesn't use a case expression" "elm.blorkemon-cards.use_case" Essential Dict.empty
         }

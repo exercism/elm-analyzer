@@ -60,7 +60,7 @@ one =
                         ]
         , test "decoder behavior" <|
             \() ->
-                Decode.decodeString Common.Simplify.simplifyDecoder """
+                Decode.decodeString (Common.Simplify.simplifyDecoder (Comment "Simplify" "elm.common.simplify" Actionable Dict.empty)) """
 {
 "rule": "Simplify",
 "message": "Unnecessary multiplication by 1",

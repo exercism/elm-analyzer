@@ -14,8 +14,8 @@ ruleConfig =
     { slug = Just "bettys-bike-shop"
     , restrictToFiles = Just [ "src/BettysBikeShop.elm" ]
     , rules =
-        [ CustomRule hasFunctionSignatures
-        , CustomRule importString
+        [ CustomRule hasFunctionSignatures (Comment "has no signature" "elm.bettys-bike-shop.use_signature" Essential Dict.empty)
+        , CustomRule importString (Comment "does not import String" "elm.bettys-bike-shop.import_string" Essential Dict.empty)
         ]
     }
 
@@ -24,10 +24,10 @@ ruleConfig =
 {- All top-level functions must use type signatures -}
 
 
-hasFunctionSignatures : Rule
-hasFunctionSignatures =
+hasFunctionSignatures : Comment -> Rule
+hasFunctionSignatures comment =
     Rule.newModuleRuleSchema "elm.bettys-bike-shop.use_signature" []
-        |> Rule.withDeclarationEnterVisitor hasSignatureVisitor
+        |> Rule.withDeclarationEnterVisitor (hasSignatureVisitor comment)
         |> Rule.withFinalModuleEvaluation hasSignatureFinalEvaluation
         |> Rule.fromModuleRuleSchema
 
@@ -39,15 +39,14 @@ hasFunctionSignatures =
 -}
 
 
-hasSignatureVisitor : Node Declaration -> List (Error {}) -> ( List empty, List (Error {}) )
-hasSignatureVisitor node errors =
+hasSignatureVisitor : Comment -> Node Declaration -> List (Error {}) -> ( List empty, List (Error {}) )
+hasSignatureVisitor comment node errors =
     case Node.value node of
         Declaration.FunctionDeclaration { declaration, signature } ->
             case signature of
                 Nothing ->
                     ( []
-                    , Comment.createError
-                        (Comment "has no signature" "elm.bettys-bike-shop.use_signature" Essential Dict.empty)
+                    , Comment.createError comment
                         (declaration |> Node.value |> .name |> Node.range)
                         :: errors
                     )
@@ -75,11 +74,11 @@ hasSignatureFinalEvaluation =
 {- String module must be imported -}
 
 
-importString : Rule
-importString =
+importString : Comment -> Rule
+importString comment =
     Rule.newModuleRuleSchema "elm.bettys-bike-shop.import_string" False
         |> Rule.withImportVisitor importStringVisitor
-        |> Rule.withFinalModuleEvaluation importStringFinalEvaluation
+        |> Rule.withFinalModuleEvaluation (importStringFinalEvaluation comment)
         |> Rule.fromModuleRuleSchema
 
 
@@ -101,12 +100,10 @@ importStringVisitor node importedString =
 {- Emit error if String was not imported -}
 
 
-importStringFinalEvaluation : Bool -> List (Error {})
-importStringFinalEvaluation importedString =
+importStringFinalEvaluation : Comment -> Bool -> List (Error {})
+importStringFinalEvaluation comment importedString =
     if importedString then
         []
 
     else
-        [ Comment.createGlobalError
-            (Comment "does not import String" "elm.bettys-bike-shop.import_string" Essential Dict.empty)
-        ]
+        [ Comment.createGlobalError comment ]

@@ -5,10 +5,12 @@ import Dict
 import Exercise.Strain as Strain
 import Review.Rule exposing (Rule)
 import Review.Test
+import RuleConfig
 import Test exposing (Test, describe, test)
 import TestHelper
 
 
+tests : Test
 tests =
     describe "StrainTest"
         [ exampleSolution
@@ -19,7 +21,7 @@ tests =
 
 rules : List Rule
 rules =
-    [ Strain.doNotUseFilter ]
+    Strain.ruleConfig |> .rules |> List.map RuleConfig.analyzerRuleToRule
 
 
 exampleSolution : Test
@@ -111,6 +113,10 @@ consIf predicate value list =
 
 usingFilter : Test
 usingFilter =
+    let
+        comment =
+            Comment "Uses the List module" "elm.strain.do_not_use_filter" Essential Dict.empty
+    in
     describe "solutions that use filter or filterMap" <|
         [ test "using List.filter" <|
             \() ->
@@ -128,10 +134,10 @@ discard : (a -> Bool) -> List a -> List a
 discard predicate =
     List.filter (predicate >> not)
 """
-                    |> Review.Test.run Strain.doNotUseFilter
+                    |> Review.Test.run (Strain.doNotUseFilter comment)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder
-                            (Comment "Uses the List module" "elm.strain.do_not_use_filter" Essential Dict.empty)
+                            comment
                             "List.filter"
                             |> Review.Test.atExactly { start = { row = 13, column = 5 }, end = { row = 13, column = 16 } }
                         ]
@@ -151,10 +157,10 @@ discard : (a -> Bool) -> List a -> List a
 discard predicate =
     List.filterMap (\\a -> if predicate a then Nothing else Just a)
 """
-                    |> Review.Test.run Strain.doNotUseFilter
+                    |> Review.Test.run (Strain.doNotUseFilter comment)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder
-                            (Comment "Uses the List module" "elm.strain.do_not_use_filter" Essential Dict.empty)
+                            comment
                             "List.filterMap"
                             |> Review.Test.atExactly { start = { row = 13, column = 5 }, end = { row = 13, column = 19 } }
                         ]
@@ -174,10 +180,10 @@ discard : (a -> Bool) -> List a -> List a
 discard predicate =
     filterMap (\\a -> if predicate a then Nothing else Just a)
 """
-                    |> Review.Test.run Strain.doNotUseFilter
+                    |> Review.Test.run (Strain.doNotUseFilter comment)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder
-                            (Comment "Uses the List module" "elm.strain.do_not_use_filter" Essential Dict.empty)
+                            comment
                             "filter"
                             |> Review.Test.atExactly { start = { row = 8, column = 5 }, end = { row = 8, column = 11 } }
                         ]
@@ -200,10 +206,10 @@ discard : (a -> Bool) -> List a -> List a
 discard predicate =
     totallyNotFilter (predicate >> not)
 """
-                    |> Review.Test.run Strain.doNotUseFilter
+                    |> Review.Test.run (Strain.doNotUseFilter comment)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder
-                            (Comment "Uses the List module" "elm.strain.do_not_use_filter" Essential Dict.empty)
+                            comment
                             "filter"
                             |> Review.Test.atExactly { start = { row = 7, column = 3 }, end = { row = 7, column = 9 } }
                         ]

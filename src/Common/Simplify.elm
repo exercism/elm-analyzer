@@ -19,12 +19,16 @@ ruleConfig : RuleConfig
 ruleConfig =
     { slug = Nothing
     , restrictToFiles = Nothing
-    , rules = [ ImportedRule (Simplify.rule Simplify.defaults) simplifyDecoder ]
+    , rules =
+        [ ImportedRule (Simplify.rule Simplify.defaults)
+            simplifyDecoder
+            (Comment "Simplify" "elm.common.simplify" Actionable Dict.empty)
+        ]
     }
 
 
-simplifyDecoder : Decoder Comment
-simplifyDecoder =
+simplifyDecoder : Comment -> Decoder Comment
+simplifyDecoder comment =
     let
         decodeFormatted : Decoder (List String)
         decodeFormatted =
@@ -37,16 +41,15 @@ simplifyDecoder =
         toComment : ( String, List String ) -> Decoder Comment
         toComment ( errorRule, formatted ) =
             if errorRule == "Simplify" then
-                Comment "Simplify"
-                    "elm.common.simplify"
-                    Actionable
-                    (Dict.singleton "message"
-                        (formatted
-                            |> String.concat
-                            |> String.replace "(fix) " ""
-                        )
-                    )
-                    |> Decode.succeed
+                Decode.succeed
+                    { comment
+                        | params =
+                            Dict.singleton "message"
+                                (formatted
+                                    |> String.concat
+                                    |> String.replace "(fix) " ""
+                                )
+                    }
 
             else
                 Decode.fail "not Simplify"

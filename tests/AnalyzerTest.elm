@@ -53,8 +53,8 @@ allRules =
                                             { calledFrom = calledFrom
                                             , findFunctions = findFunctions
                                             , find = find
-                                            , comment = quickComment name
                                             }
+                                            (quickComment name)
                                         )
                                     )
                         )
@@ -751,8 +751,8 @@ callingFunction param =
                             { calledFrom = Anywhere
                             , findFunctions = [ AnyFromExternalModule [ "Ext", "Sub" ] ]
                             , find = All
-                            , comment = quickComment "Ext.Sub"
                             }
+                            (quickComment "Ext.Sub")
                         )
                     |> Review.Test.expectNoErrors
         , test "should detect imported Basic functions with module name" <|
@@ -774,8 +774,8 @@ callingFunction param =
                                 , FromExternalModule [ "Basics" ] "round"
                                 ]
                             , find = All
-                            , comment = quickComment "basics"
                             }
+                            (quickComment "basics")
                         )
                     |> Review.Test.expectNoErrors
         , test "shouldn't confuse imported Basic functions with module functions" <|
@@ -797,8 +797,8 @@ callingFunction param =
                                 , FromSameModule "round"
                                 ]
                             , find = Some
-                            , comment = quickComment "basics"
                             }
+                            (quickComment "basics")
                         )
                     |> Review.Test.expectGlobalErrors
                         [ TestHelper.createExpectedGlobalError (quickComment "basics") ]

@@ -78,7 +78,9 @@ jobs:
           path: website-copy
 
       - name: Check comment paths exist
-        run: ./bin/check_website-copy_paths.sh website-copy
+        run: |
+          ./bin/build.sh
+          ./bin/check_website-copy_paths.sh website-copy
 
   smoke-test:
     runs-on: ubuntu-latest

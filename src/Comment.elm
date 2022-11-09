@@ -9,6 +9,7 @@ module Comment exposing
     , encodeComment
     , feedbackComment
     , makeSummary
+    , toWebsiteCopyPath
     )
 
 import Dict exposing (Dict)
@@ -31,7 +32,7 @@ type alias Summary =
 
 type alias Comment =
     { name : String
-    , comment : String
+    , path : String
     , commentType : CommentType
     , params : Dict String String
     }
@@ -100,7 +101,7 @@ aggregateComments comments =
 
 
 commentTypeShowOrder : Comment -> ( Int, String )
-commentTypeShowOrder { commentType, comment } =
+commentTypeShowOrder { commentType, path } =
     let
         firstOrder =
             case commentType of
@@ -116,7 +117,7 @@ commentTypeShowOrder { commentType, comment } =
                 Informative ->
                     3
     in
-    ( firstOrder, comment )
+    ( firstOrder, path )
 
 
 commentTypeSummaryOrder : CommentType -> Int
@@ -174,19 +175,19 @@ encodeSummary { summary, comments } =
 
 
 encodeSummaryComment : Comment -> Value
-encodeSummaryComment { comment, commentType, params } =
+encodeSummaryComment { path, commentType, params } =
     Encode.object
-        [ ( "comment", Encode.string comment )
+        [ ( "comment", Encode.string path )
         , ( "type", commentType |> encodeCommentType )
         , ( "params", Encode.dict identity Encode.string params )
         ]
 
 
 encodeComment : Comment -> Value
-encodeComment { name, comment, commentType, params } =
+encodeComment { name, path, commentType, params } =
     Encode.object
         [ ( "name", Encode.string name )
-        , ( "comment", Encode.string comment )
+        , ( "comment", Encode.string path )
         , ( "type", commentType |> encodeCommentType )
         , ( "params", Encode.dict identity Encode.string params )
         ]
@@ -266,3 +267,8 @@ decodeCommentType =
                     Decode.fail ("Invalid comment type " ++ other)
     in
     Decode.string |> Decode.andThen decodeType
+
+
+toWebsiteCopyPath : Comment -> String
+toWebsiteCopyPath { path } =
+    "analyzer-comments/" ++ String.replace "." "/" path ++ ".md"

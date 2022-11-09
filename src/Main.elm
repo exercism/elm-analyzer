@@ -26,21 +26,32 @@ main =
 
 update : String -> () -> ( (), Cmd msg )
 update input () =
-    let
-        elmReviewErrorDecoders =
-            List.concatMap RuleConfig.getDecoders ReviewConfig.ruleConfigs
-    in
-    case Comment.makeSummary elmReviewErrorDecoders input of
-        Ok output ->
-            ( (), stdout output )
-
-        Err err ->
+    case input of
+        "--extract-comments" ->
             ( ()
-            , [ "Input could not be parsed. \nError:"
-              , Decode.errorToString err
-              , "Input:"
-              , input
-              ]
+            , RuleConfig.getComments ReviewConfig.ruleConfigs
+                |> (::) Comment.feedbackComment
+                |> List.map Comment.toWebsiteCopyPath
                 |> String.join "\n"
-                |> stderr
+                |> stdout
             )
+
+        _ ->
+            let
+                elmReviewErrorDecoders =
+                    RuleConfig.getDecoders ReviewConfig.ruleConfigs
+            in
+            case Comment.makeSummary elmReviewErrorDecoders input of
+                Ok output ->
+                    ( (), stdout output )
+
+                Err err ->
+                    ( ()
+                    , [ "Input could not be parsed. \nError:"
+                      , Decode.errorToString err
+                      , "Input:"
+                      , input
+                      ]
+                        |> String.join "\n"
+                        |> stderr
+                    )

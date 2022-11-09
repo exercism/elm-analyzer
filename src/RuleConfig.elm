@@ -1,4 +1,4 @@
-module RuleConfig exposing (AnalyzerRule(..), RuleConfig, analyzerRuleToRule, getDecoders, makeConfig)
+module RuleConfig exposing (AnalyzerRule(..), RuleConfig, analyzerRuleToRule, getComments, getDecoders, makeConfig)
 
 import Comment exposing (Comment)
 import Json.Decode exposing (Decoder)
@@ -37,6 +37,16 @@ analyzerRuleToDecoder analyzerRule =
             Just (toDecoder comment)
 
 
+analyzerRuleToComment : AnalyzerRule -> Comment
+analyzerRuleToComment analyzerRule =
+    case analyzerRule of
+        CustomRule _ comment ->
+            comment
+
+        ImportedRule _ _ comment ->
+            comment
+
+
 getRules : RuleConfig -> List Rule
 getRules { rules, restrictToFiles } =
     case restrictToFiles of
@@ -47,9 +57,14 @@ getRules { rules, restrictToFiles } =
             List.map (analyzerRuleToRule >> Rule.filterErrorsForFiles (\file -> List.member file files)) rules
 
 
-getDecoders : RuleConfig -> List (Decoder Comment)
-getDecoders { rules } =
-    List.filterMap analyzerRuleToDecoder rules
+getDecoders : List RuleConfig -> List (Decoder Comment)
+getDecoders =
+    List.concatMap (.rules >> List.filterMap analyzerRuleToDecoder)
+
+
+getComments : List RuleConfig -> List Comment
+getComments =
+    List.concatMap (.rules >> List.map analyzerRuleToComment)
 
 
 makeConfig : List RuleConfig -> List Rule

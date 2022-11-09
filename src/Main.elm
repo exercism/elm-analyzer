@@ -27,7 +27,7 @@ main =
 update : String -> () -> ( (), Cmd msg )
 update input () =
     case input of
-        "--extract-comments" ->
+        "--extract-comment-paths" ->
             ( ()
             , RuleConfig.getComments ReviewConfig.ruleConfigs
                 |> (::) Comment.feedbackComment

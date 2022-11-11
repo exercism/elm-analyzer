@@ -1,4 +1,4 @@
-module RuleConfig exposing (AnalyzerRule(..), RuleConfig, getDecoders, makeConfig)
+module RuleConfig exposing (AnalyzerRule(..), RuleConfig, analyzerRuleToRule, getComments, getDecoders, makeConfig)
 
 import Comment exposing (Comment)
 import Json.Decode exposing (Decoder)
@@ -13,46 +13,60 @@ type alias RuleConfig =
 
 
 type AnalyzerRule
-    = CustomRule Rule
-    | ImportedRule Rule (Decoder Comment)
+    = CustomRule (Comment -> Rule) Comment
+    | ImportedRule Rule (Comment -> Decoder Comment) Comment
 
 
-analyzerRuletoRule : AnalyzerRule -> Rule
-analyzerRuletoRule analyzerRule =
+analyzerRuleToRule : AnalyzerRule -> Rule
+analyzerRuleToRule analyzerRule =
     case analyzerRule of
-        CustomRule rule ->
+        CustomRule toRule comment ->
+            toRule comment
+
+        ImportedRule rule _ _ ->
             rule
 
-        ImportedRule rule _ ->
-            rule
 
-
-analyzerRuletoDecoder : AnalyzerRule -> Maybe (Decoder Comment)
-analyzerRuletoDecoder analyzerRule =
+analyzerRuleToDecoder : AnalyzerRule -> Maybe (Decoder Comment)
+analyzerRuleToDecoder analyzerRule =
     case analyzerRule of
-        CustomRule _ ->
+        CustomRule _ _ ->
             Nothing
 
-        ImportedRule _ decoder ->
-            Just decoder
+        ImportedRule _ toDecoder comment ->
+            Just (toDecoder comment)
+
+
+analyzerRuleToComment : AnalyzerRule -> Comment
+analyzerRuleToComment analyzerRule =
+    case analyzerRule of
+        CustomRule _ comment ->
+            comment
+
+        ImportedRule _ _ comment ->
+            comment
 
 
 getRules : RuleConfig -> List Rule
 getRules { rules, restrictToFiles } =
     case restrictToFiles of
         Nothing ->
-            List.map analyzerRuletoRule rules
+            List.map analyzerRuleToRule rules
 
         Just files ->
-            List.map (analyzerRuletoRule >> Rule.filterErrorsForFiles (\file -> List.member file files)) rules
+            List.map (analyzerRuleToRule >> Rule.filterErrorsForFiles (\file -> List.member file files)) rules
 
 
-getDecoders : RuleConfig -> List (Decoder Comment)
-getDecoders { rules } =
-    List.filterMap analyzerRuletoDecoder rules
+getDecoders : List RuleConfig -> List (Decoder Comment)
+getDecoders =
+    List.concatMap (.rules >> List.filterMap analyzerRuleToDecoder)
+
+
+getComments : List RuleConfig -> List Comment
+getComments =
+    List.concatMap (.rules >> List.map analyzerRuleToComment)
 
 
 makeConfig : List RuleConfig -> List Rule
-makeConfig ruleConfigs =
-    ruleConfigs
-        |> List.concatMap getRules
+makeConfig =
+    List.concatMap getRules

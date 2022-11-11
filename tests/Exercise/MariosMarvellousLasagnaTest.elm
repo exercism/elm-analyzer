@@ -5,6 +5,7 @@ import Dict
 import Exercise.MariosMarvellousLasagna as MariosMarvellousLasagna
 import Review.Rule exposing (Rule)
 import Review.Test
+import RuleConfig
 import Test exposing (Test, describe, test)
 import TestHelper
 
@@ -19,7 +20,7 @@ tests =
 
 rules : List Rule
 rules =
-    [ MariosMarvellousLasagna.usesLet ]
+    MariosMarvellousLasagna.ruleConfig |> .rules |> List.map RuleConfig.analyzerRuleToRule
 
 
 exemplar : Test
@@ -82,6 +83,10 @@ remainingTimeInMinutes layers minutesSinceStarting =
 
 noLet : Test
 noLet =
+    let
+        comment =
+            Comment "Doesn't use a let expression" "elm.marios-marvellous-lasagna.use_let" Essential Dict.empty
+    in
     test "doesn't use a let expression" <|
         \() ->
             """
@@ -91,8 +96,8 @@ remainingTimeInMinutes : Int -> Int -> Int
 remainingTimeInMinutes layers minutesSinceStarting =
     (2 * layers) + 40 - minutesSinceStarting
 """
-                |> Review.Test.run MariosMarvellousLasagna.usesLet
+                |> Review.Test.run (MariosMarvellousLasagna.usesLet comment)
                 |> Review.Test.expectErrors
-                    [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use a let expression" "elm.marios-marvellous-lasagna.use_let" Essential Dict.empty) "remainingTimeInMinutes"
+                    [ TestHelper.createExpectedErrorUnder comment "remainingTimeInMinutes"
                         |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 23 } }
                     ]

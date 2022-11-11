@@ -14,7 +14,7 @@ import Test exposing (Test, describe, test)
 
 tests =
     describe "CommentTest tests"
-        [ aggregateCommentsTest, encoderDecoderTest, makeSummaryTest ]
+        [ aggregateCommentsTest, encoderDecoderTest, makeSummaryTest, toWebsiteCopyPathTest ]
 
 
 fuzzComment : Fuzzer Comment
@@ -129,21 +129,21 @@ aggregateCommentsTest =
                 Expect.equal
                     (Comment.aggregateComments
                         [ essential
-                        , { essential | comment = "a" }
+                        , { essential | path = "a" }
                         , informative
-                        , { celebratory | comment = "a" }
+                        , { celebratory | path = "a" }
                         , actionable
                         , celebratory
-                        , { actionable | comment = "a" }
+                        , { actionable | path = "a" }
                         ]
                     )
                     (Summary "Check the comments for things to fix.\u{202F}🛠 "
                         [ celebratory
-                        , { celebratory | comment = "a" }
+                        , { celebratory | path = "a" }
                         , essential
-                        , { essential | comment = "a" }
+                        , { essential | path = "a" }
                         , actionable
-                        , { actionable | comment = "a" }
+                        , { actionable | path = "a" }
                         , informative
                         , Comment.feedbackComment
                         ]
@@ -168,7 +168,7 @@ makeSummaryTest =
                         )
         , test "common rule comment" <|
             \() ->
-                Comment.makeSummary (List.concatMap RuleConfig.getDecoders [ NoUnused.ruleConfig, Simplify.ruleConfig ])
+                Comment.makeSummary (RuleConfig.getDecoders [ NoUnused.ruleConfig, Simplify.ruleConfig ])
                     "{\"type\":\"review-errors\",\"errors\":[{\"path\":\"src/TwoFer.elm\",\"errors\":[{\"rule\":\"Simplify\",\"message\":\"Unnecessary concatenation with an empty string\",\"ruleLink\":\"https://package.elm-lang.org/packages/jfmengels/elm-review-simplify/2.0.7/Simplify\",\"details\":[\"You should remove the concatenation with the empty string.\"],\"region\":{\"start\":{\"line\":6,\"column\":31},\"end\":{\"line\":6,\"column\":33}},\"fix\":[{\"range\":{\"start\":{\"line\":6,\"column\":31},\"end\":{\"line\":6,\"column\":37}},\"string\":\"\"}],\"formatted\":[{\"string\":\"(fix) \",\"color\":\"#33BBC8\"},{\"string\":\"Simplify\",\"color\":\"#FF0000\",\"href\":\"https://package.elm-lang.org/packages/jfmengels/elm-review-simplify/2.0.7/Simplify\"},\": Unnecessary concatenation with an empty string\\n\\n5|     \\\"One for \\\"\\n6|         ++ Maybe.withDefault (\\\"\\\" ++ \\\"you\\\") name\\n                                 \",{\"string\":\"^^\",\"color\":\"#FF0000\"},\"\\n7|         ++ \\\", one for me.\\\"\\n\\nYou should remove the concatenation with the empty string.\"],\"suppressed\":false,\"originallySuppressed\":false}]}]}"
                     |> Expect.equal
                         (Ok
@@ -188,4 +188,18 @@ makeSummaryTest =
                 Comment.makeSummary []
                     "{\"type\":\"review-errors\",\"errors\":[{\"path\":\"src/TwoFer.elm\",\"errors\":[{\"rule\":\"Simplify\",\"message\":\"Unnecessary concatenation with an empty string\",\"ruleLink\":\"https://package.elm-lang.org/packages/jfmengels/elm-review-simplify/2.0.7/Simplify\",\"details\":[\"You should remove the concatenation with the empty string.\"],\"region\":{\"start\":{\"line\":6,\"column\":31},\"end\":{\"line\":6,\"column\":33}},\"fix\":[{\"range\":{\"start\":{\"line\":6,\"column\":31},\"end\":{\"line\":6,\"column\":37}},\"string\":\"\"}],\"formatted\":[{\"string\":\"(fix) \",\"color\":\"#33BBC8\"},{\"string\":\"Simplify\",\"color\":\"#FF0000\",\"href\":\"https://package.elm-lang.org/packages/jfmengels/elm-review-simplify/2.0.7/Simplify\"},\": Unnecessary concatenation with an empty string\\n\\n5|     \\\"One for \\\"\\n6|         ++ Maybe.withDefault (\\\"\\\" ++ \\\"you\\\") name\\n                                 \",{\"string\":\"^^\",\"color\":\"#FF0000\"},\"\\n7|         ++ \\\", one for me.\\\"\\n\\nYou should remove the concatenation with the empty string.\"],\"suppressed\":false,\"originallySuppressed\":false}]}]}"
                     |> Expect.err
+        ]
+
+
+toWebsiteCopyPathTest : Test
+toWebsiteCopyPathTest =
+    describe "transform Comment into a valid website-copy path"
+        [ test "short path" <|
+            \() ->
+                Comment.toWebsiteCopyPath (Comment "name" "elm.comment" Informative Dict.empty)
+                    |> Expect.equal "analyzer-comments/elm/comment.md"
+        , test "long path" <|
+            \() ->
+                Comment.toWebsiteCopyPath (Comment "name" "elm.something.or.other.comment" Informative Dict.empty)
+                    |> Expect.equal "analyzer-comments/elm/something/or/other/comment.md"
         ]

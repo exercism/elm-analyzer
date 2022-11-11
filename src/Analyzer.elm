@@ -120,11 +120,11 @@ functionCalls :
     { calledFrom : CalledFrom
     , findFunctions : List CalledFunction
     , find : Find
-    , comment : Comment
     }
+    -> Comment
     -> Rule
-functionCalls { calledFrom, findFunctions, find, comment } =
-    Rule.newModuleRuleSchemaUsingContextCreator comment.comment (initialContext findFunctions)
+functionCalls { calledFrom, findFunctions, find } comment =
+    Rule.newModuleRuleSchemaUsingContextCreator comment.path (initialContext findFunctions)
         |> Rule.withDeclarationEnterVisitor (annotateFunctionDeclaration calledFrom)
         |> Rule.withExpressionEnterVisitor expressionCallsFunction
         |> Rule.withDeclarationExitVisitor annotateLeaveDeclaration

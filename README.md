@@ -76,7 +76,7 @@ When a new exercise is proposed, corresponding messages must be added on that re
 
 A `Comment` has four fields: 
 - `name`: a description of what went wrong, for internal use only.
-- `comment`: a path pointing to the message location on `exercism/website-copy`.
+- `path`: a path pointing to the message location on `exercism/website-copy`.
 - `commentType`: the gravity of a comment, ranging from essential to celebratory.
 - `params`: a `Dict` of parameters that can be injected into the message on `exercism/website-copy`.
 

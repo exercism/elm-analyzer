@@ -5,6 +5,7 @@ import Dict
 import Exercise.BlorkemonCards as BlorkemonCards
 import Review.Rule exposing (Rule)
 import Review.Test
+import RuleConfig
 import Test exposing (Test, describe, test)
 import TestHelper
 
@@ -22,11 +23,7 @@ tests =
 
 rules : List Rule
 rules =
-    [ BlorkemonCards.maxPowerUsesMax
-    , BlorkemonCards.sortByMonsterNameUsesSortBy
-    , BlorkemonCards.expectedWinnerUsesCompareShinyPower
-    , BlorkemonCards.expectedWinnerUsesCase
-    ]
+    BlorkemonCards.ruleConfig |> .rules |> List.map RuleConfig.analyzerRuleToRule
 
 
 exemplar : Test
@@ -153,6 +150,10 @@ expectedWinner card1 card2 =
 
 noMax : Test
 noMax =
+    let
+        comment =
+            Comment "maxPower doesn't use max" "elm.blorkemon-cards.use_max" Essential Dict.empty
+    in
     test "maxPower doesn't use max" <|
         \() ->
             """
@@ -163,14 +164,17 @@ maxPower card1 card2 =
     then card1.power
     else card2.power
 """
-                |> Review.Test.run BlorkemonCards.maxPowerUsesMax
+                |> Review.Test.run (BlorkemonCards.maxPowerUsesMax comment)
                 |> Review.Test.expectErrors
-                    [ TestHelper.createExpectedErrorUnder (Comment "maxPower doesn't use max" "elm.blorkemon-cards.use_max" Essential Dict.empty) "maxPower"
-                    ]
+                    [ TestHelper.createExpectedErrorUnder comment "maxPower" ]
 
 
 noSortBy : Test
 noSortBy =
+    let
+        comment =
+            Comment "sortByMonsterName doesn't use List.sortBy" "elm.blorkemon-cards.use_sort_by" Essential Dict.empty
+    in
     test "sortByMonsterName doesn't use List.sortBy" <|
         \() ->
             """
@@ -187,14 +191,18 @@ sortByMonsterName =
                 GT
         )
 """
-                |> Review.Test.run BlorkemonCards.sortByMonsterNameUsesSortBy
+                |> Review.Test.run (BlorkemonCards.sortByMonsterNameUsesSortBy comment)
                 |> Review.Test.expectErrors
-                    [ TestHelper.createExpectedErrorUnder (Comment "sortByMonsterName doesn't use List.sortBy" "elm.blorkemon-cards.use_sort_by" Essential Dict.empty) "sortByMonsterName"
+                    [ TestHelper.createExpectedErrorUnder comment "sortByMonsterName"
                     ]
 
 
 noCompareShinyPower : Test
 noCompareShinyPower =
+    let
+        comment =
+            Comment "expectedWinner doesn't use compareShinyPower" "elm.blorkemon-cards.use_shiny_power" Essential Dict.empty
+    in
     test "expectedWinner doesn't use compareShinyPower" <|
         \() ->
             """
@@ -211,14 +219,18 @@ expectedWinner card1 card2 =
         GT ->
             card1.monster
 """
-                |> Review.Test.run BlorkemonCards.expectedWinnerUsesCompareShinyPower
+                |> Review.Test.run (BlorkemonCards.expectedWinnerUsesCompareShinyPower comment)
                 |> Review.Test.expectErrors
-                    [ TestHelper.createExpectedErrorUnder (Comment "expectedWinner doesn't use compareShinyPower" "elm.blorkemon-cards.use_shiny_power" Essential Dict.empty) "expectedWinner"
+                    [ TestHelper.createExpectedErrorUnder comment "expectedWinner"
                     ]
 
 
 noCase : Test
 noCase =
+    let
+        comment =
+            Comment "Doesn't use a case expression" "elm.blorkemon-cards.use_case" Essential Dict.empty
+    in
     test "expectedWinner doesn't use a case expression" <|
         \() ->
             """
@@ -234,7 +246,7 @@ expectedWinner card1 card2 =
         else
             card1.monster
 """
-                |> Review.Test.run BlorkemonCards.expectedWinnerUsesCase
+                |> Review.Test.run (BlorkemonCards.expectedWinnerUsesCase comment)
                 |> Review.Test.expectErrors
-                    [ TestHelper.createExpectedErrorUnder (Comment "Doesn't use a case expression" "elm.blorkemon-cards.use_case" Essential Dict.empty) "expectedWinner"
+                    [ TestHelper.createExpectedErrorUnder comment "expectedWinner"
                     ]

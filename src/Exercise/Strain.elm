@@ -11,15 +11,17 @@ ruleConfig : RuleConfig
 ruleConfig =
     { slug = Just "strain"
     , restrictToFiles = Just [ "src/Strain.elm" ]
-    , rules = [ CustomRule doNotUseFilter ]
+    , rules =
+        [ CustomRule doNotUseFilter
+            (Comment "Uses the List module" "elm.strain.do_not_use_filter" Essential Dict.empty)
+        ]
     }
 
 
-doNotUseFilter : Rule
+doNotUseFilter : Comment -> Rule
 doNotUseFilter =
     Analyzer.functionCalls
         { calledFrom = Anywhere
         , findFunctions = [ FromExternalModule [ "List" ] "filter", FromExternalModule [ "List" ] "filterMap" ]
         , find = None
-        , comment = Comment "Uses the List module" "elm.strain.do_not_use_filter" Essential Dict.empty
         }

@@ -5,6 +5,7 @@ import Dict
 import Exercise.TwoFer as TwoFer
 import Review.Rule exposing (Rule)
 import Review.Test
+import RuleConfig
 import Test exposing (Test, describe, test)
 import TestHelper
 
@@ -20,9 +21,7 @@ tests =
 
 rules : List Rule
 rules =
-    [ TwoFer.hasFunctionSignature
-    , TwoFer.usesWithDefault
-    ]
+    TwoFer.ruleConfig |> .rules |> List.map RuleConfig.analyzerRuleToRule
 
 
 exampleSolution : Test
@@ -78,10 +77,8 @@ twoFer name =
 noFuctionSignature : Test
 noFuctionSignature =
     let
-        error =
-            TestHelper.createExpectedErrorUnder
-                (Comment "has no signature" "elm.two-fer.use_signature" Informative Dict.empty)
-                "twoFer"
+        comment =
+            Comment "has no signature" "elm.two-fer.use_signature" Informative Dict.empty
     in
     describe "solutions without function signatures" <|
         [ test "no function signature" <|
@@ -94,9 +91,9 @@ twoFer name =
         ++ Maybe.withDefault "you" name
         ++ ", one for me."
 """
-                    |> Review.Test.run TwoFer.hasFunctionSignature
+                    |> Review.Test.run (TwoFer.hasFunctionSignature comment)
                     |> Review.Test.expectErrors
-                        [ error
+                        [ TestHelper.createExpectedErrorUnder comment "twoFer"
                             |> Review.Test.atExactly { start = { row = 4, column = 1 }, end = { row = 4, column = 7 } }
                         ]
         , test "commented function signature" <|
@@ -110,9 +107,9 @@ twoFer name =
         ++ Maybe.withDefault "you" name
         ++ ", one for me."
 """
-                    |> Review.Test.run TwoFer.hasFunctionSignature
+                    |> Review.Test.run (TwoFer.hasFunctionSignature comment)
                     |> Review.Test.expectErrors
-                        [ error
+                        [ TestHelper.createExpectedErrorUnder comment "twoFer"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 7 } }
                         ]
         ]
@@ -120,6 +117,10 @@ twoFer name =
 
 noWithDefault : Test
 noWithDefault =
+    let
+        comment =
+            Comment "Doesn't use withDefault" "elm.two-fer.use_withDefault" Informative Dict.empty
+    in
     describe "solutions that don't use withDefault" <|
         [ test "using a case statement" <|
             \() ->
@@ -137,10 +138,10 @@ twoFer name =
                 ++ you
                 ++ ", one for me."
 """
-                    |> Review.Test.run TwoFer.usesWithDefault
+                    |> Review.Test.run (TwoFer.usesWithDefault comment)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder
-                            (Comment "Doesn't use withDefault" "elm.two-fer.use_withDefault" Informative Dict.empty)
+                            comment
                             "twoFer"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 7 } }
                         ]
@@ -157,10 +158,10 @@ twoFer name =
         ++ Maybe.Extra.withDefaultLazy (\\() -> "you") name
         ++ ", one for me."
 """
-                    |> Review.Test.run TwoFer.usesWithDefault
+                    |> Review.Test.run (TwoFer.usesWithDefault comment)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder
-                            (Comment "Doesn't use withDefault" "elm.two-fer.use_withDefault" Informative Dict.empty)
+                            comment
                             "twoFer"
                             |> Review.Test.atExactly { start = { row = 7, column = 1 }, end = { row = 7, column = 7 } }
                         ]

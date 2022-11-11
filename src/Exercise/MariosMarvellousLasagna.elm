@@ -11,17 +11,19 @@ ruleConfig : RuleConfig
 ruleConfig =
     { slug = Just "marios-marvellous-lasagna"
     , restrictToFiles = Just [ "src/MariosMarvellousLasagna.elm" ]
-    , rules = [ CustomRule usesLet ]
+    , rules =
+        [ CustomRule usesLet
+            (Comment "Doesn't use a let expression" "elm.marios-marvellous-lasagna.use_let" Essential Dict.empty)
+        ]
     }
 
 
 {-| There should be a `let` used in `remainingTimeInMinutes`
 -}
-usesLet : Rule
+usesLet : Comment -> Rule
 usesLet =
     Analyzer.functionCalls
         { calledFrom = TopFunction "remainingTimeInMinutes"
         , findFunctions = [ LetBlock ]
         , find = Some
-        , comment = Comment "Doesn't use a let expression" "elm.marios-marvellous-lasagna.use_let" Essential Dict.empty
         }

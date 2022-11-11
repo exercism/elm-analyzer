@@ -12,6 +12,7 @@ import NoUnused.Patterns
 import NoUnused.Variables
 import Review.Rule exposing (Rule)
 import Review.Test
+import RuleConfig
 import Test exposing (Test, describe, test)
 import TestHelper
 
@@ -29,12 +30,7 @@ tests =
 
 rules : List Rule
 rules =
-    [ NoUnused.CustomTypeConstructors.rule []
-    , NoUnused.CustomTypeConstructorArgs.rule
-    , NoUnused.Parameters.rule
-    , NoUnused.Patterns.rule
-    , NoUnused.Variables.rule
-    ]
+    NoUnused.ruleConfig |> .rules |> List.map RuleConfig.analyzerRuleToRule
 
 
 adequateCode : Test
@@ -73,7 +69,11 @@ type TwoFer = TwoFerUnused
                         ]
         , test "decoder behavior" <|
             \() ->
-                Decode.decodeString NoUnused.customTypeConstructorsDecoder """
+                let
+                    comment =
+                        Comment "NoUnused.CustomTypeConstructors" "elm.common.no_unused.custom_type_constructors" Actionable Dict.empty
+                in
+                Decode.decodeString (NoUnused.makeDecoder comment) """
 {
 "rule": "NoUnused.CustomTypeConstructors",
 "message": "Type constructor `TwoFerUnused` is not used.",
@@ -130,7 +130,11 @@ type TwoFer = TwoFerUnused String
                         ]
         , test "decoder behavior" <|
             \() ->
-                Decode.decodeString NoUnused.customTypeConstructorArgsDecoder """
+                let
+                    comment =
+                        Comment "NoUnused.CustomTypeConstructorArgs" "elm.common.no_unused.custom_type_constructor_args" Actionable Dict.empty
+                in
+                Decode.decodeString (NoUnused.makeDecoder comment) """
 {
 "rule": "NoUnused.CustomTypeConstructorArgs",
 "message": "Argument is never extracted and therefore never used.",
@@ -188,7 +192,11 @@ import Parser.Advanced
                         ]
         , test "decoder behavior" <|
             \() ->
-                Decode.decodeString NoUnused.variablesDecoder """
+                let
+                    comment =
+                        Comment "NoUnused.Variables" "elm.common.no_unused.variables" Actionable Dict.empty
+                in
+                Decode.decodeString (NoUnused.makeDecoder comment) """
 {
 "rule": "NoUnused.Variables",
 "message": "Imported module `Parser.Advanced` is not used",
@@ -258,7 +266,11 @@ unusedParameter unused =
                         ]
         , test "decoder behavior" <|
             \() ->
-                Decode.decodeString NoUnused.parametersDecoder """
+                let
+                    comment =
+                        Comment "NoUnused.Parameters" "elm.common.no_unused.parameters" Actionable Dict.empty
+                in
+                Decode.decodeString (NoUnused.makeDecoder comment) """
 {
 "rule": "NoUnused.Parameters",
 "message": "Parameter `unused` is not used",
@@ -319,7 +331,11 @@ f x =
                         ]
         , test "decoder behavior" <|
             \() ->
-                Decode.decodeString NoUnused.patternsDecoder """
+                let
+                    comment =
+                        Comment "NoUnused.Patterns" "elm.common.no_unused.patterns" Actionable Dict.empty
+                in
+                Decode.decodeString (NoUnused.makeDecoder comment) """
 {
 "rule": "NoUnused.Patterns",
 "message": "Value `something` is not used",

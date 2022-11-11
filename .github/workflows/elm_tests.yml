@@ -71,6 +71,42 @@ jobs:
       - name: Run elm-review on source code
         run: npx elm-review
 
+  check-website-copy-paths:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
+
+      - name: Cache node_modules
+        id: cache-node_modules
+        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+        with:
+          path: node_modules
+          key: node_modules-${{ hashFiles('package.json', 'package-lock.json') }}
+          restore-keys: |
+            node_modules-${{ hashFiles('package.json') }}
+            node_modules-
+
+      - name: Cache ~/.elm
+        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+        with:
+          path: ~/.elm
+          key: elm-${{ hashFiles('elm-tooling.json', 'elm.json', 'review/elm.json') }}
+          restore-keys: |
+            elm-${{ hashFiles('elm-tooling.json', 'elm.json') }}
+            elm-${{ hashFiles('elm-tooling.json') }}
+            elm-
+
+      - name: npm ci
+        if: steps.cache-node_modules.outputs.cache-hit != 'true'
+        env:
+          NO_ELM_TOOLING_INSTALL: 1
+        run: npm ci
+
+      - name: elm-tooling install
+        run: npx elm-tooling install
+
       - name: Checkout the website-copy-repo
         uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
         with:

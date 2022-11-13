@@ -7,6 +7,7 @@ import Exercise.BlorkemonCards
 import Exercise.MariosMarvellousLasagna
 import Exercise.Strain
 import Exercise.TopScorers
+import Exercise.TracksOnTracksOnTracks
 import Review.Rule as Rule exposing (Rule)
 import RuleConfig exposing (RuleConfig)
 
@@ -22,6 +23,7 @@ ruleConfigs =
     , Exercise.TopScorers.ruleConfig
     , Exercise.MariosMarvellousLasagna.ruleConfig
     , Exercise.BlorkemonCards.ruleConfig
+    , Exercise.TracksOnTracksOnTracks.ruleConfig
 
     -- Practice Exercises
     , Exercise.Strain.ruleConfig

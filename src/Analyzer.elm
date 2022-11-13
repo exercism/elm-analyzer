@@ -41,11 +41,13 @@ Note that for searching for function that are automatically imported, like `roun
 
 `CaseBlock` means looking for a `case` expression.
 
+`Operator "::"` means we are looking for the operator either applied `head :: tail` or standalone `List.map2 (::)`.
+
 -}
 
 
 
--- TODO: also search for operators, if, or any expression?
+-- TODO: also search for if, or any expression?
 
 
 type CalledFunction
@@ -54,6 +56,7 @@ type CalledFunction
     | FromSameModule FunctionName
     | LetBlock
     | CaseBlock
+    | Operator FunctionName
 
 
 {-| Type of search.
@@ -177,32 +180,35 @@ annotateFunctionDeclaration calledFrom node (Context context) =
 {-| Gather all expressions we care about from the code in a tree
 -}
 expressionCallsFunction : Node Expression -> Context -> ( List nothing, Context )
-expressionCallsFunction (Node range expression) (Context ({ lookupTable, functionDeclaration, callTree } as context)) =
+expressionCallsFunction ((Node range expression) as node) (Context ({ lookupTable, functionDeclaration, callTree } as context)) =
     let
-        updateFunction treeExpressions =
+        add expr tree =
+            Just (expr :: Maybe.withDefault [] tree)
+
+        updateTree nodeTree =
             case expression of
                 FunctionOrValue _ name ->
-                    case LookupTable.moduleNameFor lookupTable (Node range expression) of
+                    case LookupTable.moduleNameFor lookupTable node of
                         Nothing ->
-                            treeExpressions
+                            nodeTree
 
                         Just originalModuleName ->
-                            Node range (FunctionOrValue originalModuleName name)
-                                :: Maybe.withDefault [] treeExpressions
-                                |> Just
+                            add (Node range (FunctionOrValue originalModuleName name)) nodeTree
 
-                LetExpression block ->
-                    Node range (LetExpression block)
-                        :: Maybe.withDefault [] treeExpressions
-                        |> Just
+                LetExpression _ ->
+                    add node nodeTree
 
-                CaseExpression block ->
-                    Node range (CaseExpression block)
-                        :: Maybe.withDefault [] treeExpressions
-                        |> Just
+                CaseExpression _ ->
+                    add node nodeTree
+
+                OperatorApplication _ _ _ _ ->
+                    add node nodeTree
+
+                PrefixOperator _ ->
+                    add node nodeTree
 
                 _ ->
-                    treeExpressions
+                    nodeTree
     in
     ( []
     , Context
@@ -210,7 +216,7 @@ expressionCallsFunction (Node range expression) (Context ({ lookupTable, functio
             | callTree =
                 case functionDeclaration of
                     Just function ->
-                        Dict.update function updateFunction callTree
+                        Dict.update function updateTree callTree
 
                     Nothing ->
                         callTree
@@ -295,6 +301,12 @@ matchFunction (Node range expression) foundFunction =
 
         ( CaseExpression _, NotFound CaseBlock ) ->
             FoundAt range
+
+        ( OperatorApplication exprOperator _ _ _, NotFound (Operator operator) ) ->
+            match exprOperator operator
+
+        ( PrefixOperator exprOperator, NotFound (Operator operator) ) ->
+            match exprOperator operator
 
         -- already found function, or expression that doesn't match
         _ ->

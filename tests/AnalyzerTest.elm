@@ -9,6 +9,7 @@ import Test exposing (Test, describe, test)
 import TestHelper
 
 
+tests : Test
 tests =
     describe "AnalyzerTest tests"
         [ calledFromTest, findFunctionsTest, findTest, indirectCallTest ]
@@ -26,6 +27,7 @@ allRules =
             , ( "internal", [ FromSameModule "internal" ] )
             , ( "let", [ LetBlock ] )
             , ( "case", [ CaseBlock ] )
+            , ( "pipe", [ Operator "|>" ] )
             , ( "Ext._ + Ext.ext", [ AnyFromExternalModule [ "Ext" ], FromExternalModule [ "Ext" ] "ext" ] )
             , ( "Ext._ + internal", [ AnyFromExternalModule [ "Ext" ], FromSameModule "internal" ] )
             , ( "Ext.ext + internal", [ FromExternalModule [ "Ext" ] "ext", FromSameModule "internal" ] )
@@ -297,6 +299,9 @@ findFunctionsTest =
         caseRule =
             "calling function, case, all"
 
+        pipeRule =
+            "calling function, pipe, all"
+
         extExtExtRule =
             "calling function, Ext._ + Ext.ext, all"
 
@@ -472,6 +477,47 @@ callingFunction param =
                     |> Review.Test.run (getRule caseRule)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder (quickComment caseRule) "callingFunction" ]
+        , test "calling pipe operator, no error" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+  param
+  |> Ext.ext
+  |> Ext.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule pipeRule)
+                    |> Review.Test.expectNoErrors
+        , test "calling pipe operator as prefix, no error" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+  (|>) param (internal >> Ext.other >> Ext.ext)
+"""
+                    |> Review.Test.run (getRule pipeRule)
+                    |> Review.Test.expectNoErrors
+        , test "calling pipe operator, missing pipe" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+  internal (Ext.other (Ext.ext param))
+  -- |> foo
+"""
+                    |> Review.Test.run (getRule pipeRule)
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (quickComment pipeRule) "callingFunction" ]
         , test "any function from Ext and Ext, no error" <|
             \() ->
                 """

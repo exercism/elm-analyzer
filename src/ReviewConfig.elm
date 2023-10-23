@@ -5,6 +5,7 @@ import Common.Simplify
 import Exercise.BettysBikeShop
 import Exercise.BlorkemonCards
 import Exercise.MariosMarvellousLasagna
+import Exercise.MazeMaker
 import Exercise.Strain
 import Exercise.TopScorers
 import Exercise.TracksOnTracksOnTracks

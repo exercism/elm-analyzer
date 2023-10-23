@@ -1,4 +1,4 @@
-module Exercise.MazeMaker exposing (..)
+module Exercise.MazeMaker exposing (ruleConfig)
 
 import Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..))
 import Comment exposing (Comment, CommentType(..))

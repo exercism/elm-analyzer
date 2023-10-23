@@ -24,6 +24,7 @@ ruleConfigs =
     , Exercise.MariosMarvellousLasagna.ruleConfig
     , Exercise.BlorkemonCards.ruleConfig
     , Exercise.TracksOnTracksOnTracks.ruleConfig
+    , Exercise.MazeMaker.ruleConfig
 
     -- Practice Exercises
     , Exercise.Strain.ruleConfig

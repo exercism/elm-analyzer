@@ -1,4 +1,4 @@
-module Exercise.MazeMaker exposing (ruleConfig)
+module Exercise.MazeMaker exposing (mazeOfDepthUsesDeadendRoomAndBranch, mazeOfDepthUsesMazeOfDepth, mazeUsesDeadendRoomAndBranch, mazeUsesMaze, roomUsesTreasure, ruleConfig)
 
 import Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..))
 import Comment exposing (Comment, CommentType(..))

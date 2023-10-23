@@ -54,7 +54,7 @@ one =
                         [ Review.Test.error
                             { message = "Unnecessary multiplication by 1"
                             , details = [ "Multiplying by 1 does not change the value of the number." ]
-                            , under = " * 1"
+                            , under = "* 1"
                             }
                             |> Review.Test.whenFixed "\nmodule TwoFer exposing (..)\n\none =\n  1\n"
                         ]

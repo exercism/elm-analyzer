@@ -10,6 +10,7 @@ import Test exposing (Test, describe, test)
 import TestHelper
 
 
+tests : Test
 tests =
     describe "MariosMarvellousLasagnaTest"
         [ exemplar

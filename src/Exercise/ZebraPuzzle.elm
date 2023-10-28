@@ -1,6 +1,5 @@
 module Exercise.ZebraPuzzle exposing (hardcodingDrinksWater, hardcodingOwnsZebra, ruleConfig)
 
-import Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..))
 import Comment exposing (Comment, CommentType(..))
 import Dict
 import Elm.Syntax.Declaration as Declaration exposing (Declaration)

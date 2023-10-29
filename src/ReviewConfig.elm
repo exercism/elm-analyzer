@@ -9,6 +9,7 @@ import Exercise.MazeMaker
 import Exercise.Strain
 import Exercise.TopScorers
 import Exercise.TracksOnTracksOnTracks
+import Exercise.ValentinesDay
 import Review.Rule as Rule exposing (Rule)
 import RuleConfig exposing (RuleConfig)
 
@@ -26,6 +27,7 @@ ruleConfigs =
     , Exercise.BlorkemonCards.ruleConfig
     , Exercise.TracksOnTracksOnTracks.ruleConfig
     , Exercise.MazeMaker.ruleConfig
+    , Exercise.ValentinesDay.ruleConfig
 
     -- Practice Exercises
     , Exercise.Strain.ruleConfig

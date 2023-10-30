@@ -9,6 +9,7 @@ import Exercise.MazeMaker
 import Exercise.Strain
 import Exercise.TopScorers
 import Exercise.TracksOnTracksOnTracks
+import Exercise.ZebraPuzzle
 import Review.Rule as Rule exposing (Rule)
 import RuleConfig exposing (RuleConfig)
 
@@ -29,6 +30,7 @@ ruleConfigs =
 
     -- Practice Exercises
     , Exercise.Strain.ruleConfig
+    , Exercise.ZebraPuzzle.ruleConfig
     ]
 
 

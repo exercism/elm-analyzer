@@ -15,23 +15,23 @@ ruleConfig =
     , restrictToFiles = Just [ "src/ZebraPuzzle.elm" ]
     , rules =
         [ CustomRule hardcodingDrinksWater
-            (Comment "Hardcodes solution for drinksWater" "elm.ZebraPuzzle.do_not_hardcode_solution" Essential Dict.empty)
+            (Comment "Hardcodes solution for drinksWater" "elm.zebra-puzzle.do_not_hardcode_solution" Essential Dict.empty)
         , CustomRule hardcodingOwnsZebra
-            (Comment "Hardcodes solution for ownsZebra" "elm.ZebraPuzzle.do_not_hardcode_solution" Essential Dict.empty)
+            (Comment "Hardcodes solution for ownsZebra" "elm.zebra-puzzle.do_not_hardcode_solution" Essential Dict.empty)
         ]
     }
 
 
 hardcodingDrinksWater : Comment -> Rule
 hardcodingDrinksWater comment =
-    Rule.newModuleRuleSchema "elm.ZebraPuzzle.do_not_hardcode_solution" []
+    Rule.newModuleRuleSchema comment.path []
         |> Rule.withSimpleDeclarationVisitor (hardcodedDeclaration comment "drinksWater")
         |> Rule.fromModuleRuleSchema
 
 
 hardcodingOwnsZebra : Comment -> Rule
 hardcodingOwnsZebra comment =
-    Rule.newModuleRuleSchema "elm.ZebraPuzzle.do_not_hardcode_solution" []
+    Rule.newModuleRuleSchema "elm.zebra-puzzle.do_not_hardcode_solution" []
         |> Rule.withSimpleDeclarationVisitor (hardcodedDeclaration comment "ownsZebra")
         |> Rule.fromModuleRuleSchema
 

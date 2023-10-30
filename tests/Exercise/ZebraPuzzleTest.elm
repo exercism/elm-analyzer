@@ -358,7 +358,7 @@ hardcodingDrinksWater : Test
 hardcodingDrinksWater =
     let
         comment =
-            Comment "Hardcodes solution for drinksWater" "elm.ZebraPuzzle.do_not_hardcode_solution" Essential Dict.empty
+            Comment "Hardcodes solution for drinksWater" "elm.zebra-puzzle.do_not_hardcode_solution" Essential Dict.empty
     in
     test "Hardcoding drinksWater" <|
         \() ->
@@ -389,7 +389,7 @@ hardcodingOwnsZebra : Test
 hardcodingOwnsZebra =
     let
         comment =
-            Comment "Hardcodes solution for ownsZebra" "elm.ZebraPuzzle.do_not_hardcode_solution" Essential Dict.empty
+            Comment "Hardcodes solution for ownsZebra" "elm.zebra-puzzle.do_not_hardcode_solution" Essential Dict.empty
     in
     test "Hardcoding ownsZebra" <|
         \() ->

@@ -27,6 +27,7 @@ allRules =
             , ( "internal", [ FromSameModule "internal" ] )
             , ( "let", [ LetBlock ] )
             , ( "case", [ CaseBlock ] )
+            , ( "recordUpdate", [ RecordUpdate ] )
             , ( "pipe", [ Operator "|>" ] )
             , ( "Ext._ + Ext.ext", [ AnyFromExternalModule [ "Ext" ], FromExternalModule [ "Ext" ] "ext" ] )
             , ( "Ext._ + internal", [ AnyFromExternalModule [ "Ext" ], FromSameModule "internal" ] )
@@ -299,6 +300,9 @@ findFunctionsTest =
         caseRule =
             "calling function, case, all"
 
+        recordUpdateRule =
+            "calling function, recordUpdate, all"
+
         pipeRule =
             "calling function, pipe, all"
 
@@ -477,6 +481,35 @@ callingFunction param =
                     |> Review.Test.run (getRule caseRule)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder (quickComment caseRule) "callingFunction" ]
+        , test "using record update, no error" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+  {param | x = 0 }
+"""
+                    |> Review.Test.run (getRule recordUpdateRule)
+                    |> Review.Test.expectNoErrors
+        , test "calling record update expression, missing expression" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+--   {param | x = 0 }
+  param
+  |> Ext.ext
+  |> Ext.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule recordUpdateRule)
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (quickComment recordUpdateRule) "callingFunction" ]
         , test "calling pipe operator, no error" <|
             \() ->
                 """

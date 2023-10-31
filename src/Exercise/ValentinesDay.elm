@@ -13,7 +13,7 @@ ruleConfig =
     , restrictToFiles = Just [ "src/ValentinesDay.elm" ]
     , rules =
         [ CustomRule usesCase
-            (Comment "Doesn't use a case expression" "elm.valentines-day.use_case" Essential Dict.empty)
+            (Comment "Doesn't use a case expression" "elm.valentines-day.use_case_statement" Essential Dict.empty)
         ]
     }
 

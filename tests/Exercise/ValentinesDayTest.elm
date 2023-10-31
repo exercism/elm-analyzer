@@ -73,7 +73,7 @@ noCase : Test
 noCase =
     let
         comment =
-            Comment "Doesn't use a case expression" "elm.valentines-day.use_case" Essential Dict.empty
+            Comment "Doesn't use a case expression" "elm.valentines-day.use_case_statement" Essential Dict.empty
     in
     test "doesn't use a case expression" <|
         \() ->

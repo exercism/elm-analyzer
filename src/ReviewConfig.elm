@@ -2,6 +2,7 @@ module ReviewConfig exposing (config, ruleConfigs)
 
 import Common.NoUnused
 import Common.Simplify
+import Exercise.Bandwagoner
 import Exercise.BettysBikeShop
 import Exercise.BlorkemonCards
 import Exercise.CustomSet
@@ -32,6 +33,7 @@ ruleConfigs =
     , Exercise.MazeMaker.ruleConfig
     , Exercise.TreasureFactory.ruleConfig
     , Exercise.ValentinesDay.ruleConfig
+    , Exercise.Bandwagoner.ruleConfig
 
     -- Practice Exercises
     , Exercise.Strain.ruleConfig

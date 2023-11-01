@@ -13,6 +13,7 @@ import TestHelper
 tests =
     describe "TopScorersTest"
         [ exemplar
+        , otherSolutions
         , ruleTests
         ]
 
@@ -90,6 +91,78 @@ combineGames game1 game2 =
         game2
         Dict.empty
 """
+
+
+otherSolutions : Test
+otherSolutions =
+    describe "other solutions that should pass"
+        [ test "using List.foldr in aggregateScorers" <|
+            \() ->
+                TestHelper.expectNoErrorsForRules rules
+                    """
+module TopScorers exposing (..)
+
+import Dict exposing (Dict)
+import TopScorersSupport exposing (PlayerName)
+
+
+updateGoalCountForPlayer : PlayerName -> Dict PlayerName Int -> Dict PlayerName Int
+updateGoalCountForPlayer playerName playerGoalCounts =
+    let
+        updatePlayer existingGoalCount =
+            case existingGoalCount of
+                Just goalCount ->
+                    Just (goalCount + 1)
+
+                Nothing ->
+                    Just 1
+    in
+    Dict.update playerName updatePlayer playerGoalCounts
+
+
+aggregateScorers : List PlayerName -> Dict PlayerName Int
+aggregateScorers playerNames =
+    List.foldr updateGoalCountForPlayer Dict.empty playerNames
+
+
+removeInsignificantPlayers : Int -> Dict PlayerName Int -> Dict PlayerName Int
+removeInsignificantPlayers goalThreshold playerGoalCounts =
+    Dict.filter (\\_ goalCount -> goalCount >= goalThreshold) playerGoalCounts
+
+
+resetPlayerGoalCount : PlayerName -> Dict PlayerName Int -> Dict PlayerName Int
+resetPlayerGoalCount playerName playerGoalCounts =
+    Dict.insert playerName 0 playerGoalCounts
+
+
+formatPlayer : PlayerName -> Dict PlayerName Int -> String
+formatPlayer playerName playerGoalCounts =
+    Dict.get playerName playerGoalCounts
+        |> Maybe.map (\\goalCount -> playerName ++ ": " ++ String.fromInt goalCount)
+        |> Maybe.withDefault (playerName ++ ": 0")
+
+
+formatPlayers : Dict PlayerName Int -> String
+formatPlayers players =
+    Dict.toList players
+        |> List.map (\\( playerName, goalCount ) -> playerName ++ ": " ++ String.fromInt goalCount)
+        |> String.join ", "
+
+
+combineGames : Dict PlayerName Int -> Dict PlayerName Int -> Dict PlayerName Int
+combineGames game1 game2 =
+    Dict.merge
+        -- when only in game 1
+        (\\playerName game1GoalCount playerGoalCounts -> Dict.insert playerName game1GoalCount playerGoalCounts)
+        -- when in game 1 and game2
+        (\\playerName game1GoalCount game2GoalCount playerGoalCounts -> Dict.insert playerName (game1GoalCount + game2GoalCount) playerGoalCounts)
+        -- when only in game 2
+        (\\playerName game2GoalCount playerGoalCounts -> Dict.insert playerName game2GoalCount playerGoalCounts)
+        game1
+        game2
+        Dict.empty
+"""
+        ]
 
 
 ruleTests : Test
@@ -172,11 +245,11 @@ combineGames game1 game2 =
                         [ TestHelper.createExpectedErrorUnder comment "combineGames"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 13 } }
                         ]
-        , test "should report that List.foldl and updateGoalCountForPlayer must be used" <|
+        , test "should report that updateGoalCountForPlayer must be used" <|
             \() ->
                 let
                     comment =
-                        Comment "Doesn't use List.foldl and updateGoalCountForPlayer" "elm.top-scorers.use_foldl_and_updateGoalCountForPlayer" Essential Dict.empty
+                        Comment "Doesn't use updateGoalCountForPlayer" "elm.top-scorers.use_foldl_and_updateGoalCountForPlayer" Essential Dict.empty
                 in
                 """
 module TopScorers exposing (..)
@@ -198,7 +271,30 @@ aggregateScorers playerNames =
         )
         Dict.empty
             """
-                    |> Review.Test.run (TopScorers.aggregateScorersMustUseFoldlAndUpdateGoalCountForPlayer comment)
+                    |> Review.Test.run (TopScorers.aggregateScorersMustUseUpdateGoalCountForPlayer comment)
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder comment "aggregateScorers"
+                            |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 17 } }
+                        ]
+        , test "should report that List.foldl or List.foldr be used" <|
+            \() ->
+                let
+                    comment =
+                        Comment "Doesn't use List.foldl or List.foldr" "elm.top-scorers.use_foldl_and_updateGoalCountForPlayer" Essential Dict.empty
+                in
+                """
+module TopScorers exposing (..)
+
+aggregateScorers : List PlayerName -> Dict PlayerName Int
+aggregateScorers playerNames =
+    case playerNames of
+        [] ->
+            Dict.empty
+
+        playerName :: rest ->
+            updateGoalCountForPlayer playerName (aggregateScorers rest)
+            """
+                    |> Review.Test.run (TopScorers.aggregateScorersMustUseFold comment)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder comment "aggregateScorers"
                             |> Review.Test.atExactly { start = { row = 5, column = 1 }, end = { row = 5, column = 17 } }

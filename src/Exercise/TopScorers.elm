@@ -20,8 +20,10 @@ ruleConfig =
             (Comment "Uses List.sort" "elm.top-scorers.dont_use_sort" Essential Dict.empty)
         , CustomRule combineGamesMustUseMerge
             (Comment "Doesn't use Dict.merge" "elm.top-scorers.use_merge" Essential Dict.empty)
-        , CustomRule aggregateScorersMustUseFoldlAndUpdateGoalCountForPlayer
-            (Comment "Doesn't use List.foldl and updateGoalCountForPlayer" "elm.top-scorers.use_foldl_and_updateGoalCountForPlayer" Essential Dict.empty)
+        , CustomRule aggregateScorersMustUseUpdateGoalCountForPlayer
+            (Comment "Doesn't use updateGoalCountForPlayer" "elm.top-scorers.use_foldl_and_updateGoalCountForPlayer" Essential Dict.empty)
+        , CustomRule aggregateScorersMustUseFold
+            (Comment "Doesn't use List.foldl or List.foldr" "elm.top-scorers.use_foldl_and_updateGoalCountForPlayer" Essential Dict.empty)
         , CustomRule formatPlayerMustUseWithDefault
             (Comment "Doesn't use Maybe.withDefault" "elm.top-scorers.use_withDefault" Essential Dict.empty)
         ]
@@ -64,12 +66,21 @@ combineGamesMustUseMerge =
         }
 
 
-aggregateScorersMustUseFoldlAndUpdateGoalCountForPlayer : Comment -> Rule
-aggregateScorersMustUseFoldlAndUpdateGoalCountForPlayer =
+aggregateScorersMustUseUpdateGoalCountForPlayer : Comment -> Rule
+aggregateScorersMustUseUpdateGoalCountForPlayer =
     Analyzer.functionCalls
         { calledFrom = TopFunction "aggregateScorers"
-        , findFunctions = [ FromExternalModule [ "List" ] "foldl", FromSameModule "updateGoalCountForPlayer" ]
+        , findFunctions = [ FromSameModule "updateGoalCountForPlayer" ]
         , find = All
+        }
+
+
+aggregateScorersMustUseFold : Comment -> Rule
+aggregateScorersMustUseFold =
+    Analyzer.functionCalls
+        { calledFrom = TopFunction "aggregateScorers"
+        , findFunctions = [ FromExternalModule [ "List" ] "foldl", FromExternalModule [ "List" ] "foldr" ]
+        , find = Some
         }
 
 

@@ -4,12 +4,15 @@ import Common.NoUnused
 import Common.Simplify
 import Exercise.BettysBikeShop
 import Exercise.BlorkemonCards
+import Exercise.CustomSet
 import Exercise.MariosMarvellousLasagna
 import Exercise.MazeMaker
 import Exercise.Strain
 import Exercise.TopScorers
 import Exercise.TracksOnTracksOnTracks
 import Exercise.TreasureFactory
+import Exercise.ValentinesDay
+import Exercise.ZebraPuzzle
 import Review.Rule as Rule exposing (Rule)
 import RuleConfig exposing (RuleConfig)
 
@@ -28,9 +31,12 @@ ruleConfigs =
     , Exercise.TracksOnTracksOnTracks.ruleConfig
     , Exercise.MazeMaker.ruleConfig
     , Exercise.TreasureFactory.ruleConfig
+    , Exercise.ValentinesDay.ruleConfig
 
     -- Practice Exercises
     , Exercise.Strain.ruleConfig
+    , Exercise.CustomSet.ruleConfig
+    , Exercise.ZebraPuzzle.ruleConfig
     ]
 
 

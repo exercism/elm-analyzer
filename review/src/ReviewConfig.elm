@@ -1,5 +1,7 @@
 module ReviewConfig exposing (config)
 
+import NoDebug.Log
+import NoDebug.TodoOrToString
 import NoUnused.CustomTypeConstructorArgs
 import NoUnused.CustomTypeConstructors
 import NoUnused.Dependencies
@@ -8,9 +10,6 @@ import NoUnused.Modules
 import NoUnused.Parameters
 import NoUnused.Patterns
 import NoUnused.Variables
-import NoDebug.Log
-import NoDebug.TodoOrToString
-
 import Review.Rule exposing (Rule)
 import Simplify
 

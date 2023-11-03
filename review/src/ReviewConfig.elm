@@ -8,6 +8,9 @@ import NoUnused.Modules
 import NoUnused.Parameters
 import NoUnused.Patterns
 import NoUnused.Variables
+import NoDebug.Log
+import NoDebug.TodoOrToString
+
 import Review.Rule exposing (Rule)
 import Simplify
 
@@ -23,4 +26,6 @@ config =
     , NoUnused.Exports.rule |> Review.Rule.ignoreErrorsForDirectories [ "tests/" ]
     , NoUnused.Dependencies.rule
     , Simplify.rule Simplify.defaults
+    , NoDebug.Log.rule
+    , NoDebug.TodoOrToString.rule
     ]

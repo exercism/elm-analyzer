@@ -5,6 +5,7 @@ import Common.Simplify
 import Exercise.BettysBikeShop
 import Exercise.BlorkemonCards
 import Exercise.CustomSet
+import Exercise.ListOps
 import Exercise.MariosMarvellousLasagna
 import Exercise.MazeMaker
 import Exercise.Strain
@@ -36,6 +37,7 @@ ruleConfigs =
     -- Practice Exercises
     , Exercise.Strain.ruleConfig
     , Exercise.CustomSet.ruleConfig
+    , Exercise.ListOps.ruleConfig
     , Exercise.ZebraPuzzle.ruleConfig
     ]
 

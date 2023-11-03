@@ -1,4 +1,4 @@
-module ElmSyntaxHelpers exposing (typeAnnotationsMatch)
+module ElmSyntaxHelpers exposing (hasGenericRecord, typeAnnotationsMatch)
 
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.TypeAnnotation exposing (TypeAnnotation(..))
@@ -47,4 +47,29 @@ typeAnnotationsMatch a b =
             typeAnnotationsMatch a1 b1 && typeAnnotationsMatch a2 b2
 
         _ ->
+            False
+
+
+hasGenericRecord : Node TypeAnnotation -> Bool
+hasGenericRecord annotation =
+    case Node.value annotation of
+        GenericRecord _ _ ->
+            True
+
+        Typed _ annotations ->
+            List.any hasGenericRecord annotations
+
+        Tupled annotations ->
+            List.any hasGenericRecord annotations
+
+        FunctionTypeAnnotation a b ->
+            hasGenericRecord a || hasGenericRecord b
+
+        Record _ ->
+            False
+
+        GenericType _ ->
+            False
+
+        Unit ->
             False

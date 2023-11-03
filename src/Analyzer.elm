@@ -56,6 +56,7 @@ type CalledFunction
     | FromSameModule FunctionName
     | LetBlock
     | CaseBlock
+    | RecordUpdate
     | Operator FunctionName
 
 
@@ -201,6 +202,9 @@ expressionCallsFunction ((Node range expression) as node) (Context ({ lookupTabl
                 CaseExpression _ ->
                     add node nodeTree
 
+                RecordUpdateExpression _ _ ->
+                    add node nodeTree
+
                 OperatorApplication _ _ _ _ ->
                     add node nodeTree
 
@@ -300,6 +304,9 @@ matchFunction (Node range expression) foundFunction =
             FoundAt range
 
         ( CaseExpression _, NotFound CaseBlock ) ->
+            FoundAt range
+
+        ( RecordUpdateExpression _ _, NotFound RecordUpdate ) ->
             FoundAt range
 
         ( OperatorApplication exprOperator _ _ _, NotFound (Operator operator) ) ->

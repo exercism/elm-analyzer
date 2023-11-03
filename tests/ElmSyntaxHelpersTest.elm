@@ -33,6 +33,22 @@ typeAnnotationsMatchTests =
         ]
 
 
+hasGenericRecordTests : Test
+hasGenericRecordTests =
+    describe "hasGenericRecord"
+        [ test "no GenericRecord" <|
+            \_ ->
+                Node.empty (Tupled [ Node.empty Unit ])
+                    |> ElmSyntaxHelpers.hasGenericRecord
+                    |> Expect.equal False
+        , test "one GenericRecord" <|
+            \_ ->
+                Node.empty (Tupled [ Node.empty Unit, Node.empty (GenericRecord (Node.empty "a") (Node.empty [])) ])
+                    |> ElmSyntaxHelpers.hasGenericRecord
+                    |> Expect.equal True
+        ]
+
+
 typeAnnotationsFuzzer : Fuzzer (Node TypeAnnotation)
 typeAnnotationsFuzzer =
     let

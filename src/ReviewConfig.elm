@@ -1,5 +1,6 @@
 module ReviewConfig exposing (config, ruleConfigs)
 
+import Common.NoDebug
 import Common.NoUnused
 import Common.Simplify
 import Exercise.BettysBikeShop
@@ -22,6 +23,7 @@ ruleConfigs =
     [ -- Common Rules
       Common.NoUnused.ruleConfig
     , Common.Simplify.ruleConfig
+    , Common.NoDebug.ruleConfig
 
     -- Concept Exercises
     , Exercise.BettysBikeShop.ruleConfig

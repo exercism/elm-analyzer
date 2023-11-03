@@ -72,7 +72,7 @@ twoFer name =
             \() ->
                 let
                     comment =
-                        Comment "NoDebug.Log" "elm.common.common.no_debug" Actionable Dict.empty
+                        Comment "NoDebug.Log" "elm.common.no_debug" Actionable Dict.empty
                 in
                 Decode.decodeString (Common.NoDebug.noDebugDecoder comment) """
 {
@@ -161,7 +161,7 @@ twoFer name =
             \() ->
                 let
                     comment =
-                        Comment "NoDebug.TodoOrToString" "elm.common.common.no_debug" Actionable Dict.empty
+                        Comment "NoDebug.TodoOrToString" "elm.common.no_debug" Actionable Dict.empty
                 in
                 Decode.decodeString (Common.NoDebug.noDebugDecoder comment) """
 {
@@ -228,7 +228,7 @@ twoFer name =
             \() ->
                 let
                     comment =
-                        Comment "NoDebug.TodoOrToString" "elm.common.common.no_debug" Actionable Dict.empty
+                        Comment "NoDebug.TodoOrToString" "elm.common.no_debug" Actionable Dict.empty
                 in
                 Decode.decodeString (Common.NoDebug.noDebugDecoder comment) """
 {

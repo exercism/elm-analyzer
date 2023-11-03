@@ -24,10 +24,10 @@ ruleConfig =
     , rules =
         [ ImportedRule NoDebug.Log.rule
             noDebugDecoder
-            (Comment "NoDebug.Log" "elm.common.common.no_debug" Actionable Dict.empty)
+            (Comment "NoDebug.Log" "elm.common.no_debug" Actionable Dict.empty)
         , ImportedRule NoDebug.TodoOrToString.rule
             noDebugDecoder
-            (Comment "NoDebug.TodoOrToString" "elm.common.common.no_debug" Actionable Dict.empty)
+            (Comment "NoDebug.TodoOrToString" "elm.common.no_debug" Actionable Dict.empty)
         ]
     }
 

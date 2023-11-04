@@ -1,6 +1,7 @@
-module ElmSyntaxHelpers exposing (hasGenericRecord, typeAnnotationsMatch)
+module ElmSyntaxHelpers exposing (hasGenericRecord, traversePattern, typeAnnotationsMatch)
 
 import Elm.Syntax.Node as Node exposing (Node(..))
+import Elm.Syntax.Pattern exposing (Pattern(..))
 import Elm.Syntax.TypeAnnotation exposing (TypeAnnotation(..))
 
 
@@ -73,3 +74,52 @@ hasGenericRecord annotation =
 
         Unit ->
             False
+
+
+traversePattern : Node Pattern -> List (Node Pattern)
+traversePattern pattern =
+    case Node.value pattern of
+        AllPattern ->
+            [ pattern ]
+
+        UnitPattern ->
+            [ pattern ]
+
+        CharPattern _ ->
+            [ pattern ]
+
+        StringPattern _ ->
+            [ pattern ]
+
+        IntPattern _ ->
+            [ pattern ]
+
+        HexPattern _ ->
+            [ pattern ]
+
+        FloatPattern _ ->
+            [ pattern ]
+
+        VarPattern _ ->
+            [ pattern ]
+
+        RecordPattern _ ->
+            [ pattern ]
+
+        AsPattern a _ ->
+            pattern :: traversePattern a
+
+        ParenthesizedPattern a ->
+            pattern :: traversePattern a
+
+        UnConsPattern a b ->
+            pattern :: traversePattern a ++ traversePattern b
+
+        TuplePattern patterns ->
+            pattern :: List.concatMap traversePattern patterns
+
+        ListPattern patterns ->
+            pattern :: List.concatMap traversePattern patterns
+
+        NamedPattern _ patterns ->
+            pattern :: List.concatMap traversePattern patterns

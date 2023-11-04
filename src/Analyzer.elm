@@ -1,4 +1,4 @@
-module Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..), functionCalls)
+module Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..), Pattern(..), functionCalls)
 
 import Comment exposing (Comment)
 import Dict exposing (Dict)
@@ -6,7 +6,9 @@ import Elm.Syntax.Declaration as Declaration exposing (Declaration)
 import Elm.Syntax.Expression exposing (Expression(..))
 import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node(..))
+import Elm.Syntax.Pattern as Pattern
 import Elm.Syntax.Range exposing (Range)
+import ElmSyntaxHelpers
 import Review.ModuleNameLookupTable as LookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
 
@@ -45,6 +47,8 @@ Note that for searching for function that are automatically imported, like `roun
 
 `Operator "::"` means we are looking for the operator either applied `head :: tail` or standalone `List.map2 (::)`.
 
+`PatternInArgument pattern` means we are looking for a pattern match in a top-level function argument.
+
 -}
 
 
@@ -60,6 +64,15 @@ type CalledExpression
     | CaseBlock
     | RecordUpdate
     | Operator FunctionName
+    | PatternInArgument Pattern
+
+
+type Pattern
+    = Record
+    | Tuple
+    | Any
+    | Named
+    | As
 
 
 {-| Type of search.
@@ -87,6 +100,7 @@ type Context
         , foundExpressions : List FoundExpression
         , lookupTable : ModuleNameLookupTable
         , callTree : Dict FunctionName (List (Node Expression))
+        , argumentTree : Dict FunctionName (List (Node Pattern.Pattern))
         }
 
 
@@ -132,9 +146,10 @@ functionCalls :
 functionCalls { calledFrom, findExpressions, find } comment =
     Rule.newModuleRuleSchemaUsingContextCreator comment.path (initialContext findExpressions)
         |> Rule.withDeclarationEnterVisitor (annotateFunctionDeclaration calledFrom)
+        |> Rule.withDeclarationEnterVisitor grabFunctionDeclarationArguments
         |> Rule.withExpressionEnterVisitor expressionCallsFunction
         |> Rule.withDeclarationExitVisitor annotateLeaveDeclaration
-        |> Rule.withFinalModuleEvaluation (flattenTree calledFrom >> checkForError find comment)
+        |> Rule.withFinalModuleEvaluation (flattenTrees calledFrom >> checkForError find comment)
         |> Rule.fromModuleRuleSchema
 
 
@@ -148,6 +163,7 @@ initialContext functions =
                 , calledFromRange = Nothing
                 , foundExpressions = List.map NotFound functions
                 , callTree = Dict.empty
+                , argumentTree = Dict.empty
                 }
         )
         |> Rule.withModuleNameLookupTable
@@ -173,7 +189,32 @@ annotateFunctionDeclaration calledFrom node (Context context) =
 
                         else
                             context.calledFromRange
+
+                    -- all function declaration must be represented in callTree to match the shape of argumentTree
+                    , callTree = Dict.insert functionName [] context.callTree
                 }
+            )
+
+        _ ->
+            ( [], Context context )
+
+
+{-| Gather the function arguments
+-}
+grabFunctionDeclarationArguments : Node Declaration -> Context -> ( List nothing, Context )
+grabFunctionDeclarationArguments node (Context ({ argumentTree } as context)) =
+    case Node.value node of
+        Declaration.FunctionDeclaration { declaration } ->
+            let
+                { name, arguments } =
+                    Node.value declaration
+
+                updateTree args =
+                    Just (List.concatMap ElmSyntaxHelpers.traversePattern arguments ++ Maybe.withDefault [] args)
+            in
+            ( []
+            , Context
+                { context | argumentTree = Dict.update (Node.value name) updateTree argumentTree }
             )
 
         _ ->
@@ -240,31 +281,42 @@ annotateLeaveDeclaration node (Context context) =
             ( [], Context context )
 
 
-flattenTree : CalledFrom -> Context -> Context
-flattenTree calledFrom (Context ({ callTree } as context)) =
+flattenTrees : CalledFrom -> Context -> Context
+flattenTrees calledFrom (Context ({ callTree, argumentTree } as context)) =
     let
-        allExpressions =
+        ( allExpressions, allArguments ) =
             case calledFrom of
                 Anywhere ->
-                    Dict.values callTree |> List.concat
+                    ( Dict.values callTree |> List.concat
+                    , Dict.values argumentTree |> List.concat
+                    )
 
                 TopFunction topFunction ->
-                    traverseTreeFrom topFunction callTree
+                    traverseTreesFrom topFunction callTree argumentTree
 
-        functionsFound =
-            List.map (\function -> List.foldl matchFunction function allExpressions) context.foundExpressions
+        expressionsFound =
+            context.foundExpressions
+                |> List.map (\expression -> List.foldl matchExpression expression allExpressions)
+                |> List.map (\expression -> List.foldl matchPattern expression allArguments)
     in
-    Context { context | foundExpressions = functionsFound }
+    Context { context | foundExpressions = expressionsFound }
 
 
-traverseTreeFrom : FunctionName -> Dict FunctionName (List (Node Expression)) -> List (Node Expression)
-traverseTreeFrom root tree =
-    case Dict.get root tree of
-        Nothing ->
-            []
-
-        Just expressions ->
+traverseTreesFrom :
+    FunctionName
+    -> Dict FunctionName (List (Node Expression))
+    -> Dict FunctionName (List (Node Pattern.Pattern))
+    -> ( List (Node Expression), List (Node Pattern.Pattern) )
+traverseTreesFrom root callTree argumentTree =
+    case ( Dict.get root callTree, Dict.get root argumentTree ) of
+        ( Just expressions, Just arguments ) ->
             let
+                trimmedCallTree =
+                    Dict.remove root callTree
+
+                trimmedArgumentTree =
+                    Dict.remove root argumentTree
+
                 keepModuleFunction (Node _ expression) =
                     case expression of
                         FunctionOrValue [] name ->
@@ -273,17 +325,25 @@ traverseTreeFrom root tree =
                         _ ->
                             Nothing
 
-                modulefunctions =
-                    List.filterMap keepModuleFunction expressions
-
-                trimmedTree =
-                    Dict.remove root tree
+                results =
+                    expressions
+                        |> List.filterMap keepModuleFunction
+                        |> List.map (\branch -> traverseTreesFrom branch trimmedCallTree trimmedArgumentTree)
             in
-            expressions ++ List.concatMap (\branch -> traverseTreeFrom branch trimmedTree) modulefunctions
+            ( expressions ++ List.concatMap Tuple.first results
+            , arguments ++ List.concatMap Tuple.second results
+            )
+
+        ( Nothing, Nothing ) ->
+            ( [], [] )
+
+        -- this should not happen, all function declarations have corresponding arguments
+        _ ->
+            ( [], [] )
 
 
-matchFunction : Node Expression -> FoundExpression -> FoundExpression
-matchFunction (Node range expression) foundFunction =
+matchExpression : Node Expression -> FoundExpression -> FoundExpression
+matchExpression (Node range expression) foundFunction =
     let
         match a b =
             if a == b then
@@ -317,9 +377,32 @@ matchFunction (Node range expression) foundFunction =
         ( PrefixOperator exprOperator, NotFound (Operator operator) ) ->
             match exprOperator operator
 
-        -- already found function, or expression that doesn't match
+        -- already found expression, argument pattern, or expression that doesn't match
         _ ->
             foundFunction
+
+
+matchPattern : Node Pattern.Pattern -> FoundExpression -> FoundExpression
+matchPattern (Node range pattern) foundExpression =
+    case ( pattern, foundExpression ) of
+        ( Pattern.RecordPattern _, NotFound (PatternInArgument Record) ) ->
+            foundAt range foundExpression
+
+        ( Pattern.TuplePattern _, NotFound (PatternInArgument Tuple) ) ->
+            foundAt range foundExpression
+
+        ( Pattern.AllPattern, NotFound (PatternInArgument Any) ) ->
+            foundAt range foundExpression
+
+        ( Pattern.NamedPattern _ _, NotFound (PatternInArgument Named) ) ->
+            foundAt range foundExpression
+
+        ( Pattern.AsPattern _ _, NotFound (PatternInArgument As) ) ->
+            foundAt range foundExpression
+
+        -- already found expression/pattern, or pattern that doesn't match
+        _ ->
+            foundExpression
 
 
 foundAt : Range -> FoundExpression -> FoundExpression

@@ -1,6 +1,6 @@
 module AnalyzerTest exposing (tests)
 
-import Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..))
+import Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..), Pattern(..))
 import Comment exposing (Comment, CommentType(..))
 import Dict exposing (Dict)
 import Review.Rule exposing (Rule)
@@ -12,7 +12,7 @@ import TestHelper
 tests : Test
 tests =
     describe "AnalyzerTest tests"
-        [ calledFromTest, findExpressionsTest, findTest, indirectCallTest ]
+        [ calledFromTest, findExpressionsTest, findArgumentPatternTest, findTest, indirectCallTest ]
 
 
 allRules : Dict String Rule
@@ -29,6 +29,7 @@ allRules =
             , ( "case", [ CaseBlock ] )
             , ( "recordUpdate", [ RecordUpdate ] )
             , ( "pipe", [ Operator "|>" ] )
+            , ( "arg", [ PatternInArgument Record, PatternInArgument Tuple, PatternInArgument Any, PatternInArgument Named, PatternInArgument As ] )
             , ( "Ext._ + Ext.ext", [ AnyFromExternalModule [ "Ext" ], FromExternalModule [ "Ext" ] "ext" ] )
             , ( "Ext._ + internal", [ AnyFromExternalModule [ "Ext" ], FromSameModule "internal" ] )
             , ( "Ext.ext + internal", [ FromExternalModule [ "Ext" ] "ext", FromSameModule "internal" ] )
@@ -881,6 +882,210 @@ callingFunction param =
                         )
                     |> Review.Test.expectGlobalErrors
                         [ TestHelper.createExpectedGlobalError (quickComment "basics") ]
+        ]
+
+
+findArgumentPatternTest : Test
+findArgumentPatternTest =
+    let
+        allRule =
+            "calling function, arg, all"
+
+        allAnywhereRule =
+            "called anywhere, arg, all"
+    in
+    describe "pattern arguments should work for various settings"
+        [ test "all patterns, no error" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction { a, b } (c, d) _ (Named e) (f as g) =
+  param
+  |> Ext.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule allRule)
+                    |> Review.Test.expectNoErrors
+        , test "all patterns nested together, no error" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction   ((Named (_, { a, b } as e)), f)=
+  param
+  |> Ext.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule allRule)
+                    |> Review.Test.expectNoErrors
+        , test "all patterns called indirectly via a helper function, no error" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction param =
+  param
+  |> Ext.other
+  |> helperFunction1 x
+
+helperFunction1 x =
+  helperFunction2 x
+
+helperFunction2 { a, b } (c, d) _ (Named e) (f as g) =
+  0
+"""
+                    |> Review.Test.run (getRule allRule)
+                    |> Review.Test.expectNoErrors
+        , test "used in the wrong function" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+wrongCallingFunction { a, b } (c, d) _ (Named e) (f as g) =
+  param
+  |> Ext.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule allRule)
+                    |> Review.Test.expectGlobalErrors
+                        [ TestHelper.createExpectedGlobalError (quickComment allRule) ]
+        , test "used but not on top level, error" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction =
+  let
+    someInternalFunction { a, b } (c, d) _ (Named e) (f as g) =
+      0
+  in
+  param
+  |> Ext.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule allRule)
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (quickComment allRule) "callingFunction" ]
+        , test "missing record" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction missing (c, d) _ (Named e) (f as g) =
+  param
+  |> Ext.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule allRule)
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (quickComment allRule) "callingFunction" ]
+        , test "missing tuple" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction { a, b } missing _ (Named e) (f as g) =
+  param
+  |> Ext.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule allRule)
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (quickComment allRule) "callingFunction" ]
+        , test "missing any" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction { a, b } (c, d) missing (Named e) (f as g) =
+  param
+  |> Ext.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule allRule)
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (quickComment allRule) "callingFunction" ]
+        , test "missing named" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction { a, b } (c, d) _ missing (f as g) =
+  param
+  |> Ext.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule allRule)
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (quickComment allRule) "callingFunction" ]
+        , test "missing as" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction { a, b } (c, d) _ (Named e) missing =
+  param
+  |> Ext.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule allRule)
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (quickComment allRule) "callingFunction" ]
+        , test "called anywhere, no error" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction { a, b } (c, d) _ (Named e) (f as g) =
+  param
+  |> Ext.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule allAnywhereRule)
+                    |> Review.Test.expectNoErrors
+        , test "called anywhere in different functions, no error" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+dallingFunction { a, b } (c, d)  =
+  param
+  |> Ext.other
+  |> internal
+
+
+otherFunction _ (Named e) (f as g) =
+  param
+  |> Ext.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule allAnywhereRule)
+                    |> Review.Test.expectNoErrors
         ]
 
 

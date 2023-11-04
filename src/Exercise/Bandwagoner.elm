@@ -1,6 +1,6 @@
 module Exercise.Bandwagoner exposing (replaceCoachUsesRecordUpdateSyntax, rootForTeamHasExtensibleRecordSignature, rootForTeamUsesPatternMatchingInArgument, ruleConfig)
 
-import Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..))
+import Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..))
 import Comment exposing (Comment, CommentType(..))
 import Dict
 import Elm.Syntax.Declaration as Declaration exposing (Declaration)
@@ -30,7 +30,7 @@ replaceCoachUsesRecordUpdateSyntax : Comment -> Rule
 replaceCoachUsesRecordUpdateSyntax =
     Analyzer.functionCalls
         { calledFrom = TopFunction "replaceCoach"
-        , findFunctions = [ RecordUpdate ]
+        , findExpressions = [ RecordUpdate ]
         , find = Some
         }
 

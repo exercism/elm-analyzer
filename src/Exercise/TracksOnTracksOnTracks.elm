@@ -1,6 +1,6 @@
 module Exercise.TracksOnTracksOnTracks exposing (addLanguageUsesCons, countLanguagesUsesLength, excitingListUsesCase, reverseListUsesReverse, ruleConfig)
 
-import Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..))
+import Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..))
 import Comment exposing (Comment, CommentType(..))
 import Dict
 import Review.Rule exposing (Rule)
@@ -28,7 +28,7 @@ addLanguageUsesCons : Comment -> Rule
 addLanguageUsesCons =
     Analyzer.functionCalls
         { calledFrom = TopFunction "addLanguage"
-        , findFunctions = [ Operator "::" ]
+        , findExpressions = [ Operator "::" ]
         , find = Some
         }
 
@@ -37,7 +37,7 @@ countLanguagesUsesLength : Comment -> Rule
 countLanguagesUsesLength =
     Analyzer.functionCalls
         { calledFrom = TopFunction "countLanguages"
-        , findFunctions = [ FromExternalModule [ "List" ] "length" ]
+        , findExpressions = [ FromExternalModule [ "List" ] "length" ]
         , find = Some
         }
 
@@ -46,7 +46,7 @@ reverseListUsesReverse : Comment -> Rule
 reverseListUsesReverse =
     Analyzer.functionCalls
         { calledFrom = TopFunction "reverseList"
-        , findFunctions = [ FromExternalModule [ "List" ] "reverse" ]
+        , findExpressions = [ FromExternalModule [ "List" ] "reverse" ]
         , find = Some
         }
 
@@ -55,6 +55,6 @@ excitingListUsesCase : Comment -> Rule
 excitingListUsesCase =
     Analyzer.functionCalls
         { calledFrom = TopFunction "excitingList"
-        , findFunctions = [ CaseBlock ]
+        , findExpressions = [ CaseBlock ]
         , find = Some
         }

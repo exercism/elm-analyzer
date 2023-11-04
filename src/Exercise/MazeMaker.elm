@@ -1,6 +1,6 @@
 module Exercise.MazeMaker exposing (mazeOfDepthUsesDeadendRoomAndBranch, mazeOfDepthUsesMazeOfDepth, mazeUsesDeadendRoomAndBranch, mazeUsesMaze, roomUsesTreasure, ruleConfig)
 
-import Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..))
+import Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..))
 import Comment exposing (Comment, CommentType(..))
 import Dict
 import Review.Rule exposing (Rule)
@@ -30,7 +30,7 @@ roomUsesTreasure : Comment -> Rule
 roomUsesTreasure =
     Analyzer.functionCalls
         { calledFrom = TopFunction "room"
-        , findFunctions = [ FromSameModule "treasure" ]
+        , findExpressions = [ FromSameModule "treasure" ]
         , find = Some
         }
 
@@ -39,7 +39,7 @@ mazeUsesDeadendRoomAndBranch : Comment -> Rule
 mazeUsesDeadendRoomAndBranch =
     Analyzer.functionCalls
         { calledFrom = TopFunction "maze"
-        , findFunctions = [ FromSameModule "deadend", FromSameModule "room", FromSameModule "branch" ]
+        , findExpressions = [ FromSameModule "deadend", FromSameModule "room", FromSameModule "branch" ]
         , find = All
         }
 
@@ -48,7 +48,7 @@ mazeUsesMaze : Comment -> Rule
 mazeUsesMaze =
     Analyzer.functionCalls
         { calledFrom = TopFunction "maze"
-        , findFunctions = [ FromSameModule "maze" ]
+        , findExpressions = [ FromSameModule "maze" ]
         , find = Some
         }
 
@@ -57,7 +57,7 @@ mazeOfDepthUsesDeadendRoomAndBranch : Comment -> Rule
 mazeOfDepthUsesDeadendRoomAndBranch =
     Analyzer.functionCalls
         { calledFrom = TopFunction "mazeOfDepth"
-        , findFunctions = [ FromSameModule "deadend", FromSameModule "room", FromSameModule "branch" ]
+        , findExpressions = [ FromSameModule "deadend", FromSameModule "room", FromSameModule "branch" ]
         , find = All
         }
 
@@ -66,6 +66,6 @@ mazeOfDepthUsesMazeOfDepth : Comment -> Rule
 mazeOfDepthUsesMazeOfDepth =
     Analyzer.functionCalls
         { calledFrom = TopFunction "mazeOfDepth"
-        , findFunctions = [ FromSameModule "mazeOfDepth" ]
+        , findExpressions = [ FromSameModule "mazeOfDepth" ]
         , find = Some
         }

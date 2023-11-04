@@ -1,6 +1,6 @@
 module Exercise.MariosMarvellousLasagna exposing (ruleConfig, usesLet)
 
-import Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..))
+import Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..))
 import Comment exposing (Comment, CommentType(..))
 import Dict
 import Review.Rule exposing (Rule)
@@ -24,6 +24,6 @@ usesLet : Comment -> Rule
 usesLet =
     Analyzer.functionCalls
         { calledFrom = TopFunction "remainingTimeInMinutes"
-        , findFunctions = [ LetBlock ]
+        , findExpressions = [ LetBlock ]
         , find = Some
         }

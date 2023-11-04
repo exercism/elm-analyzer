@@ -1,6 +1,6 @@
 module Exercise.ValentinesDay exposing (ruleConfig, usesCase)
 
-import Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..))
+import Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..))
 import Comment exposing (Comment, CommentType(..))
 import Dict
 import Review.Rule exposing (Rule)
@@ -22,6 +22,6 @@ usesCase : Comment -> Rule
 usesCase =
     Analyzer.functionCalls
         { calledFrom = TopFunction "rateActivity"
-        , findFunctions = [ CaseBlock ]
+        , findExpressions = [ CaseBlock ]
         , find = Some
         }

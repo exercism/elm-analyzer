@@ -1,6 +1,6 @@
 module Exercise.TwoFer exposing (hasFunctionSignature, ruleConfig, usesWithDefault)
 
-import Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..))
+import Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..))
 import Comment exposing (Comment, CommentType(..))
 import Dict
 import Elm.Syntax.Declaration as Declaration exposing (Declaration)
@@ -49,6 +49,6 @@ usesWithDefault : Comment -> Rule
 usesWithDefault =
     Analyzer.functionCalls
         { calledFrom = TopFunction "twoFer"
-        , findFunctions = [ FromExternalModule [ "Maybe" ] "withDefault" ]
+        , findExpressions = [ FromExternalModule [ "Maybe" ] "withDefault" ]
         , find = All
         }

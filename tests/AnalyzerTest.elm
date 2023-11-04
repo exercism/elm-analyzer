@@ -1,6 +1,6 @@
 module AnalyzerTest exposing (tests)
 
-import Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..))
+import Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..))
 import Comment exposing (Comment, CommentType(..))
 import Dict exposing (Dict)
 import Review.Rule exposing (Rule)
@@ -12,7 +12,7 @@ import TestHelper
 tests : Test
 tests =
     describe "AnalyzerTest tests"
-        [ calledFromTest, findFunctionsTest, findTest, indirectCallTest ]
+        [ calledFromTest, findExpressionsTest, findTest, indirectCallTest ]
 
 
 allRules : Dict String Rule
@@ -43,7 +43,7 @@ allRules =
             (\( calledFromName, calledFrom ) ->
                 calling
                     |> List.concatMap
-                        (\( findFunctionName, findFunctions ) ->
+                        (\( findFunctionName, findExpressions ) ->
                             finding
                                 |> List.map
                                     (\( findName, find ) ->
@@ -54,7 +54,7 @@ allRules =
                                         ( name
                                         , Analyzer.functionCalls
                                             { calledFrom = calledFrom
-                                            , findFunctions = findFunctions
+                                            , findExpressions = findExpressions
                                             , find = find
                                             }
                                             (quickComment name)
@@ -282,8 +282,8 @@ callingFunction param =
         ]
 
 
-findFunctionsTest : Test
-findFunctionsTest =
+findExpressionsTest : Test
+findExpressionsTest =
     let
         extRule =
             "calling function, Ext._, all"
@@ -828,7 +828,7 @@ callingFunction param =
                     |> Review.Test.run
                         (Analyzer.functionCalls
                             { calledFrom = Anywhere
-                            , findFunctions = [ AnyFromExternalModule [ "Ext", "Sub" ] ]
+                            , findExpressions = [ AnyFromExternalModule [ "Ext", "Sub" ] ]
                             , find = All
                             }
                             (quickComment "Ext.Sub")
@@ -848,7 +848,7 @@ callingFunction param =
                     |> Review.Test.run
                         (Analyzer.functionCalls
                             { calledFrom = Anywhere
-                            , findFunctions =
+                            , findExpressions =
                                 [ FromExternalModule [ "Basics" ] "toFloat"
                                 , FromExternalModule [ "Basics" ] "round"
                                 ]
@@ -871,7 +871,7 @@ callingFunction param =
                     |> Review.Test.run
                         (Analyzer.functionCalls
                             { calledFrom = Anywhere
-                            , findFunctions =
+                            , findExpressions =
                                 [ FromSameModule "toFloat"
                                 , FromSameModule "round"
                                 ]

@@ -1,4 +1,4 @@
-module Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..), functionCalls)
+module Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..), functionCalls)
 
 import Comment exposing (Comment)
 import Dict exposing (Dict)
@@ -27,7 +27,7 @@ type CalledFrom
     | TopFunction FunctionName
 
 
-{-| Functions that can be searched for.
+{-| Expressions that can be searched for.
 
 `AnyFromExternalModule ["List", "Extra"]` means that we are looking for any function from the `List.Extra` module.
 
@@ -41,6 +41,8 @@ Note that for searching for function that are automatically imported, like `roun
 
 `CaseBlock` means looking for a `case` expression.
 
+`RecordUpdate` meanls looking for a record update expression.
+
 `Operator "::"` means we are looking for the operator either applied `head :: tail` or standalone `List.map2 (::)`.
 
 -}
@@ -50,7 +52,7 @@ Note that for searching for function that are automatically imported, like `roun
 -- TODO: also search for if, or any expression?
 
 
-type CalledFunction
+type CalledExpression
     = AnyFromExternalModule ModuleName
     | FromExternalModule ModuleName FunctionName
     | FromSameModule FunctionName
@@ -73,8 +75,8 @@ type Find
     | Some
 
 
-type FoundFunction
-    = NotFound CalledFunction
+type FoundExpression
+    = NotFound CalledExpression
     | FoundAt Range
 
 
@@ -82,7 +84,7 @@ type Context
     = Context
         { functionDeclaration : Maybe FunctionName
         , calledFromRange : Maybe Range
-        , foundFunctions : List FoundFunction
+        , foundExpressions : List FoundExpression
         , lookupTable : ModuleNameLookupTable
         , callTree : Dict FunctionName (List (Node Expression))
         }
@@ -92,7 +94,7 @@ type Context
 
 `calledFrom` indicates if the functions should be searched through the whole module (`Anywhere`) or within a particular function (`TopFunction functionA`).
 
-`findFunctions` specifies the list of functions that we are looking for, for example `functions = [FromExternalModule ["List", "Extra"] "find", FromExternalModule ["List", "Extra"] "findIndex"]`.
+`findExpressions` specifies the list of functions or expressions that we are looking for, for example `functions = [FromExternalModule ["List", "Extra"] "find", FromExternalModule ["List", "Extra"] "findIndex"]`.
 
 `find` specifies the type of search. For example, we might want to forbid the use of `List.Extra.find` and `List.Extra.findIndex`, or maybe we want to make sure that one of these is being called, or even both.
 
@@ -110,7 +112,7 @@ Let's consider an example:
         |> List.Extra.findIndex (\(i, _) -> i > 0)
         |> List.map Tuple.second
 
-The rule `functionCalls {calledFrom = Anywhere, findFunctions = functions, find = All, comment = comment}` would succeed since `List.Extra.find` and `List.Extra.findIndex` are both called somewhere in the module. Changing to `calledFrom = TopFunction "functionB"` would fail, since `functionB` only calls one of the two, and `comment` would be thrown.
+The rule `functionCalls {calledFrom = Anywhere, findExpressions = functions, find = All, comment = comment}` would succeed since `List.Extra.find` and `List.Extra.findIndex` are both called somewhere in the module. Changing to `calledFrom = TopFunction "functionB"` would fail, since `functionB` only calls one of the two, and `comment` would be thrown.
 
 `functionCalls` can keep track of imports and aliases.
 If module `A` was using `import List.Extra exposing (find, findIndex)` or `import List.Extra as List`, the rule would behave the same.
@@ -122,13 +124,13 @@ For example, the rule above with `calledFrom = TopFunction "functionA"` would su
 -}
 functionCalls :
     { calledFrom : CalledFrom
-    , findFunctions : List CalledFunction
+    , findExpressions : List CalledExpression
     , find : Find
     }
     -> Comment
     -> Rule
-functionCalls { calledFrom, findFunctions, find } comment =
-    Rule.newModuleRuleSchemaUsingContextCreator comment.path (initialContext findFunctions)
+functionCalls { calledFrom, findExpressions, find } comment =
+    Rule.newModuleRuleSchemaUsingContextCreator comment.path (initialContext findExpressions)
         |> Rule.withDeclarationEnterVisitor (annotateFunctionDeclaration calledFrom)
         |> Rule.withExpressionEnterVisitor expressionCallsFunction
         |> Rule.withDeclarationExitVisitor annotateLeaveDeclaration
@@ -136,7 +138,7 @@ functionCalls { calledFrom, findFunctions, find } comment =
         |> Rule.fromModuleRuleSchema
 
 
-initialContext : List CalledFunction -> Rule.ContextCreator () Context
+initialContext : List CalledExpression -> Rule.ContextCreator () Context
 initialContext functions =
     Rule.initContextCreator
         (\lookupTable () ->
@@ -144,7 +146,7 @@ initialContext functions =
                 { lookupTable = lookupTable
                 , functionDeclaration = Nothing
                 , calledFromRange = Nothing
-                , foundFunctions = List.map NotFound functions
+                , foundExpressions = List.map NotFound functions
                 , callTree = Dict.empty
                 }
         )
@@ -250,9 +252,9 @@ flattenTree calledFrom (Context ({ callTree } as context)) =
                     traverseTreeFrom topFunction callTree
 
         functionsFound =
-            List.map (\function -> List.foldl matchFunction function allExpressions) context.foundFunctions
+            List.map (\function -> List.foldl matchFunction function allExpressions) context.foundExpressions
     in
-    Context { context | foundFunctions = functionsFound }
+    Context { context | foundExpressions = functionsFound }
 
 
 traverseTreeFrom : FunctionName -> Dict FunctionName (List (Node Expression)) -> List (Node Expression)
@@ -280,7 +282,7 @@ traverseTreeFrom root tree =
             expressions ++ List.concatMap (\branch -> traverseTreeFrom branch trimmedTree) modulefunctions
 
 
-matchFunction : Node Expression -> FoundFunction -> FoundFunction
+matchFunction : Node Expression -> FoundExpression -> FoundExpression
 matchFunction (Node range expression) foundFunction =
     let
         match a b =
@@ -320,7 +322,7 @@ matchFunction (Node range expression) foundFunction =
             foundFunction
 
 
-foundAt : Range -> FoundFunction -> FoundFunction
+foundAt : Range -> FoundExpression -> FoundExpression
 foundAt range foundFunction =
     case foundFunction of
         NotFound _ ->
@@ -331,12 +333,12 @@ foundAt range foundFunction =
 
 
 checkForError : Find -> Comment -> Context -> List (Error {})
-checkForError find comment (Context { foundFunctions, calledFromRange }) =
+checkForError find comment (Context { foundExpressions, calledFromRange }) =
     --  errors do not actually export a range at this point, but they could
     case find of
         All ->
             -- looking at functions not found
-            case ( List.filter (functionWasFound >> not) foundFunctions, calledFromRange ) of
+            case ( List.filter (functionWasFound >> not) foundExpressions, calledFromRange ) of
                 -- all were found, no error
                 ( [], _ ) ->
                     []
@@ -353,7 +355,7 @@ checkForError find comment (Context { foundFunctions, calledFromRange }) =
 
         None ->
             -- looking at found functions
-            case List.filter functionWasFound foundFunctions of
+            case List.filter functionWasFound foundExpressions of
                 -- some were found, return error with range of the first one
                 (FoundAt range) :: _ ->
                     -- Head is the function not found, could be included in the message / parameters
@@ -365,7 +367,7 @@ checkForError find comment (Context { foundFunctions, calledFromRange }) =
 
         Some ->
             -- looking at found functions
-            case ( List.filter functionWasFound foundFunctions, calledFromRange ) of
+            case ( List.filter functionWasFound foundExpressions, calledFromRange ) of
                 -- none were found, searching with TopFunction, return error with the range of the TopFunction
                 ( [], Just range ) ->
                     [ Comment.createError comment range ]
@@ -379,7 +381,7 @@ checkForError find comment (Context { foundFunctions, calledFromRange }) =
                     []
 
 
-functionWasFound : FoundFunction -> Bool
+functionWasFound : FoundExpression -> Bool
 functionWasFound foundFunction =
     case foundFunction of
         NotFound _ ->

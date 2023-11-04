@@ -1,6 +1,6 @@
 module Exercise.TopScorers exposing (..)
 
-import Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..))
+import Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..))
 import Comment exposing (Comment, CommentType(..))
 import Dict
 import Review.Rule exposing (Rule)
@@ -34,7 +34,7 @@ removeInsignificantPlayersMustUseFilter : Comment -> Rule
 removeInsignificantPlayersMustUseFilter =
     Analyzer.functionCalls
         { calledFrom = TopFunction "removeInsignificantPlayers"
-        , findFunctions = [ FromExternalModule [ "Dict" ] "filter" ]
+        , findExpressions = [ FromExternalModule [ "Dict" ] "filter" ]
         , find = Some
         }
 
@@ -43,7 +43,7 @@ resetPlayerGoalCountMustUseInsert : Comment -> Rule
 resetPlayerGoalCountMustUseInsert =
     Analyzer.functionCalls
         { calledFrom = TopFunction "resetPlayerGoalCount"
-        , findFunctions = [ FromExternalModule [ "Dict" ] "insert" ]
+        , findExpressions = [ FromExternalModule [ "Dict" ] "insert" ]
         , find = Some
         }
 
@@ -52,7 +52,7 @@ formatPlayersCannotUseSort : Comment -> Rule
 formatPlayersCannotUseSort =
     Analyzer.functionCalls
         { calledFrom = TopFunction "formatPlayers"
-        , findFunctions = [ FromExternalModule [ "List" ] "sort" ]
+        , findExpressions = [ FromExternalModule [ "List" ] "sort" ]
         , find = None
         }
 
@@ -61,7 +61,7 @@ combineGamesMustUseMerge : Comment -> Rule
 combineGamesMustUseMerge =
     Analyzer.functionCalls
         { calledFrom = TopFunction "combineGames"
-        , findFunctions = [ FromExternalModule [ "Dict" ] "merge" ]
+        , findExpressions = [ FromExternalModule [ "Dict" ] "merge" ]
         , find = Some
         }
 
@@ -70,7 +70,7 @@ aggregateScorersMustUseUpdateGoalCountForPlayer : Comment -> Rule
 aggregateScorersMustUseUpdateGoalCountForPlayer =
     Analyzer.functionCalls
         { calledFrom = TopFunction "aggregateScorers"
-        , findFunctions = [ FromSameModule "updateGoalCountForPlayer" ]
+        , findExpressions = [ FromSameModule "updateGoalCountForPlayer" ]
         , find = All
         }
 
@@ -79,7 +79,7 @@ aggregateScorersMustUseFold : Comment -> Rule
 aggregateScorersMustUseFold =
     Analyzer.functionCalls
         { calledFrom = TopFunction "aggregateScorers"
-        , findFunctions = [ FromExternalModule [ "List" ] "foldl", FromExternalModule [ "List" ] "foldr" ]
+        , findExpressions = [ FromExternalModule [ "List" ] "foldl", FromExternalModule [ "List" ] "foldr" ]
         , find = Some
         }
 
@@ -88,6 +88,6 @@ formatPlayerMustUseWithDefault : Comment -> Rule
 formatPlayerMustUseWithDefault =
     Analyzer.functionCalls
         { calledFrom = TopFunction "formatPlayer"
-        , findFunctions = [ FromExternalModule [ "Maybe" ] "withDefault" ]
+        , findExpressions = [ FromExternalModule [ "Maybe" ] "withDefault" ]
         , find = Some
         }

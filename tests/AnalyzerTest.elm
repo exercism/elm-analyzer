@@ -907,8 +907,6 @@ findArgumentPatternTest =
                 """
 module A exposing (..)
 
-import Ext
-
 callingFunction { a, b } (c, d) _ (Named "e") (f as g) =
   param
   |> Ext.other
@@ -921,8 +919,6 @@ callingFunction { a, b } (c, d) _ (Named "e") (f as g) =
                 """
 module A exposing (..)
 
-import Ext
-
 callingFunction   ((Named (_, { a, b } as e)), "f")=
   param
   |> Ext.other
@@ -934,8 +930,6 @@ callingFunction   ((Named (_, { a, b } as e)), "f")=
             \() ->
                 """
 module A exposing (..)
-
-import Ext
 
 callingFunction param =
   param
@@ -955,8 +949,6 @@ helperFunction2 { a, b } (c, d) _ (Named "e") (f as g) =
                 """
 module A exposing (..)
 
-import Ext
-
 wrongCallingFunction { a, b } (c, d) _ (Named "e") (f as g) =
   param
   |> Ext.other
@@ -970,8 +962,6 @@ wrongCallingFunction { a, b } (c, d) _ (Named "e") (f as g) =
                 """
 module A exposing (..)
 
-import Ext
-
 callingFunction =
   let
     someInternalFunction { a, b } (c, d) _ (Named "e") (f as g) =
@@ -984,12 +974,28 @@ callingFunction =
                     |> Review.Test.run (getRule allRule)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder (quickComment allRule) "callingFunction" ]
-        , test "missing record" <|
+        , test "used but in a let expressions, error" <|
             \() ->
                 """
 module A exposing (..)
 
-import Ext
+callingFunction =
+  let
+    ({ a, b } as f) = recordAndAs
+    (c, _) = tupleAndIgnored
+    (Named "e") = namedAndString
+  in
+  param
+  |> Ext.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule allRule)
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (quickComment allRule) "callingFunction" ]
+        , test "missing record" <|
+            \() ->
+                """
+module A exposing (..)
 
 callingFunction missing (c, d) _ (Named "e") (f as g) =
   param
@@ -1004,8 +1010,6 @@ callingFunction missing (c, d) _ (Named "e") (f as g) =
                 """
 module A exposing (..)
 
-import Ext
-
 callingFunction { a, b } missing _ (Named "e") (f as g) =
   param
   |> Ext.other
@@ -1018,8 +1022,6 @@ callingFunction { a, b } missing _ (Named "e") (f as g) =
             \() ->
                 """
 module A exposing (..)
-
-import Ext
 
 callingFunction { a, b } (c, d) missing (Named "e") (f as g) =
   param
@@ -1034,8 +1036,6 @@ callingFunction { a, b } (c, d) missing (Named "e") (f as g) =
                 """
 module A exposing (..)
 
-import Ext
-
 callingFunction { a, b } (c, d) _ missing (f as g) =
   param
   |> Ext.other
@@ -1048,8 +1048,6 @@ callingFunction { a, b } (c, d) _ missing (f as g) =
             \() ->
                 """
 module A exposing (..)
-
-import Ext
 
 callingFunction { a, b } (c, d) _ (Named "e") missing =
   param
@@ -1064,8 +1062,6 @@ callingFunction { a, b } (c, d) _ (Named "e") missing =
                 """
 module A exposing (..)
 
-import Ext
-
 callingFunction { a, b } (c, d) _ (Named missing) (f as g) =
   param
   |> Ext.other
@@ -1079,8 +1075,6 @@ callingFunction { a, b } (c, d) _ (Named missing) (f as g) =
                 """
 module A exposing (..)
 
-import Ext
-
 callingFunction { a, b } (c, d) _ (Named "e") (f as g) =
   param
   |> Ext.other
@@ -1092,8 +1086,6 @@ callingFunction { a, b } (c, d) _ (Named "e") (f as g) =
             \() ->
                 """
 module A exposing (..)
-
-import Ext
 
 dallingFunction { a, b } (c, d)  =
   param
@@ -1192,6 +1184,17 @@ callingFunction param =
   case a of
       _ ->
           \\(x, y) -> x + y
+"""
+                    |> Review.Test.run (getRule allRule)
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (quickComment allRule) "callingFunction" ]
+        , test "doesn't match patterns in arguments" <|
+            \() ->
+                """
+module A exposing (..)
+
+callingFunction (a, b) _ { x, y } =
+  a + b + x + y
 """
                     |> Review.Test.run (getRule allRule)
                     |> Review.Test.expectErrors

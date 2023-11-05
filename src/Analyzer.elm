@@ -306,7 +306,7 @@ flattenTrees calledFrom (Context ({ callTree, argumentTree } as context)) =
         expressionsFound =
             context.foundExpressions
                 |> List.map (\expression -> List.foldl matchExpression expression allExpressions)
-                |> List.map (\expression -> List.foldl matchPattern expression allArguments)
+                |> List.map (\expression -> List.foldl matchArgumentPattern expression allArguments)
     in
     Context { context | foundExpressions = expressionsFound }
 
@@ -398,66 +398,85 @@ matchExpression (Node range expression) foundExpression =
             declarations
                 |> List.filterMap letDestructuringPattern
                 |> List.concatMap ElmSyntaxHelpers.traversePattern
-                |> List.foldl matchPattern foundExpression
+                |> List.foldl matchExpressionPattern foundExpression
 
         ( CaseExpression { cases }, NotFound (CaseWithPattern _) ) ->
             cases
                 |> List.map Tuple.first
                 |> List.concatMap ElmSyntaxHelpers.traversePattern
-                |> List.foldl matchPattern foundExpression
+                |> List.foldl matchExpressionPattern foundExpression
 
         ( LambdaExpression { args }, NotFound (LambdaWithPattern _) ) ->
             args
                 |> List.concatMap ElmSyntaxHelpers.traversePattern
-                |> List.foldl matchPattern foundExpression
+                |> List.foldl matchExpressionPattern foundExpression
 
         -- already found expression, argument pattern, or expression that doesn't match
         _ ->
             foundExpression
 
 
-matchPattern : Node Pattern.Pattern -> FoundExpression -> FoundExpression
-matchPattern (Node range pattern) foundExpression =
-    let
-        extractNotFoundPattern found =
-            case found of
-                NotFound (ArgumentWithPattern p) ->
-                    Just p
+matchArgumentPattern : Node Pattern.Pattern -> FoundExpression -> FoundExpression
+matchArgumentPattern (Node range elmSyntaxPattern) foundExpression =
+    case foundExpression of
+        NotFound (ArgumentWithPattern pattern) ->
+            if matchPattern elmSyntaxPattern pattern then
+                foundAt range foundExpression
 
-                NotFound (LetWithPattern p) ->
-                    Just p
+            else
+                foundExpression
 
-                NotFound (CaseWithPattern p) ->
-                    Just p
-
-                NotFound (LambdaWithPattern p) ->
-                    Just p
-
-                _ ->
-                    Nothing
-    in
-    case ( pattern, extractNotFoundPattern foundExpression ) of
-        ( Pattern.RecordPattern _, Just Record ) ->
-            foundAt range foundExpression
-
-        ( Pattern.TuplePattern _, Just Tuple ) ->
-            foundAt range foundExpression
-
-        ( Pattern.AllPattern, Just Ignore ) ->
-            foundAt range foundExpression
-
-        ( Pattern.NamedPattern _ _, Just Named ) ->
-            foundAt range foundExpression
-
-        ( Pattern.AsPattern _ _, Just As ) ->
-            foundAt range foundExpression
-
-        ( Pattern.StringPattern _, Just String ) ->
-            foundAt range foundExpression
-
-        -- already found expression/pattern, or pattern that doesn't match
         _ ->
             foundExpression
+
+
+matchExpressionPattern : Node Pattern.Pattern -> FoundExpression -> FoundExpression
+matchExpressionPattern (Node range elmSyntaxPattern) foundExpression =
+    let
+        checkPattern pattern =
+            if matchPattern elmSyntaxPattern pattern then
+                foundAt range foundExpression
+
+            else
+                foundExpression
+    in
+    case foundExpression of
+        NotFound (LetWithPattern pattern) ->
+            checkPattern pattern
+
+        NotFound (CaseWithPattern pattern) ->
+            checkPattern pattern
+
+        NotFound (LambdaWithPattern pattern) ->
+            checkPattern pattern
+
+        _ ->
+            foundExpression
+
+
+matchPattern : Pattern.Pattern -> Pattern -> Bool
+matchPattern elmSyntaxPattern pattern =
+    case ( elmSyntaxPattern, pattern ) of
+        ( Pattern.RecordPattern _, Record ) ->
+            True
+
+        ( Pattern.TuplePattern _, Tuple ) ->
+            True
+
+        ( Pattern.AllPattern, Ignore ) ->
+            True
+
+        ( Pattern.NamedPattern _ _, Named ) ->
+            True
+
+        ( Pattern.AsPattern _ _, As ) ->
+            True
+
+        ( Pattern.StringPattern _, String ) ->
+            True
+
+        _ ->
+            False
 
 
 foundAt : Range -> FoundExpression -> FoundExpression

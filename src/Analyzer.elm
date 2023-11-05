@@ -3,7 +3,7 @@ module Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..), Patter
 import Comment exposing (Comment)
 import Dict exposing (Dict)
 import Elm.Syntax.Declaration as Declaration exposing (Declaration)
-import Elm.Syntax.Expression exposing (Expression(..))
+import Elm.Syntax.Expression exposing (Expression(..), LetDeclaration(..))
 import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Pattern as Pattern
@@ -47,7 +47,9 @@ Note that for searching for function that are automatically imported, like `roun
 
 `Operator "::"` means we are looking for the operator either applied `head :: tail` or standalone `List.map2 (::)`.
 
-`PatternInArgument pattern` means we are looking for a pattern match in a top-level function argument.
+`ArgumentWithPattern pattern` means we are looking for a pattern match in a top-level function argument.
+
+`LetWithPattern pattern`, `CaseWithPattern pattern`, `LambdaWithPattern pattern`, means we are looking for a destructure pattern in a let, case, or lambda function expression.
 
 -}
 
@@ -64,13 +66,16 @@ type CalledExpression
     | CaseBlock
     | RecordUpdate
     | Operator FunctionName
-    | PatternInArgument Pattern
+    | ArgumentWithPattern Pattern
+    | LetWithPattern Pattern
+    | CaseWithPattern Pattern
+    | LambdaWithPattern Pattern
 
 
 type Pattern
     = Record
     | Tuple
-    | Any
+    | Ignore
     | Named
     | As
 
@@ -254,6 +259,9 @@ expressionCallsFunction ((Node range expression) as node) (Context ({ lookupTabl
                 PrefixOperator _ ->
                     add node nodeTree
 
+                LambdaExpression _ ->
+                    add node nodeTree
+
                 _ ->
                     nodeTree
     in
@@ -343,16 +351,24 @@ traverseTreesFrom root callTree argumentTree =
 
 
 matchExpression : Node Expression -> FoundExpression -> FoundExpression
-matchExpression (Node range expression) foundFunction =
+matchExpression (Node range expression) foundExpression =
     let
         match a b =
             if a == b then
-                foundAt range foundFunction
+                foundAt range foundExpression
 
             else
-                foundFunction
+                foundExpression
+
+        letDestructuringPattern declaration =
+            case Node.value declaration of
+                LetDestructuring pattern _ ->
+                    Just pattern
+
+                LetFunction _ ->
+                    Nothing
     in
-    case ( expression, foundFunction ) of
+    case ( expression, foundExpression ) of
         ( FunctionOrValue exprModule _, NotFound (AnyFromExternalModule extModule) ) ->
             match exprModule extModule
 
@@ -377,27 +393,62 @@ matchExpression (Node range expression) foundFunction =
         ( PrefixOperator exprOperator, NotFound (Operator operator) ) ->
             match exprOperator operator
 
+        ( LetExpression { declarations }, NotFound (LetWithPattern _) ) ->
+            declarations
+                |> List.filterMap letDestructuringPattern
+                |> List.concatMap ElmSyntaxHelpers.traversePattern
+                |> List.foldl matchPattern foundExpression
+
+        ( CaseExpression { cases }, NotFound (CaseWithPattern _) ) ->
+            cases
+                |> List.map Tuple.first
+                |> List.concatMap ElmSyntaxHelpers.traversePattern
+                |> List.foldl matchPattern foundExpression
+
+        ( LambdaExpression { args }, NotFound (LambdaWithPattern _) ) ->
+            args
+                |> List.concatMap ElmSyntaxHelpers.traversePattern
+                |> List.foldl matchPattern foundExpression
+
         -- already found expression, argument pattern, or expression that doesn't match
         _ ->
-            foundFunction
+            foundExpression
 
 
 matchPattern : Node Pattern.Pattern -> FoundExpression -> FoundExpression
 matchPattern (Node range pattern) foundExpression =
-    case ( pattern, foundExpression ) of
-        ( Pattern.RecordPattern _, NotFound (PatternInArgument Record) ) ->
+    let
+        extractNotFoundPattern found =
+            case found of
+                NotFound (ArgumentWithPattern p) ->
+                    Just p
+
+                NotFound (LetWithPattern p) ->
+                    Just p
+
+                NotFound (CaseWithPattern p) ->
+                    Just p
+
+                NotFound (LambdaWithPattern p) ->
+                    Just p
+
+                _ ->
+                    Nothing
+    in
+    case ( pattern, extractNotFoundPattern foundExpression ) of
+        ( Pattern.RecordPattern _, Just Record ) ->
             foundAt range foundExpression
 
-        ( Pattern.TuplePattern _, NotFound (PatternInArgument Tuple) ) ->
+        ( Pattern.TuplePattern _, Just Tuple ) ->
             foundAt range foundExpression
 
-        ( Pattern.AllPattern, NotFound (PatternInArgument Any) ) ->
+        ( Pattern.AllPattern, Just Ignore ) ->
             foundAt range foundExpression
 
-        ( Pattern.NamedPattern _ _, NotFound (PatternInArgument Named) ) ->
+        ( Pattern.NamedPattern _ _, Just Named ) ->
             foundAt range foundExpression
 
-        ( Pattern.AsPattern _ _, NotFound (PatternInArgument As) ) ->
+        ( Pattern.AsPattern _ _, Just As ) ->
             foundAt range foundExpression
 
         -- already found expression/pattern, or pattern that doesn't match

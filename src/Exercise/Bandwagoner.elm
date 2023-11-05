@@ -39,7 +39,7 @@ rootForTeamUsesPatternMatchingInArgument : Comment -> Rule
 rootForTeamUsesPatternMatchingInArgument =
     Analyzer.functionCalls
         { calledFrom = TopFunction "rootForTeam"
-        , findExpressions = [ PatternInArgument Record ]
+        , findExpressions = [ ArgumentWithPattern Record ]
         , find = Some
         }
 

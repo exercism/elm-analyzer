@@ -1,6 +1,6 @@
 module Exercise.Bandwagoner exposing (replaceCoachUsesRecordUpdateSyntax, rootForTeamHasExtensibleRecordSignature, rootForTeamUsesPatternMatchingInArgument, ruleConfig)
 
-import Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..))
+import Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..), Pattern(..))
 import Comment exposing (Comment, CommentType(..))
 import Dict
 import Elm.Syntax.Declaration as Declaration exposing (Declaration)
@@ -35,6 +35,15 @@ replaceCoachUsesRecordUpdateSyntax =
         }
 
 
+rootForTeamUsesPatternMatchingInArgument : Comment -> Rule
+rootForTeamUsesPatternMatchingInArgument =
+    Analyzer.functionCalls
+        { calledFrom = TopFunction "rootForTeam"
+        , findExpressions = [ PatternInArgument Record ]
+        , find = Some
+        }
+
+
 rootForTeamHasExtensibleRecordSignature : Comment -> Rule
 rootForTeamHasExtensibleRecordSignature comment =
     Rule.newModuleRuleSchema comment.path []
@@ -61,32 +70,6 @@ hasExtensibleRecordSignatureVisitor comment functionName node =
 
                         else
                             error
-
-            else
-                []
-
-        _ ->
-            []
-
-
-rootForTeamUsesPatternMatchingInArgument : Comment -> Rule
-rootForTeamUsesPatternMatchingInArgument comment =
-    Rule.newModuleRuleSchema comment.path []
-        |> Rule.withSimpleDeclarationVisitor (usesPaternMatchingInArg comment "rootForTeam")
-        |> Rule.fromModuleRuleSchema
-
-
-usesPaternMatchingInArg : Comment -> String -> Node Declaration -> List (Error {})
-usesPaternMatchingInArg comment functionName node =
-    case Node.value node of
-        Declaration.FunctionDeclaration { declaration } ->
-            if (declaration |> Node.value |> .name |> Node.value) == functionName then
-                case declaration |> Node.value |> .arguments of
-                    [ Node _ (RecordPattern _) ] ->
-                        []
-
-                    _ ->
-                        [ Comment.createError comment (declaration |> Node.value |> .name |> Node.range) ]
 
             else
                 []

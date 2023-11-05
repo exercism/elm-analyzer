@@ -1,5 +1,7 @@
 module ReviewConfig exposing (config)
 
+import NoDebug.Log
+import NoDebug.TodoOrToString
 import NoUnused.CustomTypeConstructorArgs
 import NoUnused.CustomTypeConstructors
 import NoUnused.Dependencies
@@ -23,4 +25,6 @@ config =
     , NoUnused.Exports.rule |> Review.Rule.ignoreErrorsForDirectories [ "tests/" ]
     , NoUnused.Dependencies.rule
     , Simplify.rule Simplify.defaults
+    , NoDebug.Log.rule
+    , NoDebug.TodoOrToString.rule
     ]

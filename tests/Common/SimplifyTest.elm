@@ -12,6 +12,7 @@ import Test exposing (Test, describe, test)
 import TestHelper
 
 
+tests : Test
 tests =
     describe "SimplifyTest"
         [ adequateCode, simplify ]

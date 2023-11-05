@@ -35,7 +35,7 @@ allRules =
             , ( "case", [ CaseBlock ] )
             , ( "recordUpdate", [ RecordUpdate ] )
             , ( "pipe", [ Operator "|>" ] )
-            , ( "arg", [ ArgumentWithPattern Record, ArgumentWithPattern Tuple, ArgumentWithPattern Ignore, ArgumentWithPattern Named, ArgumentWithPattern As ] )
+            , ( "arg", [ ArgumentWithPattern Record, ArgumentWithPattern Tuple, ArgumentWithPattern Ignore, ArgumentWithPattern Named, ArgumentWithPattern As, ArgumentWithPattern String ] )
             , ( "patterns", [ LetWithPattern Tuple, CaseWithPattern Ignore, LambdaWithPattern Record ] )
             , ( "Ext._ + Ext.ext", [ AnyFromExternalModule [ "Ext" ], FromExternalModule [ "Ext" ] "ext" ] )
             , ( "Ext._ + internal", [ AnyFromExternalModule [ "Ext" ], FromSameModule "internal" ] )
@@ -909,7 +909,7 @@ module A exposing (..)
 
 import Ext
 
-callingFunction { a, b } (c, d) _ (Named e) (f as g) =
+callingFunction { a, b } (c, d) _ (Named "e") (f as g) =
   param
   |> Ext.other
   |> internal
@@ -923,7 +923,7 @@ module A exposing (..)
 
 import Ext
 
-callingFunction   ((Named (_, { a, b } as e)), f)=
+callingFunction   ((Named (_, { a, b } as e)), "f")=
   param
   |> Ext.other
   |> internal
@@ -945,7 +945,7 @@ callingFunction param =
 helperFunction1 x =
   helperFunction2 x
 
-helperFunction2 { a, b } (c, d) _ (Named e) (f as g) =
+helperFunction2 { a, b } (c, d) _ (Named "e") (f as g) =
   0
 """
                     |> Review.Test.run (getRule allRule)
@@ -957,7 +957,7 @@ module A exposing (..)
 
 import Ext
 
-wrongCallingFunction { a, b } (c, d) _ (Named e) (f as g) =
+wrongCallingFunction { a, b } (c, d) _ (Named "e") (f as g) =
   param
   |> Ext.other
   |> internal
@@ -974,7 +974,7 @@ import Ext
 
 callingFunction =
   let
-    someInternalFunction { a, b } (c, d) _ (Named e) (f as g) =
+    someInternalFunction { a, b } (c, d) _ (Named "e") (f as g) =
       0
   in
   param
@@ -991,7 +991,7 @@ module A exposing (..)
 
 import Ext
 
-callingFunction missing (c, d) _ (Named e) (f as g) =
+callingFunction missing (c, d) _ (Named "e") (f as g) =
   param
   |> Ext.other
   |> internal
@@ -1006,7 +1006,7 @@ module A exposing (..)
 
 import Ext
 
-callingFunction { a, b } missing _ (Named e) (f as g) =
+callingFunction { a, b } missing _ (Named "e") (f as g) =
   param
   |> Ext.other
   |> internal
@@ -1021,7 +1021,7 @@ module A exposing (..)
 
 import Ext
 
-callingFunction { a, b } (c, d) missing (Named e) (f as g) =
+callingFunction { a, b } (c, d) missing (Named "e") (f as g) =
   param
   |> Ext.other
   |> internal
@@ -1051,7 +1051,22 @@ module A exposing (..)
 
 import Ext
 
-callingFunction { a, b } (c, d) _ (Named e) missing =
+callingFunction { a, b } (c, d) _ (Named "e") missing =
+  param
+  |> Ext.other
+  |> internal
+"""
+                    |> Review.Test.run (getRule allRule)
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (quickComment allRule) "callingFunction" ]
+        , test "missing string" <|
+            \() ->
+                """
+module A exposing (..)
+
+import Ext
+
+callingFunction { a, b } (c, d) _ (Named missing) (f as g) =
   param
   |> Ext.other
   |> internal
@@ -1066,7 +1081,7 @@ module A exposing (..)
 
 import Ext
 
-callingFunction { a, b } (c, d) _ (Named e) (f as g) =
+callingFunction { a, b } (c, d) _ (Named "e") (f as g) =
   param
   |> Ext.other
   |> internal
@@ -1086,7 +1101,7 @@ dallingFunction { a, b } (c, d)  =
   |> internal
 
 
-otherFunction _ (Named e) (f as g) =
+otherFunction _ (Named "e") (f as g) =
   param
   |> Ext.other
   |> internal

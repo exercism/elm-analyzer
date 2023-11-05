@@ -78,6 +78,7 @@ type Pattern
     | Ignore
     | Named
     | As
+    | String
 
 
 {-| Type of search.
@@ -449,6 +450,9 @@ matchPattern (Node range pattern) foundExpression =
             foundAt range foundExpression
 
         ( Pattern.AsPattern _ _, Just As ) ->
+            foundAt range foundExpression
+
+        ( Pattern.StringPattern _, Just String ) ->
             foundAt range foundExpression
 
         -- already found expression/pattern, or pattern that doesn't match

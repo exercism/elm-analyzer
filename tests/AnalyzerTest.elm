@@ -1199,6 +1199,22 @@ callingFunction (a, b) _ { x, y } =
                     |> Review.Test.run (getRule allRule)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder (quickComment allRule) "callingFunction" ]
+        , test "doesn't match patterns in other blocks" <|
+            \() ->
+                """
+module A exposing (..)
+
+callingFunction param =
+  let
+      {a, b} = param
+  in
+  case a of
+      a ->
+          \\(x, _) -> x + y
+"""
+                    |> Review.Test.run (getRule allRule)
+                    |> Review.Test.expectErrors
+                        [ TestHelper.createExpectedErrorUnder (quickComment allRule) "callingFunction" ]
         , test "called in helper functions, no error" <|
             \() ->
                 """

@@ -72,6 +72,21 @@ type CalledExpression
     | LambdaWithPattern Pattern
 
 
+{-| Patterns that can be searched for, either in function arguments or in expression that support them.
+
+`Record` is for records: `let {a, b} = rec in ...`.
+
+`Tuple` is for tuples: `let (a, b) = pair in ...`.
+
+`Ignore` is for the wild card: `let _ = ignored in ...`.
+
+`Named` is for constructors: `let Just x = maybeX in ...`.
+
+`As` is for assigning a variable to a pattern: `let Just ({a, b} as rec) = maybeRec in ...`.
+
+`String` is for strings: `let Just "x" = maybeX in ...`.
+
+-}
 type Pattern
     = Record
     | Tuple

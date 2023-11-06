@@ -94,13 +94,11 @@ traversePatternTests =
         , test "patterns with two pattern arguments are placed before their traversed arguments" <|
             \_ ->
                 let
-                    patterns =
-                        [ UnConsPattern (Node.empty (VarPattern "x")) (Node.empty (VarPattern "xs"))
-                        ]
-                            |> List.map Node.empty
+                    pattern =
+                        Node.empty (UnConsPattern (Node.empty (VarPattern "x")) (Node.empty (VarPattern "xs")))
                 in
-                patterns
-                    |> List.concatMap ElmSyntaxHelpers.traversePattern
+                pattern
+                    |> ElmSyntaxHelpers.traversePattern
                     |> Expect.equal
                         ([ UnConsPattern (Node.empty (VarPattern "x")) (Node.empty (VarPattern "xs"))
                          , VarPattern "x"

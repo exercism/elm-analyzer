@@ -1,11 +1,13 @@
 module ReviewConfig exposing (config, ruleConfigs)
 
+import Common.NoDebug
 import Common.NoUnused
 import Common.Simplify
 import Exercise.Bandwagoner
 import Exercise.BettysBikeShop
 import Exercise.BlorkemonCards
 import Exercise.CustomSet
+import Exercise.ListOps
 import Exercise.MariosMarvellousLasagna
 import Exercise.MazeMaker
 import Exercise.Strain
@@ -24,6 +26,7 @@ ruleConfigs =
     [ -- Common Rules
       Common.NoUnused.ruleConfig
     , Common.Simplify.ruleConfig
+    , Common.NoDebug.ruleConfig
 
     -- Concept Exercises
     , Exercise.BettysBikeShop.ruleConfig
@@ -40,6 +43,7 @@ ruleConfigs =
     -- Practice Exercises
     , Exercise.Strain.ruleConfig
     , Exercise.CustomSet.ruleConfig
+    , Exercise.ListOps.ruleConfig
     , Exercise.ZebraPuzzle.ruleConfig
     ]
 

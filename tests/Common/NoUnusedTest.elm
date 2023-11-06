@@ -17,6 +17,7 @@ import Test exposing (Test, describe, test)
 import TestHelper
 
 
+tests : Test
 tests =
     describe "NoUnusedTest"
         [ adequateCode

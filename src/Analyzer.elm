@@ -72,7 +72,7 @@ type CalledExpression
     | LambdaWithPattern Pattern
 
 
-{-| Patterns that can be searched for, either in function arguments or in expression that support them.
+{-| Patterns that can be searched for, either in function arguments or in expressions that support them.
 
 `Record` is for records: `let {a, b} = rec in ...`.
 

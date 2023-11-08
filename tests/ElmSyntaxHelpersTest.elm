@@ -72,7 +72,7 @@ traversePatternTests =
                 patterns
                     |> List.concatMap ElmSyntaxHelpers.traversePattern
                     |> Expect.equal patterns
-        , test "patterns with one pattern argument are placed before to their traversed argument" <|
+        , test "patterns with one pattern argument are placed before their traversed argument" <|
             \_ ->
                 let
                     patterns =

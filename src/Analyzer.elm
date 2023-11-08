@@ -432,66 +432,54 @@ matchExpression (Node range expression) foundExpression =
 
 
 matchArgumentPattern : Node Pattern.Pattern -> FoundExpression -> FoundExpression
-matchArgumentPattern (Node range elmSyntaxPattern) foundExpression =
+matchArgumentPattern node foundExpression =
     case foundExpression of
         NotFound (ArgumentWithPattern pattern) ->
-            if matchPattern elmSyntaxPattern pattern then
-                foundAt range foundExpression
-
-            else
-                foundExpression
+            matchPattern node pattern foundExpression
 
         _ ->
             foundExpression
 
 
 matchExpressionPattern : Node Pattern.Pattern -> FoundExpression -> FoundExpression
-matchExpressionPattern (Node range elmSyntaxPattern) foundExpression =
-    let
-        checkPattern pattern =
-            if matchPattern elmSyntaxPattern pattern then
-                foundAt range foundExpression
-
-            else
-                foundExpression
-    in
+matchExpressionPattern node foundExpression =
     case foundExpression of
         NotFound (LetWithPattern pattern) ->
-            checkPattern pattern
+            matchPattern node pattern foundExpression
 
         NotFound (CaseWithPattern pattern) ->
-            checkPattern pattern
+            matchPattern node pattern foundExpression
 
         NotFound (LambdaWithPattern pattern) ->
-            checkPattern pattern
+            matchPattern node pattern foundExpression
 
         _ ->
             foundExpression
 
 
-matchPattern : Pattern.Pattern -> Pattern -> Bool
-matchPattern elmSyntaxPattern pattern =
+matchPattern : Node Pattern.Pattern -> Pattern -> FoundExpression -> FoundExpression
+matchPattern (Node range elmSyntaxPattern) pattern =
     case ( elmSyntaxPattern, pattern ) of
         ( Pattern.RecordPattern _, Record ) ->
-            True
+            foundAt range
 
         ( Pattern.TuplePattern _, Tuple ) ->
-            True
+            foundAt range
 
         ( Pattern.AllPattern, Ignore ) ->
-            True
+            foundAt range
 
         ( Pattern.NamedPattern _ _, Named ) ->
-            True
+            foundAt range
 
         ( Pattern.AsPattern _ _, As ) ->
-            True
+            foundAt range
 
         ( Pattern.StringPattern _, String ) ->
-            True
+            foundAt range
 
         _ ->
-            False
+            identity
 
 
 foundAt : Range -> FoundExpression -> FoundExpression

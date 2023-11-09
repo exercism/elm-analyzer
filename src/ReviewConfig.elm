@@ -3,6 +3,7 @@ module ReviewConfig exposing (config, ruleConfigs)
 import Common.NoDebug
 import Common.NoUnused
 import Common.Simplify
+import Common.UseCamelCase
 import Exercise.Bandwagoner
 import Exercise.BettysBikeShop
 import Exercise.BlorkemonCards
@@ -27,6 +28,7 @@ ruleConfigs =
       Common.NoUnused.ruleConfig
     , Common.Simplify.ruleConfig
     , Common.NoDebug.ruleConfig
+    , Common.UseCamelCase.ruleConfig
 
     -- Concept Exercises
     , Exercise.BettysBikeShop.ruleConfig

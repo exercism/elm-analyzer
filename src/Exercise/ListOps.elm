@@ -1,6 +1,6 @@
 module Exercise.ListOps exposing (doNotUseListModule, ruleConfig)
 
-import Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..))
+import Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..))
 import Comment exposing (Comment, CommentType(..))
 import Dict
 import Review.Rule exposing (Rule)
@@ -22,6 +22,6 @@ doNotUseListModule : Comment -> Rule
 doNotUseListModule =
     Analyzer.functionCalls
         { calledFrom = Anywhere
-        , findFunctions = [ AnyFromExternalModule [ "List" ] ]
+        , findExpressions = [ AnyFromExternalModule [ "List" ] ]
         , find = None
         }

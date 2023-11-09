@@ -1,6 +1,6 @@
 module Exercise.Strain exposing (doNotUseFilter, ruleConfig)
 
-import Analyzer exposing (CalledFrom(..), CalledFunction(..), Find(..))
+import Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..))
 import Comment exposing (Comment, CommentType(..))
 import Dict
 import Review.Rule exposing (Rule)
@@ -22,6 +22,6 @@ doNotUseFilter : Comment -> Rule
 doNotUseFilter =
     Analyzer.functionCalls
         { calledFrom = Anywhere
-        , findFunctions = [ FromExternalModule [ "List" ] "filter", FromExternalModule [ "List" ] "filterMap" ]
+        , findExpressions = [ FromExternalModule [ "List" ] "filter", FromExternalModule [ "List" ] "filterMap" ]
         , find = None
         }

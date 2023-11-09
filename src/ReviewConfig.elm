@@ -11,6 +11,7 @@ import Exercise.ListOps
 import Exercise.MariosMarvellousLasagna
 import Exercise.MazeMaker
 import Exercise.Strain
+import Exercise.TicketPlease
 import Exercise.TopScorers
 import Exercise.TracksOnTracksOnTracks
 import Exercise.TreasureFactory
@@ -37,6 +38,7 @@ ruleConfigs =
     , Exercise.TreasureFactory.ruleConfig
     , Exercise.ValentinesDay.ruleConfig
     , Exercise.Bandwagoner.ruleConfig
+    , Exercise.TicketPlease.ruleConfig
 
     -- Practice Exercises
     , Exercise.Strain.ruleConfig

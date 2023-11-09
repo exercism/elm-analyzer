@@ -12,6 +12,7 @@ import NoUnused.Patterns
 import NoUnused.Variables
 import Review.Rule exposing (Rule)
 import Simplify
+import UseCamelCase
 
 
 config : List Rule
@@ -27,4 +28,5 @@ config =
     , Simplify.rule Simplify.defaults
     , NoDebug.Log.rule
     , NoDebug.TodoOrToString.rule
+    , UseCamelCase.rule UseCamelCase.default
     ]

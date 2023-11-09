@@ -36,3 +36,9 @@ unusedParameter unused =
     -- True && False can be simplified to False
     -- if condition can be simplified to 0
     Nothing -> if (True && False) then 1 else 0
+
+-- function not in camelCase
+snake_case_two_fer name =
+    "One for "
+        ++ Maybe.withDefault "you" name
+        ++ ", one for me."

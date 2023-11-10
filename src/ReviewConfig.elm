@@ -13,6 +13,7 @@ import Exercise.MariosMarvellousLasagna
 import Exercise.MazeMaker
 import Exercise.Strain
 import Exercise.TicketPlease
+import Exercise.TisburyTreasureHunt
 import Exercise.TopScorers
 import Exercise.TracksOnTracksOnTracks
 import Exercise.TreasureFactory
@@ -41,6 +42,7 @@ ruleConfigs =
     , Exercise.ValentinesDay.ruleConfig
     , Exercise.Bandwagoner.ruleConfig
     , Exercise.TicketPlease.ruleConfig
+    , Exercise.TisburyTreasureHunt.ruleConfig
 
     -- Practice Exercises
     , Exercise.Strain.ruleConfig

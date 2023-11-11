@@ -1,4 +1,4 @@
-module Exercise.GottaSnatchEmAll exposing (boringCardsUsesFold, boringCardsUsesIntersect, extraCardsUsesDiff, removeDuplicatesUsesSet, ruleConfig, splitShinyCardsUsesPartition, splitShinyCardsUsesStartsWith, totalCardsUsesFold, totalCardsUsesUnion, usesSingleton)
+module Exercise.GottaSnatchEmAll exposing (boringCardsUsesFold, boringCardsUsesIntersect, extraCardsUsesDiff, removeDuplicatesUsesSet, ruleConfig, splitShinyCardsUsesPartition, totalCardsUsesFold, totalCardsUsesUnion, usesSingleton)
 
 import Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..))
 import Comment exposing (Comment, CommentType(..))

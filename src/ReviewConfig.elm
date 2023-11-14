@@ -8,6 +8,7 @@ import Exercise.Bandwagoner
 import Exercise.BettysBikeShop
 import Exercise.BlorkemonCards
 import Exercise.CustomSet
+import Exercise.GottaSnatchEmAll
 import Exercise.ListOps
 import Exercise.MariosMarvellousLasagna
 import Exercise.MazeMaker
@@ -43,6 +44,7 @@ ruleConfigs =
     , Exercise.Bandwagoner.ruleConfig
     , Exercise.TicketPlease.ruleConfig
     , Exercise.TisburyTreasureHunt.ruleConfig
+    , Exercise.GottaSnatchEmAll.ruleConfig
 
     -- Practice Exercises
     , Exercise.Strain.ruleConfig

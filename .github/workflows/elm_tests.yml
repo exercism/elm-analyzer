@@ -154,7 +154,7 @@ jobs:
           context: .
           push: false
           load: true
-          tags: exercism/elm-analyzer
+          tags: elm-analyzer
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

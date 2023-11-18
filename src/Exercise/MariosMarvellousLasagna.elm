@@ -9,8 +9,7 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "marios-marvellous-lasagna"
-    , restrictToFiles = Just [ "src/MariosMarvellousLasagna.elm" ]
+    { restrictToFiles = Just [ "src/MariosMarvellousLasagna.elm" ]
     , rules =
         [ CustomRule usesLet
             (Comment "Doesn't use a let expression" "elm.marios-marvellous-lasagna.use_let" Essential Dict.empty)

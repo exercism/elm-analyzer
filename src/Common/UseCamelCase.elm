@@ -17,8 +17,7 @@ import UseCamelCase
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Nothing
-    , restrictToFiles = Nothing
+    { restrictToFiles = Nothing
     , rules =
         [ ImportedRule (UseCamelCase.rule UseCamelCase.default)
             useCameCaseDecoder

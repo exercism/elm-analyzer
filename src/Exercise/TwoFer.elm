@@ -11,8 +11,7 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "two-fer"
-    , restrictToFiles = Just [ "src/TwoFer.elm" ]
+    { restrictToFiles = Just [ "src/TwoFer.elm" ]
     , rules =
         [ CustomRule hasFunctionSignature (Comment "has no signature" "elm.two-fer.use_signature" Informative Dict.empty)
         , CustomRule usesWithDefault (Comment "Doesn't use withDefault" "elm.two-fer.use_withDefault" Informative Dict.empty)

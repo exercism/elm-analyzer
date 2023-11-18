@@ -9,8 +9,7 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "gotta-snatch-em-all"
-    , restrictToFiles = Just [ "src/GottaSnatchEmAll.elm" ]
+    { restrictToFiles = Just [ "src/GottaSnatchEmAll.elm" ]
     , rules =
         [ CustomRule usesSingleton
             (Comment "newCollection doesn't use Set.singleton" "elm.gotta-snatch-em-all.use_singleton" Actionable Dict.empty)

@@ -13,8 +13,7 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "bandwagoner"
-    , restrictToFiles = Just [ "src/Bandwagoner.elm" ]
+    { restrictToFiles = Just [ "src/Bandwagoner.elm" ]
     , rules =
         [ CustomRule replaceCoachUsesRecordUpdateSyntax
             (Comment "replaceCoach doesn't use record update syntax" "elm.bandwagoner.use_record_update_syntax" Actionable Dict.empty)

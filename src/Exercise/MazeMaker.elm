@@ -9,8 +9,7 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "maze-maker"
-    , restrictToFiles = Just [ "src/MazeMaker.elm" ]
+    { restrictToFiles = Just [ "src/MazeMaker.elm" ]
     , rules =
         [ CustomRule roomUsesTreasure
             (Comment "room doesn't use treasure" "elm.maze-maker.room_use_treasure" Essential Dict.empty)

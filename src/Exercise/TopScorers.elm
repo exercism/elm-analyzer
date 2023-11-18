@@ -9,8 +9,7 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "top-scorers"
-    , restrictToFiles = Just [ "src/TopScorers.elm" ]
+    { restrictToFiles = Just [ "src/TopScorers.elm" ]
     , rules =
         [ CustomRule removeInsignificantPlayersMustUseFilter
             (Comment "Doesn't use Dict.filter" "elm.top-scorers.use_filter" Essential Dict.empty)

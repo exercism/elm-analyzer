@@ -17,8 +17,7 @@ import Simplify
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Nothing
-    , restrictToFiles = Nothing
+    { restrictToFiles = Nothing
     , rules =
         [ ImportedRule (Simplify.rule Simplify.defaults)
             simplifyDecoder

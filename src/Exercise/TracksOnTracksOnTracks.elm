@@ -9,8 +9,7 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "tracks-on-tracks-on-tracks"
-    , restrictToFiles = Just [ "src/TracksOnTracksOnTracks.elm" ]
+    { restrictToFiles = Just [ "src/TracksOnTracksOnTracks.elm" ]
     , rules =
         [ CustomRule addLanguageUsesCons
             (Comment "addLanguage doesn't use (::)" "elm.tracks-on-tracks-on-tracks.use_cons" Essential Dict.empty)

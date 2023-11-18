@@ -13,8 +13,7 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "treasure-factory"
-    , restrictToFiles = Just [ "src/TreasureFactory.elm" ]
+    { restrictToFiles = Just [ "src/TreasureFactory.elm" ]
     , rules =
         [ CustomRule makeChestSignatureMatchesStub
             (Comment "makeChest signature was changed" "elm.treasure-factory.do_not_change_given_signatures" Essential Dict.empty)

@@ -9,8 +9,7 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "blorkemon-cards"
-    , restrictToFiles = Just [ "src/BlorkemonCards.elm" ]
+    { restrictToFiles = Just [ "src/BlorkemonCards.elm" ]
     , rules =
         [ CustomRule maxPowerUsesMax
             (Comment "maxPower doesn't use max" "elm.blorkemon-cards.use_max" Essential Dict.empty)

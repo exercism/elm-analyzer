@@ -20,8 +20,7 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "ticket-please"
-    , restrictToFiles = Just [ "src/TicketPlease.elm" ]
+    { restrictToFiles = Just [ "src/TicketPlease.elm" ]
     , rules =
         [ CustomRule emptyCommentArgumentShouldUseTupleAndIgnore
             (Comment "emptyComment argument doesn't destructure a tuple and wild card" "elm.ticket-please.destructure_emptyComment_argument" Essential Dict.empty)

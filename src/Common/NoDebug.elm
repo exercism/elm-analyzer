@@ -19,8 +19,7 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Nothing
-    , restrictToFiles = Nothing
+    {   restrictToFiles = Nothing
     , rules =
         [ ImportedRule NoDebug.Log.rule
             noDebugDecoder

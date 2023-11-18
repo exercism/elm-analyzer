@@ -22,8 +22,7 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Nothing
-    , restrictToFiles = Nothing
+    { restrictToFiles = Nothing
     , rules =
         -- do not include Modules.rule since exercise modules are always unused
         -- do not include Exports.rule since exported functions are always unused

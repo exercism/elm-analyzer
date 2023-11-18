@@ -9,8 +9,7 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "custom-set"
-    , restrictToFiles = Just [ "src/CustomSet.elm" ]
+    { restrictToFiles = Just [ "src/CustomSet.elm" ]
     , rules =
         [ CustomRule doNotUseSetModule
             (Comment "Uses the Set module" "elm.custom-set.do_not_use_set" Essential Dict.empty)

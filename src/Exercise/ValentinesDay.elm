@@ -9,8 +9,7 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "valentines-day"
-    , restrictToFiles = Just [ "src/ValentinesDay.elm" ]
+    { restrictToFiles = Just [ "src/ValentinesDay.elm" ]
     , rules =
         [ CustomRule usesCase
             (Comment "Doesn't use a case expression" "elm.valentines-day.use_case_statement" Essential Dict.empty)

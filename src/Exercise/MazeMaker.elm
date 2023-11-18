@@ -12,15 +12,15 @@ ruleConfig =
     { restrictToFiles = Just [ "src/MazeMaker.elm" ]
     , rules =
         [ CustomRule roomUsesTreasure
-            (Comment "room doesn't use treasure" "elm.maze-maker.room_use_treasure" Essential Dict.empty)
+            (Comment "elm.maze-maker.room_use_treasure" Essential Dict.empty)
         , CustomRule mazeUsesDeadendRoomAndBranch
-            (Comment "maze doesn't use deadend, room and branch" "elm.maze-maker.maze_use_deadend_room_branch" Essential Dict.empty)
+            (Comment "elm.maze-maker.maze_use_deadend_room_branch" Essential Dict.empty)
         , CustomRule mazeUsesMaze
-            (Comment "maze doesn't use itself recursively" "elm.maze-maker.use_maze_recursively" Essential Dict.empty)
+            (Comment "elm.maze-maker.use_maze_recursively" Essential Dict.empty)
         , CustomRule mazeOfDepthUsesDeadendRoomAndBranch
-            (Comment "mazeOfDepth doesn't use deadend, room and branch" "elm.maze-maker.mazeOfDepth_use_deadend_room_branch" Essential Dict.empty)
+            (Comment "elm.maze-maker.mazeOfDepth_use_deadend_room_branch" Essential Dict.empty)
         , CustomRule mazeOfDepthUsesMazeOfDepth
-            (Comment "mazeOfDepth doesn't use itself recursively" "elm.maze-maker.use_mazeOfDepth_recursively" Essential Dict.empty)
+            (Comment "elm.maze-maker.use_mazeOfDepth_recursively" Essential Dict.empty)
         ]
     }
 

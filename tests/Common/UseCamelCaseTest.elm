@@ -67,7 +67,7 @@ twoFer my_name =
                         ]
         , test "decoder behavior for wrong argument" <|
             \() ->
-                Decode.decodeString (Common.UseCamelCase.useCameCaseDecoder (Comment "UseCamelCase" "elm.common.useCamelCase" Actionable Dict.empty)) """
+                Decode.decodeString (Common.UseCamelCase.useCameCaseDecoder (Comment "elm.common.useCamelCase" Actionable Dict.empty)) """
 {
   "rule": "UseCamelCase",
   "message": "Wrong case style for `my_name` argument.",
@@ -105,8 +105,7 @@ twoFer my_name =
 """
                     |> Expect.equal
                         (Ok
-                            (Comment "UseCamelCase"
-                                "elm.common.useCamelCase"
+                            (Comment "elm.common.useCamelCase"
                                 Actionable
                                 (Dict.fromList [ ( "wrong", "my_name" ), ( "correct", "myName" ) ])
                             )
@@ -136,7 +135,7 @@ two_fer name =
                         ]
         , test "decoder behavior for wrong function name" <|
             \() ->
-                Decode.decodeString (Common.UseCamelCase.useCameCaseDecoder (Comment "UseCamelCase" "elm.common.useCamelCase" Actionable Dict.empty)) """
+                Decode.decodeString (Common.UseCamelCase.useCameCaseDecoder (Comment "elm.common.useCamelCase" Actionable Dict.empty)) """
 {
   "rule": "UseCamelCase",
   "message": "Wrong case style for `two_fer` function.",
@@ -148,8 +147,7 @@ two_fer name =
 """
                     |> Expect.equal
                         (Ok
-                            (Comment "UseCamelCase"
-                                "elm.common.useCamelCase"
+                            (Comment "elm.common.useCamelCase"
                                 Actionable
                                 (Dict.fromList [ ( "wrong", "two_fer" ), ( "correct", "twoFer" ) ])
                             )
@@ -174,7 +172,7 @@ type My_Type = Snake
                         ]
         , test "decoder behavior for wrong type" <|
             \() ->
-                Decode.decodeString (Common.UseCamelCase.useCameCaseDecoder (Comment "UseCamelCase" "elm.common.useCamelCase" Actionable Dict.empty)) """
+                Decode.decodeString (Common.UseCamelCase.useCameCaseDecoder (Comment "elm.common.useCamelCase" Actionable Dict.empty)) """
 {
   "rule": "UseCamelCase",
   "message": "Wrong case style for `My_Type` type.",
@@ -187,8 +185,7 @@ type My_Type = Snake
 """
                     |> Expect.equal
                         (Ok
-                            (Comment "UseCamelCase"
-                                "elm.common.useCamelCase"
+                            (Comment "elm.common.useCamelCase"
                                 Actionable
                                 (Dict.fromList [ ( "wrong", "My_Type" ), ( "correct", "MyType" ) ])
                             )

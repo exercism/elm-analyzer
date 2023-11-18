@@ -13,8 +13,8 @@ ruleConfig : RuleConfig
 ruleConfig =
     { restrictToFiles = Just [ "src/BettysBikeShop.elm" ]
     , rules =
-        [ CustomRule hasFunctionSignatures (Comment "has no signature" "elm.bettys-bike-shop.use_signature" Essential Dict.empty)
-        , CustomRule importString (Comment "does not import String" "elm.bettys-bike-shop.import_string" Essential Dict.empty)
+        [ CustomRule hasFunctionSignatures (Comment "elm.bettys-bike-shop.use_signature" Essential Dict.empty)
+        , CustomRule importString (Comment "elm.bettys-bike-shop.import_string" Essential Dict.empty)
         ]
     }
 

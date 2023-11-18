@@ -21,7 +21,7 @@ ruleConfig =
     , rules =
         [ ImportedRule (Simplify.rule Simplify.defaults)
             simplifyDecoder
-            (Comment "Simplify" "elm.common.simplify" Actionable Dict.empty)
+            (Comment "elm.common.simplify" Actionable Dict.empty)
         ]
     }
 

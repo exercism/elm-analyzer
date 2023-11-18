@@ -12,7 +12,7 @@ ruleConfig =
     { restrictToFiles = Just [ "src/ListOps.elm" ]
     , rules =
         [ CustomRule doNotUseListModule
-            (Comment "Uses the List module" "elm.list-ops.do_not_use_list" Essential Dict.empty)
+            (Comment "elm.list-ops.do_not_use_list" Essential Dict.empty)
         ]
     }
 

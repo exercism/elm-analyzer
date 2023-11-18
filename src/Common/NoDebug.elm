@@ -19,14 +19,14 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    {   restrictToFiles = Nothing
+    { restrictToFiles = Nothing
     , rules =
         [ ImportedRule NoDebug.Log.rule
             noDebugDecoder
-            (Comment "NoDebug.Log" "elm.common.no_debug" Actionable Dict.empty)
+            (Comment "elm.common.no_debug" Actionable Dict.empty)
         , ImportedRule NoDebug.TodoOrToString.rule
             noDebugDecoder
-            (Comment "NoDebug.TodoOrToString" "elm.common.no_debug" Actionable Dict.empty)
+            (Comment "elm.common.no_debug" Actionable Dict.empty)
         ]
     }
 

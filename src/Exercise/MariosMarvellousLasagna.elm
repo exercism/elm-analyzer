@@ -12,7 +12,7 @@ ruleConfig =
     { restrictToFiles = Just [ "src/MariosMarvellousLasagna.elm" ]
     , rules =
         [ CustomRule usesLet
-            (Comment "Doesn't use a let expression" "elm.marios-marvellous-lasagna.use_let" Essential Dict.empty)
+            (Comment "elm.marios-marvellous-lasagna.use_let" Essential Dict.empty)
         ]
     }
 

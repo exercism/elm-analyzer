@@ -72,9 +72,9 @@ type TwoFer = TwoFerUnused
             \() ->
                 let
                     comment =
-                        Comment "NoUnused.CustomTypeConstructors" "elm.common.no_unused.custom_type_constructors" Actionable Dict.empty
+                        Comment "elm.common.no_unused.custom_type_constructors" Actionable Dict.empty
                 in
-                Decode.decodeString (NoUnused.makeDecoder comment) """
+                Decode.decodeString (NoUnused.makeDecoder "NoUnused.CustomTypeConstructors" comment) """
 {
 "rule": "NoUnused.CustomTypeConstructors",
 "message": "Type constructor `TwoFerUnused` is not used.",
@@ -102,8 +102,7 @@ type TwoFer = TwoFerUnused
 """
                     |> Expect.equal
                         (Ok
-                            (Comment "NoUnused.CustomTypeConstructors"
-                                "elm.common.no_unused.custom_type_constructors"
+                            (Comment "elm.common.no_unused.custom_type_constructors"
                                 Actionable
                                 (Dict.singleton "definition" " 8| -- unused type constructor TwoFerUnused\n 9| type TwoFer = TwoFerUnused\n                  ^^^^^^^^^^^^")
                             )
@@ -133,9 +132,9 @@ type TwoFer = TwoFerUnused String
             \() ->
                 let
                     comment =
-                        Comment "NoUnused.CustomTypeConstructorArgs" "elm.common.no_unused.custom_type_constructor_args" Actionable Dict.empty
+                        Comment "elm.common.no_unused.custom_type_constructor_args" Actionable Dict.empty
                 in
-                Decode.decodeString (NoUnused.makeDecoder comment) """
+                Decode.decodeString (NoUnused.makeDecoder "NoUnused.CustomTypeConstructorArgs" comment) """
 {
 "rule": "NoUnused.CustomTypeConstructorArgs",
 "message": "Argument is never extracted and therefore never used.",
@@ -163,8 +162,7 @@ type TwoFer = TwoFerUnused String
 """
                     |> Expect.equal
                         (Ok
-                            (Comment "NoUnused.CustomTypeConstructorArgs"
-                                "elm.common.no_unused.custom_type_constructor_args"
+                            (Comment "elm.common.no_unused.custom_type_constructor_args"
                                 Actionable
                                 (Dict.singleton "definition" "11| -- unused type constructor argument String\n12| type Unused = TwoFerUnusedArg String\n                                  ^^^^^^")
                             )
@@ -195,9 +193,9 @@ import Parser.Advanced
             \() ->
                 let
                     comment =
-                        Comment "NoUnused.Variables" "elm.common.no_unused.variables" Actionable Dict.empty
+                        Comment "elm.common.no_unused.variables" Actionable Dict.empty
                 in
-                Decode.decodeString (NoUnused.makeDecoder comment) """
+                Decode.decodeString (NoUnused.makeDecoder "NoUnused.Variables" comment) """
 {
 "rule": "NoUnused.Variables",
 "message": "Imported module `Parser.Advanced` is not used",
@@ -235,8 +233,7 @@ import Parser.Advanced
 """
                     |> Expect.equal
                         (Ok
-                            (Comment "NoUnused.Variables"
-                                "elm.common.no_unused.variables"
+                            (Comment "elm.common.no_unused.variables"
                                 Actionable
                                 (Dict.singleton "definition" "5| -- unused imported module\n6| import Parser.Advanced\n          ^^^^^^^^^^^^^^^")
                             )
@@ -269,9 +266,9 @@ unusedParameter unused =
             \() ->
                 let
                     comment =
-                        Comment "NoUnused.Parameters" "elm.common.no_unused.parameters" Actionable Dict.empty
+                        Comment "elm.common.no_unused.parameters" Actionable Dict.empty
                 in
-                Decode.decodeString (NoUnused.makeDecoder comment) """
+                Decode.decodeString (NoUnused.makeDecoder "NoUnused.Parameters" comment) """
 {
 "rule": "NoUnused.Parameters",
 "message": "Parameter `unused` is not used",
@@ -299,8 +296,7 @@ unusedParameter unused =
 """
                     |> Expect.equal
                         (Ok
-                            (Comment "NoUnused.Parameters"
-                                "elm.common.no_unused.parameters"
+                            (Comment "elm.common.no_unused.parameters"
                                 Actionable
                                 (Dict.singleton "definition" "32| -- unused is unused\n33| unusedParameter unused =\n                    ^^^^^^\n34|   Nothing")
                             )
@@ -334,9 +330,9 @@ f x =
             \() ->
                 let
                     comment =
-                        Comment "NoUnused.Patterns" "elm.common.no_unused.patterns" Actionable Dict.empty
+                        Comment "elm.common.no_unused.patterns" Actionable Dict.empty
                 in
-                Decode.decodeString (NoUnused.makeDecoder comment) """
+                Decode.decodeString (NoUnused.makeDecoder "NoUnused.Patterns" comment) """
 {
 "rule": "NoUnused.Patterns",
 "message": "Value `something` is not used",
@@ -374,8 +370,7 @@ f x =
 """
                     |> Expect.equal
                         (Ok
-                            (Comment "NoUnused.Patterns"
-                                "elm.common.no_unused.patterns"
+                            (Comment "elm.common.no_unused.patterns"
                                 Actionable
                                 (Dict.singleton "definition" "34|  case x of\n35|    Just something -> 1\n             ^^^^^^^^^\n36|    Nothing -> 0")
                             )

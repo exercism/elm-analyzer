@@ -21,7 +21,7 @@ ruleConfig =
     , rules =
         [ ImportedRule (UseCamelCase.rule UseCamelCase.default)
             useCameCaseDecoder
-            (Comment "UseCamelCase" "elm.common.camelCase" Actionable Dict.empty)
+            (Comment "elm.common.camelCase" Actionable Dict.empty)
         ]
     }
 

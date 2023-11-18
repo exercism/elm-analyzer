@@ -23,21 +23,21 @@ ruleConfig =
     { restrictToFiles = Just [ "src/TicketPlease.elm" ]
     , rules =
         [ CustomRule emptyCommentArgumentShouldUseTupleAndIgnore
-            (Comment "emptyComment argument doesn't destructure a tuple and wild card" "elm.ticket-please.destructure_emptyComment_argument" Essential Dict.empty)
+            (Comment "elm.ticket-please.destructure_emptyComment_argument" Essential Dict.empty)
         , CustomRule numberOfCreatorCommentsArgumentShouldUseNamedAndRecord
-            (Comment "numberOfCreatorComments argument doesn't destructure a record in a named pattern" "elm.ticket-please.destructure_numberOfCreatorComments_argument" Essential Dict.empty)
+            (Comment "elm.ticket-please.destructure_numberOfCreatorComments_argument" Essential Dict.empty)
         , CustomRule numberOfCreatorCommentsDestructuresTupleInLetAndLambda
-            (Comment "numberOfCreatorComments doesn't destructure in let and lambda" "elm.ticket-please.destructure_numberOfCreatorComments_expressions" Essential Dict.empty)
+            (Comment "elm.ticket-please.destructure_numberOfCreatorComments_expressions" Essential Dict.empty)
         , CustomRule assignedToDevTeamArgumentShouldUseNamedAndRecord
-            (Comment "assignedToDevTeam argument doesn't destructure a record in a named pattern" "elm.ticket-please.destructure_assignedToDevTeam_argument" Essential Dict.empty)
+            (Comment "elm.ticket-please.destructure_assignedToDevTeam_argument" Essential Dict.empty)
         , CustomRule assignedToDevTeamArgumentDestructureInCase
-            (Comment "assignedToDevTeam argument doesn't destructure in a case block" "elm.ticket-please.destructure_assignedToDevTeam_expressions" Essential Dict.empty)
+            (Comment "elm.ticket-please.destructure_assignedToDevTeam_expressions" Essential Dict.empty)
         , CustomRule assignTicketToArgumentShouldUseNamedRecordAndAs
-            (Comment "assignTicketTo argument doesn't destructure a record in a named pattern using as" "elm.ticket-please.destructure_assignTicketTo_argument" Essential Dict.empty)
+            (Comment "elm.ticket-please.destructure_assignTicketTo_argument" Essential Dict.empty)
         , CustomRule assignTicketToArgumentShouldUseIgnore
-            (Comment "assignTicketTo argument doesn't ignore cases" "elm.ticket-please.assignTicketTo_ignore_cases" Actionable Dict.empty)
+            (Comment "elm.ticket-please.assignTicketTo_ignore_cases" Actionable Dict.empty)
         , CustomRule assignTicketUsesRecordUpdate
-            (Comment "assignTicketTo doesn't use the record update syntax" "elm.ticket-please.assignTicketTo_use_record_update" Actionable Dict.empty)
+            (Comment "elm.ticket-please.assignTicketTo_use_record_update" Actionable Dict.empty)
         ]
     }
 

@@ -86,7 +86,7 @@ emptyCommentArguments : Test
 emptyCommentArguments =
     let
         comment =
-            Comment "emptyComment argument doesn't destructure a tuple and wild card" "elm.ticket-please.destructure_emptyComment_argument" Essential Dict.empty
+            Comment "elm.ticket-please.destructure_emptyComment_argument" Essential Dict.empty
     in
     describe "emptyComment argument doesn't destructure a tuple and wild card"
         [ test "doesn't ignore the user" <|
@@ -126,7 +126,7 @@ numberOfCreatorCommentsArguments : Test
 numberOfCreatorCommentsArguments =
     let
         comment =
-            Comment "numberOfCreatorComments argument doesn't destructure a record in a named pattern" "elm.ticket-please.destructure_numberOfCreatorComments_argument" Essential Dict.empty
+            Comment "elm.ticket-please.destructure_numberOfCreatorComments_argument" Essential Dict.empty
     in
     describe "numberOfCreatorComments argument doesn't destructure a record in a named pattern"
         [ test "doesn't destructure the record" <|
@@ -177,7 +177,7 @@ numberOfCreatorCommentsExpressions : Test
 numberOfCreatorCommentsExpressions =
     let
         comment =
-            Comment "numberOfCreatorComments doesn't destructure in let and lambda" "elm.ticket-please.destructure_numberOfCreatorComments_expressions" Essential Dict.empty
+            Comment "elm.ticket-please.destructure_numberOfCreatorComments_expressions" Essential Dict.empty
     in
     describe "numberOfCreatorComments doesn't destructure in let and lambda"
         [ test "doesn't destructure in the let" <|
@@ -222,7 +222,7 @@ assignedToDevTeamArguments : Test
 assignedToDevTeamArguments =
     let
         comment =
-            Comment "assignedToDevTeam argument doesn't destructure a record in a named pattern" "elm.ticket-please.destructure_assignedToDevTeam_argument" Essential Dict.empty
+            Comment "elm.ticket-please.destructure_assignedToDevTeam_argument" Essential Dict.empty
     in
     describe "assignedToDevTeam argument doesn't destructure a record in a named pattern"
         [ test "doesn't destructure the record" <|
@@ -285,7 +285,7 @@ assignedToDevTeamExpressions : Test
 assignedToDevTeamExpressions =
     let
         comment =
-            Comment "assignedToDevTeam argument doesn't destructure in a case block" "elm.ticket-please.destructure_assignedToDevTeam_expressions" Essential Dict.empty
+            Comment "elm.ticket-please.destructure_assignedToDevTeam_expressions" Essential Dict.empty
     in
     describe "assignedToDevTeam argument doesn't destructure in a case block"
         [ test "doesn't destructure the string" <|
@@ -342,7 +342,7 @@ assignTicketToArguments : Test
 assignTicketToArguments =
     let
         comment =
-            Comment "assignTicketTo argument doesn't destructure a record in a named pattern using as" "elm.ticket-please.destructure_assignTicketTo_argument" Essential Dict.empty
+            Comment "elm.ticket-please.destructure_assignTicketTo_argument" Essential Dict.empty
     in
     describe "assignTicketTo argument doesn't destructure a record in a named pattern using as"
         [ test "doesn't destructure the record" <|
@@ -421,7 +421,7 @@ assignTicketIgnoresCases : Test
 assignTicketIgnoresCases =
     let
         comment =
-            Comment "assignTicketTo argument doesn't ignore cases" "elm.ticket-please.assignTicketTo_ignore_cases" Actionable Dict.empty
+            Comment "elm.ticket-please.assignTicketTo_ignore_cases" Actionable Dict.empty
     in
     test "assignTicketTo argument doesn't ignore cases" <|
         \() ->
@@ -457,7 +457,7 @@ assignTicketRecordUpdate : Test
 assignTicketRecordUpdate =
     let
         comment =
-            Comment "assignTicketTo doesn't use the record update syntax" "elm.ticket-please.assignTicketTo_use_record_update" Actionable Dict.empty
+            Comment "elm.ticket-please.assignTicketTo_use_record_update" Actionable Dict.empty
     in
     test "assignTicketTo doesn't use the record update syntax" <|
         \() ->

@@ -99,7 +99,7 @@ usingList : Test
 usingList =
     let
         comment =
-            Comment "Uses the List module" "elm.list-ops.do_not_use_list" Essential Dict.empty
+            Comment "elm.list-ops.do_not_use_list" Essential Dict.empty
     in
     describe "solutions that use the List function" <|
         [ test "using List directy" <|

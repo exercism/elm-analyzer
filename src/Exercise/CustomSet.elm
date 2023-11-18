@@ -12,7 +12,7 @@ ruleConfig =
     { restrictToFiles = Just [ "src/CustomSet.elm" ]
     , rules =
         [ CustomRule doNotUseSetModule
-            (Comment "Uses the Set module" "elm.custom-set.do_not_use_set" Essential Dict.empty)
+            (Comment "elm.custom-set.do_not_use_set" Essential Dict.empty)
         ]
     }
 

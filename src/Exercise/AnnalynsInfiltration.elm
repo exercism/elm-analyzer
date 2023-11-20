@@ -9,17 +9,16 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "annalyns-infiltration"
-    , restrictToFiles = Just [ "src/AnnalynsInfiltration.elm" ]
+    { restrictToFiles = Just [ "src/AnnalynsInfiltration.elm" ]
     , rules =
         [ CustomRule canFastAttackUsesNot
-            (Comment "canFastAttack doesn't use not" "elm.annalyns-infiltration.use_bool_operators" Essential Dict.empty)
+            (Comment "elm.annalyns-infiltration.use_bool_operators" Essential Dict.empty)
         , CustomRule canSpyUsesOr
-            (Comment "canSpy doesn't use ||" "elm.annalyns-infiltration.use_bool_operators" Essential Dict.empty)
+            (Comment "elm.annalyns-infiltration.use_bool_operators" Essential Dict.empty)
         , CustomRule canSignalPrisonerUsesBooleanOperators
-            (Comment "canSignalPrisoner doesn't use boolean operators" "elm.annalyns-infiltration.use_bool_operators" Essential Dict.empty)
+            (Comment "elm.annalyns-infiltration.use_bool_operators" Essential Dict.empty)
         , CustomRule canFreePrisonerUsesBooleanOperators
-            (Comment "canFreePrisoner doesn't use boolean operators" "elm.annalyns-infiltration.use_bool_operators" Essential Dict.empty)
+            (Comment "elm.annalyns-infiltration.use_bool_operators" Essential Dict.empty)
         ]
     }
 

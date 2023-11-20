@@ -118,7 +118,7 @@ canFastAttackNoNot : Test
 canFastAttackNoNot =
     let
         comment =
-            Comment "canFastAttack doesn't use not" "elm.annalyns-infiltration.use_bool_operators" Essential Dict.empty
+            Comment "elm.annalyns-infiltration.use_bool_operators" Essential Dict.empty
     in
     test "canFastAttack doesn't use not" <|
         \() ->
@@ -140,7 +140,7 @@ canSpyNoOr : Test
 canSpyNoOr =
     let
         comment =
-            Comment "canSpy doesn't use ||" "elm.annalyns-infiltration.use_bool_operators" Essential Dict.empty
+            Comment "elm.annalyns-infiltration.use_bool_operators" Essential Dict.empty
     in
     test "canSpy doesn't use ||" <|
         \() ->
@@ -162,7 +162,7 @@ canSignalPrisonerNoBoolOp : Test
 canSignalPrisonerNoBoolOp =
     let
         comment =
-            Comment "canSignalPrisoner doesn't use boolean operators" "elm.annalyns-infiltration.use_bool_operators" Essential Dict.empty
+            Comment "elm.annalyns-infiltration.use_bool_operators" Essential Dict.empty
     in
     test "canSignalPrisoner doesn't use boolean operators" <|
         \() ->
@@ -186,7 +186,7 @@ canFreePrisonerNoBoolOp : Test
 canFreePrisonerNoBoolOp =
     let
         comment =
-            Comment "canFreePrisoner doesn't use boolean operators" "elm.annalyns-infiltration.use_bool_operators" Essential Dict.empty
+            Comment "elm.annalyns-infiltration.use_bool_operators" Essential Dict.empty
     in
     test "canFreePrisoner doesn't use boolean operators" <|
         \() ->

@@ -13,15 +13,14 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "bandwagoner"
-    , restrictToFiles = Just [ "src/Bandwagoner.elm" ]
+    { restrictToFiles = Just [ "src/Bandwagoner.elm" ]
     , rules =
         [ CustomRule replaceCoachUsesRecordUpdateSyntax
-            (Comment "replaceCoach doesn't use record update syntax" "elm.bandwagoner.use_record_update_syntax" Actionable Dict.empty)
+            (Comment "elm.bandwagoner.use_record_update_syntax" Actionable Dict.empty)
         , CustomRule rootForTeamHasExtensibleRecordSignature
-            (Comment "rootForTeam has no extensible record" "elm.bandwagoner.use_extensible_record_signature" Essential Dict.empty)
+            (Comment "elm.bandwagoner.use_extensible_record_signature" Essential Dict.empty)
         , CustomRule rootForTeamUsesPatternMatchingInArgument
-            (Comment "rootForTeam doesn't use pattern matching in argument" "elm.bandwagoner.use_pattern_matching_in_argument" Essential Dict.empty)
+            (Comment "elm.bandwagoner.use_pattern_matching_in_argument" Essential Dict.empty)
         ]
     }
 

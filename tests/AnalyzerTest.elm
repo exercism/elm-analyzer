@@ -75,7 +75,7 @@ allRules =
 
 quickComment : String -> Comment
 quickComment name =
-    Comment name name Essential Dict.empty
+    Comment name Essential Dict.empty
 
 
 getRule : String -> Rule

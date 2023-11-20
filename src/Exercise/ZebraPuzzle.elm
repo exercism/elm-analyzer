@@ -11,13 +11,12 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "zebra-puzzle"
-    , restrictToFiles = Just [ "src/ZebraPuzzle.elm" ]
+    { restrictToFiles = Just [ "src/ZebraPuzzle.elm" ]
     , rules =
         [ CustomRule hardcodingDrinksWater
-            (Comment "Hardcodes solution for drinksWater" "elm.zebra-puzzle.do_not_hardcode_solution" Essential Dict.empty)
+            (Comment "elm.zebra-puzzle.do_not_hardcode_solution" Essential Dict.empty)
         , CustomRule hardcodingOwnsZebra
-            (Comment "Hardcodes solution for ownsZebra" "elm.zebra-puzzle.do_not_hardcode_solution" Essential Dict.empty)
+            (Comment "elm.zebra-puzzle.do_not_hardcode_solution" Essential Dict.empty)
         ]
     }
 

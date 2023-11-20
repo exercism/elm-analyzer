@@ -87,7 +87,7 @@ roomUsesTreasure : Test
 roomUsesTreasure =
     let
         comment =
-            Comment "room doesn't use treasure" "elm.maze-maker.room_use_treasure" Essential Dict.empty
+            Comment "elm.maze-maker.room_use_treasure" Essential Dict.empty
     in
     test "writing room without treasure" <|
         \() ->
@@ -126,7 +126,7 @@ mazeUsesDeadendRoomAndBranch : Test
 mazeUsesDeadendRoomAndBranch =
     let
         comment =
-            Comment "maze doesn't use deadend, room and branch" "elm.maze-maker.maze_use_deadend_room_branch" Essential Dict.empty
+            Comment "elm.maze-maker.maze_use_deadend_room_branch" Essential Dict.empty
     in
     describe "writing room without deadend, room or branch"
         [ test "without deadend" <|
@@ -290,7 +290,7 @@ mazeUsesMaze : Test
 mazeUsesMaze =
     let
         comment =
-            Comment "maze doesn't use itself recursively" "elm.maze-maker.use_maze_recursively" Essential Dict.empty
+            Comment "elm.maze-maker.use_maze_recursively" Essential Dict.empty
     in
     test "writing maze without recursion" <|
         \() ->
@@ -366,7 +366,7 @@ mazeOfDepthUsesDeadendRoomAndBranch : Test
 mazeOfDepthUsesDeadendRoomAndBranch =
     let
         comment =
-            Comment "mazeOfDepth doesn't use deadend, room and branch" "elm.maze-maker.maze_use_deadend_room_branch" Essential Dict.empty
+            Comment "elm.maze-maker.maze_use_deadend_room_branch" Essential Dict.empty
     in
     describe "writing mazeOfDepth without deadend, room or branch"
         [ test "without deadend" <|
@@ -526,7 +526,7 @@ mazeOfDepthUsesMazeOfDepth : Test
 mazeOfDepthUsesMazeOfDepth =
     let
         comment =
-            Comment "mazeOfDepth doesn't use itself recursively" "elm.maze-maker.use_mazeOfDepth_recursively" Essential Dict.empty
+            Comment "elm.maze-maker.use_mazeOfDepth_recursively" Essential Dict.empty
     in
     test "writing mazeOfDepth without recursion" <|
         \() ->

@@ -9,25 +9,24 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "gotta-snatch-em-all"
-    , restrictToFiles = Just [ "src/GottaSnatchEmAll.elm" ]
+    { restrictToFiles = Just [ "src/GottaSnatchEmAll.elm" ]
     , rules =
         [ CustomRule usesSingleton
-            (Comment "newCollection doesn't use Set.singleton" "elm.gotta-snatch-em-all.use_singleton" Actionable Dict.empty)
+            (Comment "elm.gotta-snatch-em-all.use_singleton" Actionable Dict.empty)
         , CustomRule removeDuplicatesUsesSet
-            (Comment "removeDuplicates doesn't use Set functions" "elm.gotta-snatch-em-all.use_set" Essential Dict.empty)
+            (Comment "elm.gotta-snatch-em-all.use_set" Essential Dict.empty)
         , CustomRule extraCardsUsesDiff
-            (Comment "extraCards doesn't use Set.diff" "elm.gotta-snatch-em-all.use_diff" Essential Dict.empty)
+            (Comment "elm.gotta-snatch-em-all.use_diff" Essential Dict.empty)
         , CustomRule boringCardsUsesIntersect
-            (Comment "boringCards doesn't use Set.intersect" "elm.gotta-snatch-em-all.use_intersect" Essential Dict.empty)
+            (Comment "elm.gotta-snatch-em-all.use_intersect" Essential Dict.empty)
         , CustomRule boringCardsUsesFold
-            (Comment "boringCards doesn't use a fold" "elm.gotta-snatch-em-all.boringCards_use_fold" Actionable Dict.empty)
+            (Comment "elm.gotta-snatch-em-all.boringCards_use_fold" Actionable Dict.empty)
         , CustomRule totalCardsUsesUnion
-            (Comment "totalCards doesn't use Set.union" "elm.gotta-snatch-em-all.use_union" Essential Dict.empty)
+            (Comment "elm.gotta-snatch-em-all.use_union" Essential Dict.empty)
         , CustomRule totalCardsUsesFold
-            (Comment "totalCards doesn't use a fold" "elm.gotta-snatch-em-all.totalCards_use_fold" Actionable Dict.empty)
+            (Comment "elm.gotta-snatch-em-all.totalCards_use_fold" Actionable Dict.empty)
         , CustomRule splitShinyCardsUsesPartition
-            (Comment "splitShinyCards doesn't use Set.partition" "elm.gotta-snatch-em-all.use_partition" Essential Dict.empty)
+            (Comment "elm.gotta-snatch-em-all.use_partition" Essential Dict.empty)
         ]
     }
 

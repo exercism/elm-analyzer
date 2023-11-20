@@ -86,7 +86,7 @@ specialCaseSwapPossibleDoesntUseTupleInCase : Test
 specialCaseSwapPossibleDoesntUseTupleInCase =
     let
         comment =
-            Comment "specialCaseSwapPossible doesn't use a tuple in a case" "elm.tisbury-treasure-hunt.use_tuple_in_case" Essential Dict.empty
+            Comment "elm.tisbury-treasure-hunt.use_tuple_in_case" Essential Dict.empty
     in
     test "specialCaseSwapPossible doesn't use a tuple in a case" <|
         \() ->
@@ -124,7 +124,7 @@ treasureLocationMatchesPlaceLocationDoesntUsePlaceLocationToTreasureLocation : T
 treasureLocationMatchesPlaceLocationDoesntUsePlaceLocationToTreasureLocation =
     let
         comment =
-            Comment "treasureLocationMatchesPlaceLocation doesn't use placeLocationToTreasureLocation" "elm.tisbury-treasure-hunt.use_placeLocationToTreasureLocation" Actionable Dict.empty
+            Comment "elm.tisbury-treasure-hunt.use_placeLocationToTreasureLocation" Actionable Dict.empty
     in
     test "treasureLocationMatchesPlaceLocation doesn't use placeLocationToTreasureLocation" <|
         \() ->
@@ -158,7 +158,7 @@ countPlaceTreasuresDoesntUseTupleSecond : Test
 countPlaceTreasuresDoesntUseTupleSecond =
     let
         comment =
-            Comment "countPlaceTreasures doesn't use Tuple.second" "elm.tisbury-treasure-hunt.use_tuple_second" Actionable Dict.empty
+            Comment "elm.tisbury-treasure-hunt.use_tuple_second" Actionable Dict.empty
     in
     test "countPlaceTreasures doesn't use Tuple.second" <|
         \() ->

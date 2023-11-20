@@ -97,7 +97,7 @@ incorrectMakeChestSignature : Test
 incorrectMakeChestSignature =
     let
         comment =
-            Comment "makeChest signature was changed" "elm.treasure-factory.do_not_change_given_signatures" Essential Dict.empty
+            Comment "elm.treasure-factory.do_not_change_given_signatures" Essential Dict.empty
     in
     describe "solutions with modified makeChest signature" <|
         [ test "no signature" <|
@@ -147,7 +147,7 @@ incorrectMakeTreasureChest : Test
 incorrectMakeTreasureChest =
     let
         comment =
-            Comment "makeTreasureChest signature was changed" "elm.treasure-factory.do_not_change_given_signatures" Essential Dict.empty
+            Comment "elm.treasure-factory.do_not_change_given_signatures" Essential Dict.empty
     in
     describe "solutions with modified makeTreasureChest signature" <|
         [ test "no signature" <|
@@ -181,7 +181,7 @@ incorrectSecureChest : Test
 incorrectSecureChest =
     let
         comment =
-            Comment "secureChest signature is incorrect" "elm.treasure-factory.incorrect_secureChest_signature" Essential Dict.empty
+            Comment "elm.treasure-factory.incorrect_secureChest_signature" Essential Dict.empty
     in
     describe "solutions with modified secureChest signature" <|
         [ test "no signature" <|
@@ -224,7 +224,7 @@ incorrectUniqueTreasures : Test
 incorrectUniqueTreasures =
     let
         comment =
-            Comment "uniqueTreasures signature is incorrect" "elm.treasure-factory.incorrect_uniqueTreasures_signature" Essential Dict.empty
+            Comment "elm.treasure-factory.incorrect_uniqueTreasures_signature" Essential Dict.empty
     in
     describe "solutions with modified uniqueTreasures signature" <|
         [ test "no signature" <|

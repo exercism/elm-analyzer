@@ -9,17 +9,16 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "blorkemon-cards"
-    , restrictToFiles = Just [ "src/BlorkemonCards.elm" ]
+    { restrictToFiles = Just [ "src/BlorkemonCards.elm" ]
     , rules =
         [ CustomRule maxPowerUsesMax
-            (Comment "maxPower doesn't use max" "elm.blorkemon-cards.use_max" Essential Dict.empty)
+            (Comment "elm.blorkemon-cards.use_max" Essential Dict.empty)
         , CustomRule sortByMonsterNameUsesSortBy
-            (Comment "sortByMonsterName doesn't use List.sortBy" "elm.blorkemon-cards.use_sort_by" Essential Dict.empty)
+            (Comment "elm.blorkemon-cards.use_sort_by" Essential Dict.empty)
         , CustomRule expectedWinnerUsesCompareShinyPower
-            (Comment "expectedWinner doesn't use compareShinyPower" "elm.blorkemon-cards.use_shiny_power" Essential Dict.empty)
+            (Comment "elm.blorkemon-cards.use_shiny_power" Essential Dict.empty)
         , CustomRule expectedWinnerUsesCase
-            (Comment "Doesn't use a case expression" "elm.blorkemon-cards.use_case" Essential Dict.empty)
+            (Comment "elm.blorkemon-cards.use_case" Essential Dict.empty)
         ]
     }
 

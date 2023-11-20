@@ -118,7 +118,7 @@ noCons : Test
 noCons =
     let
         comment =
-            Comment "addLanguage doesn't use (::)" "elm.tracks-on-tracks-on-tracks.use_cons" Essential Dict.empty
+            Comment "elm.tracks-on-tracks-on-tracks.use_cons" Essential Dict.empty
     in
     test "addLanguage doesn't use (::)" <|
         \() ->
@@ -137,7 +137,7 @@ noLength : Test
 noLength =
     let
         comment =
-            Comment "countLanguages doesn't use List.length" "elm.tracks-on-tracks-on-tracks.use_length" Essential Dict.empty
+            Comment "elm.tracks-on-tracks-on-tracks.use_length" Essential Dict.empty
     in
     test "countLanguages doesn't use List.length" <|
         \() ->
@@ -160,7 +160,7 @@ noReverse : Test
 noReverse =
     let
         comment =
-            Comment "reverseList doesn't use List.reverse" "elm.tracks-on-tracks-on-tracks.use_reverse" Essential Dict.empty
+            Comment "elm.tracks-on-tracks-on-tracks.use_reverse" Essential Dict.empty
     in
     test "reverseList doesn't use List.reverse" <|
         \() ->
@@ -183,7 +183,7 @@ noCase : Test
 noCase =
     let
         comment =
-            Comment "excitingList doesn't use a case expression" "elm.tracks-on-tracks-on-tracks.use_case" Essential Dict.empty
+            Comment "elm.tracks-on-tracks-on-tracks.use_case" Essential Dict.empty
     in
     test "excitingList doesn't use a case expression" <|
         \() ->

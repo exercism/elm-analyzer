@@ -153,7 +153,7 @@ noMax : Test
 noMax =
     let
         comment =
-            Comment "maxPower doesn't use max" "elm.blorkemon-cards.use_max" Essential Dict.empty
+            Comment "elm.blorkemon-cards.use_max" Essential Dict.empty
     in
     test "maxPower doesn't use max" <|
         \() ->
@@ -174,7 +174,7 @@ noSortBy : Test
 noSortBy =
     let
         comment =
-            Comment "sortByMonsterName doesn't use List.sortBy" "elm.blorkemon-cards.use_sort_by" Essential Dict.empty
+            Comment "elm.blorkemon-cards.use_sort_by" Essential Dict.empty
     in
     test "sortByMonsterName doesn't use List.sortBy" <|
         \() ->
@@ -202,7 +202,7 @@ noCompareShinyPower : Test
 noCompareShinyPower =
     let
         comment =
-            Comment "expectedWinner doesn't use compareShinyPower" "elm.blorkemon-cards.use_shiny_power" Essential Dict.empty
+            Comment "elm.blorkemon-cards.use_shiny_power" Essential Dict.empty
     in
     test "expectedWinner doesn't use compareShinyPower" <|
         \() ->
@@ -230,7 +230,7 @@ noCase : Test
 noCase =
     let
         comment =
-            Comment "Doesn't use a case expression" "elm.blorkemon-cards.use_case" Essential Dict.empty
+            Comment "elm.blorkemon-cards.use_case" Essential Dict.empty
     in
     test "expectedWinner doesn't use a case expression" <|
         \() ->

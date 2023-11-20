@@ -31,8 +31,7 @@ type alias Summary =
 
 
 type alias Comment =
-    { name : String
-    , path : String
+    { path : String
     , commentType : CommentType
     , params : Dict String String
     }
@@ -138,7 +137,7 @@ commentTypeSummaryOrder commentType =
 
 feedbackComment : Comment
 feedbackComment =
-    Comment "please give us feedback" "elm.feedback_request" Informative Dict.empty
+    Comment "elm.feedback_request" Informative Dict.empty
 
 
 
@@ -184,10 +183,9 @@ encodeSummaryComment { path, commentType, params } =
 
 
 encodeComment : Comment -> Value
-encodeComment { name, path, commentType, params } =
+encodeComment { path, commentType, params } =
     Encode.object
-        [ ( "name", Encode.string name )
-        , ( "comment", Encode.string path )
+        [ ( "comment", Encode.string path )
         , ( "type", commentType |> encodeCommentType )
         , ( "params", Encode.dict identity Encode.string params )
         ]
@@ -221,8 +219,7 @@ decodeElmReviewComments elmReviewErrorDecoders =
 
 decodeComment : Decoder Comment
 decodeComment =
-    Decode.map4 Comment
-        (Decode.field "name" Decode.string)
+    Decode.map3 Comment
         (Decode.field "comment" Decode.string)
         (Decode.field "type" decodeCommentType)
         (Decode.field "params" (Decode.dict Decode.string))

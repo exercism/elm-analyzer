@@ -6,8 +6,7 @@ import Review.Rule as Rule exposing (Rule)
 
 
 type alias RuleConfig =
-    { slug : Maybe String
-    , restrictToFiles : Maybe (List String)
+    { restrictToFiles : Maybe (List String)
     , rules : List AnalyzerRule
     }
 

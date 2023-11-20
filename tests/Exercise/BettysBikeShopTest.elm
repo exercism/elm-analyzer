@@ -107,7 +107,7 @@ noFuctionSignature : Test
 noFuctionSignature =
     let
         comment =
-            Comment "has no signature" "elm.bettys-bike-shop.use_signature" Essential Dict.empty
+            Comment "elm.bettys-bike-shop.use_signature" Essential Dict.empty
     in
     describe "solutions without function signatures" <|
         [ test "no function signature on penceToPounds" <|
@@ -202,7 +202,7 @@ noImportString : Test
 noImportString =
     let
         comment =
-            Comment "does not import String" "elm.bettys-bike-shop.import_string" Essential Dict.empty
+            Comment "elm.bettys-bike-shop.import_string" Essential Dict.empty
     in
     describe "solutions that do no import String" <|
         [ test "without the import String" <|

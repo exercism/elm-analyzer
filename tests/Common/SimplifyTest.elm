@@ -61,7 +61,7 @@ one =
                         ]
         , test "decoder behavior" <|
             \() ->
-                Decode.decodeString (Common.Simplify.simplifyDecoder (Comment "Simplify" "elm.common.simplify" Actionable Dict.empty)) """
+                Decode.decodeString (Common.Simplify.simplifyDecoder (Comment "elm.common.simplify" Actionable Dict.empty)) """
 {
 "rule": "Simplify",
 "message": "Unnecessary multiplication by 1",
@@ -105,8 +105,7 @@ one =
 """
                     |> Expect.equal
                         (Ok
-                            (Comment "Simplify"
-                                "elm.common.simplify"
+                            (Comment "elm.common.simplify"
                                 Actionable
                                 (Dict.singleton "message" "Simplify: Unnecessary multiplication by 1\n\n42| one =\n43|  1 * 1\n      ^^^^\n\nMultiplying by 1 does not change the value of the number.")
                             )

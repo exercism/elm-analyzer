@@ -13,17 +13,16 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "treasure-factory"
-    , restrictToFiles = Just [ "src/TreasureFactory.elm" ]
+    { restrictToFiles = Just [ "src/TreasureFactory.elm" ]
     , rules =
         [ CustomRule makeChestSignatureMatchesStub
-            (Comment "makeChest signature was changed" "elm.treasure-factory.do_not_change_given_signatures" Essential Dict.empty)
+            (Comment "elm.treasure-factory.do_not_change_given_signatures" Essential Dict.empty)
         , CustomRule makeTreasureChestSignatureMatchesStub
-            (Comment "makeTreasureChest signature was changed" "elm.treasure-factory.do_not_change_given_signatures" Essential Dict.empty)
+            (Comment "elm.treasure-factory.do_not_change_given_signatures" Essential Dict.empty)
         , CustomRule secureChestSignatureIsCorrect
-            (Comment "secureChest signature is incorrect" "elm.treasure-factory.incorrect_secureChest_signature" Essential Dict.empty)
+            (Comment "elm.treasure-factory.incorrect_secureChest_signature" Essential Dict.empty)
         , CustomRule uniqueTreasuresSignatureIsCorrect
-            (Comment "uniqueTreasures signature is incorrect" "elm.treasure-factory.incorrect_uniqueTreasures_signature" Essential Dict.empty)
+            (Comment "elm.treasure-factory.incorrect_uniqueTreasures_signature" Essential Dict.empty)
         ]
     }
 

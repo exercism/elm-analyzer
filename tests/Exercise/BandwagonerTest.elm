@@ -66,7 +66,7 @@ noRecordUpdate : Test
 noRecordUpdate =
     let
         comment =
-            Comment "replaceCoach doesn't use record update syntax" "elm.bandwagoner.use_record_update_syntax" Actionable Dict.empty
+            Comment "elm.bandwagoner.use_record_update_syntax" Actionable Dict.empty
     in
     test "replaceCoach doesn't use record update syntax" <|
         \() ->
@@ -101,7 +101,7 @@ noExtensibleRecord : Test
 noExtensibleRecord =
     let
         comment =
-            Comment "rootForTeam has no extensible record" "elm.bandwagoner.use_extensible_record_signature" Essential Dict.empty
+            Comment "elm.bandwagoner.use_extensible_record_signature" Essential Dict.empty
     in
     describe "rootForTeam doesn't use an extensible record in the signature"
         [ test "no signature" <|

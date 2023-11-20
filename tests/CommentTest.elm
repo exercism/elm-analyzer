@@ -12,6 +12,7 @@ import RuleConfig
 import Test exposing (Test, describe, test)
 
 
+tests : Test
 tests =
     describe "CommentTest tests"
         [ aggregateCommentsTest, encoderDecoderTest, makeSummaryTest, toWebsiteCopyPathTest ]
@@ -19,8 +20,7 @@ tests =
 
 fuzzComment : Fuzzer Comment
 fuzzComment =
-    Fuzz.map4 Comment
-        Fuzz.string
+    Fuzz.map3 Comment
         Fuzz.string
         fuzzCommentType
         (fuzzDict Fuzz.string Fuzz.string)
@@ -49,16 +49,16 @@ encoderDecoderTest =
         [ test "encoding" <|
             \() ->
                 Expect.equal
-                    "{\"name\":\"name\",\"comment\":\"comment\",\"type\":\"celebratory\",\"params\":{\"key\":\"value\"}}"
-                    (Comment "name" "comment" Celebratory (Dict.singleton "key" "value")
+                    "{\"comment\":\"comment\",\"type\":\"celebratory\",\"params\":{\"key\":\"value\"}}"
+                    (Comment "comment" Celebratory (Dict.singleton "key" "value")
                         |> Comment.encodeComment
                         |> Encode.encode 0
                     )
         , test "decoding" <|
             \() ->
                 Expect.equal
-                    (Ok (Comment "name" "comment" Celebratory (Dict.singleton "key" "value")))
-                    ("{\"name\":\"name\",\"comment\":\"comment\",\"type\":\"celebratory\",\"params\":{\"key\":\"value\"}}"
+                    (Ok (Comment "comment" Celebratory (Dict.singleton "key" "value")))
+                    ("{\"comment\":\"comment\",\"type\":\"celebratory\",\"params\":{\"key\":\"value\"}}"
                         |> Decode.decodeString Comment.decodeComment
                     )
         , Test.fuzz fuzzComment "encodeComment then decodeComment should be identity" <|
@@ -75,16 +75,16 @@ aggregateCommentsTest : Test
 aggregateCommentsTest =
     let
         essential =
-            Comment "" "" Essential Dict.empty
+            Comment "" Essential Dict.empty
 
         actionable =
-            Comment "" "" Actionable Dict.empty
+            Comment "" Actionable Dict.empty
 
         informative =
-            Comment "" "" Informative Dict.empty
+            Comment "" Informative Dict.empty
 
         celebratory =
-            Comment "" "" Celebratory Dict.empty
+            Comment "" Celebratory Dict.empty
     in
     describe "aggregateComments should order the comments and create message appropriately"
         [ test "no comments" <|
@@ -196,10 +196,10 @@ toWebsiteCopyPathTest =
     describe "transform Comment into a valid website-copy path"
         [ test "short path" <|
             \() ->
-                Comment.toWebsiteCopyPath (Comment "name" "elm.comment" Informative Dict.empty)
+                Comment.toWebsiteCopyPath (Comment "elm.comment" Informative Dict.empty)
                     |> Expect.equal "analyzer-comments/elm/comment.md"
         , test "long path" <|
             \() ->
-                Comment.toWebsiteCopyPath (Comment "name" "elm.something.or.other.comment" Informative Dict.empty)
+                Comment.toWebsiteCopyPath (Comment "elm.something.or.other.comment" Informative Dict.empty)
                     |> Expect.equal "analyzer-comments/elm/something/or/other/comment.md"
         ]

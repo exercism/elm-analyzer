@@ -78,7 +78,7 @@ noFuctionSignature : Test
 noFuctionSignature =
     let
         comment =
-            Comment "has no signature" "elm.two-fer.use_signature" Informative Dict.empty
+            Comment "elm.two-fer.use_signature" Informative Dict.empty
     in
     describe "solutions without function signatures" <|
         [ test "no function signature" <|
@@ -119,7 +119,7 @@ noWithDefault : Test
 noWithDefault =
     let
         comment =
-            Comment "Doesn't use withDefault" "elm.two-fer.use_withDefault" Informative Dict.empty
+            Comment "elm.two-fer.use_withDefault" Informative Dict.empty
     in
     describe "solutions that don't use withDefault" <|
         [ test "using a case statement" <|

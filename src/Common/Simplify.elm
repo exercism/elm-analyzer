@@ -17,12 +17,11 @@ import Simplify
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Nothing
-    , restrictToFiles = Nothing
+    { restrictToFiles = Nothing
     , rules =
         [ ImportedRule (Simplify.rule Simplify.defaults)
             simplifyDecoder
-            (Comment "Simplify" "elm.common.simplify" Actionable Dict.empty)
+            (Comment "elm.common.simplify" Actionable Dict.empty)
         ]
     }
 

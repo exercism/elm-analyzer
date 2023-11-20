@@ -115,7 +115,7 @@ usingFilter : Test
 usingFilter =
     let
         comment =
-            Comment "Uses the List module" "elm.strain.do_not_use_filter" Essential Dict.empty
+            Comment "elm.strain.do_not_use_filter" Essential Dict.empty
     in
     describe "solutions that use filter or filterMap" <|
         [ test "using List.filter" <|

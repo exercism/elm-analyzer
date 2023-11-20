@@ -95,7 +95,7 @@ noSingleton : Test
 noSingleton =
     let
         comment =
-            Comment "newCollection doesn't use Set.singleton" "elm.gotta-snatch-em-all.use_singleton" Actionable Dict.empty
+            Comment "elm.gotta-snatch-em-all.use_singleton" Actionable Dict.empty
     in
     test "newCollection doesn't use Set.singleton" <|
         \() ->
@@ -122,7 +122,7 @@ noSetInRemoveDuplicates : Test
 noSetInRemoveDuplicates =
     let
         comment =
-            Comment "removeDuplicates doesn't use Set functions" "elm.gotta-snatch-em-all.use_set" Essential Dict.empty
+            Comment "elm.gotta-snatch-em-all.use_set" Essential Dict.empty
     in
     test "removeDuplicates doesn't use Set functions" <|
         \() ->
@@ -154,7 +154,7 @@ noDiff : Test
 noDiff =
     let
         comment =
-            Comment "extraCards doesn't use Set.diff" "elm.gotta-snatch-em-all.use_diff" Essential Dict.empty
+            Comment "elm.gotta-snatch-em-all.use_diff" Essential Dict.empty
     in
     test "extraCards doesn't use Set.diff" <|
         \() ->
@@ -182,7 +182,7 @@ noIntersect : Test
 noIntersect =
     let
         comment =
-            Comment "boringCards doesn't use Set.intersect" "elm.gotta-snatch-em-all.use_intersect" Essential Dict.empty
+            Comment "elm.gotta-snatch-em-all.use_intersect" Essential Dict.empty
     in
     test "boringCards doesn't use Set.intersect" <|
         \() ->
@@ -219,7 +219,7 @@ boringCardsNoFold : Test
 boringCardsNoFold =
     let
         comment =
-            Comment "boringCards doesn't use a fold" "elm.gotta-snatch-em-all.boringCards_use_fold" Actionable Dict.empty
+            Comment "elm.gotta-snatch-em-all.boringCards_use_fold" Actionable Dict.empty
     in
     test "boringCards doesn't use a fold" <|
         \() ->
@@ -256,7 +256,7 @@ noUnion : Test
 noUnion =
     let
         comment =
-            Comment "totalCards doesn't use Set.union" "elm.gotta-snatch-em-all.use_union" Essential Dict.empty
+            Comment "elm.gotta-snatch-em-all.use_union" Essential Dict.empty
     in
     test "totalCards doesn't use Set.union" <|
         \() ->
@@ -287,7 +287,7 @@ totalCardNoFold : Test
 totalCardNoFold =
     let
         comment =
-            Comment "totalCards doesn't use a fold" "elm.gotta-snatch-em-all.totalCards_use_fold" Actionable Dict.empty
+            Comment "elm.gotta-snatch-em-all.totalCards_use_fold" Actionable Dict.empty
     in
     test "totalCards doesn't use a fold" <|
         \() ->
@@ -318,7 +318,7 @@ noPartition : Test
 noPartition =
     let
         comment =
-            Comment "splitShinyCards doesn't use Set.partition" "elm.gotta-snatch-em-all.use_partition" Essential Dict.empty
+            Comment "elm.gotta-snatch-em-all.use_partition" Essential Dict.empty
     in
     test "splitShinyCards doesn't use Set.partition" <|
         \() ->

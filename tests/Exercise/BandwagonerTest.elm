@@ -16,7 +16,6 @@ tests =
         [ exemplar
         , noRecordUpdate
         , noExtensibleRecord
-        , noRecordPatternMatching
         ]
 
 
@@ -163,42 +162,3 @@ rootForTeam { stats } =
                             |> Review.Test.atExactly { start = { row = 21, column = 1 }, end = { row = 21, column = 12 } }
                         ]
         ]
-
-
-noRecordPatternMatching : Test
-noRecordPatternMatching =
-    let
-        comment =
-            Comment "elm.bandwagoner.use_pattern_matching_in_argument" Essential Dict.empty
-    in
-    test "rootForTeam doesn't pattern matching in the rootForTeam argument" <|
-        \() ->
-            """
-module Bandwagoner exposing (..)
-
-type alias Coach =
-    { name : String
-    , formerPlayer : Bool
-    }
-
-type alias Stats =
-    { wins : Int
-    , losses : Int
-    }
-
-type alias Team =
-    { name : String
-    , coach : Coach
-    , stats : Stats
-    }
-
-rootForTeam : { a | stats : Stats } -> Bool
-rootForTeam x =
-    x.stats.wins > x.stats.losses
-
-"""
-                |> Review.Test.run (Bandwagoner.rootForTeamUsesPatternMatchingInArgument comment)
-                |> Review.Test.expectErrors
-                    [ TestHelper.createExpectedErrorUnder comment "rootForTeam"
-                        |> Review.Test.atExactly { start = { row = 21, column = 1 }, end = { row = 21, column = 12 } }
-                    ]

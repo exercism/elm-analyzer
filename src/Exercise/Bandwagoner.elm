@@ -1,11 +1,10 @@
-module Exercise.Bandwagoner exposing (replaceCoachUsesRecordUpdateSyntax, rootForTeamHasExtensibleRecordSignature, rootForTeamUsesPatternMatchingInArgument, ruleConfig)
+module Exercise.Bandwagoner exposing (replaceCoachUsesRecordUpdateSyntax, rootForTeamHasExtensibleRecordSignature, ruleConfig)
 
-import Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..), Pattern(..))
+import Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..))
 import Comment exposing (Comment, CommentType(..))
 import Dict
 import Elm.Syntax.Declaration as Declaration exposing (Declaration)
 import Elm.Syntax.Node as Node exposing (Node(..))
-import Elm.Syntax.Pattern exposing (Pattern(..))
 import ElmSyntaxHelpers
 import Review.Rule as Rule exposing (Error, Rule)
 import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
@@ -19,8 +18,6 @@ ruleConfig =
             (Comment "elm.bandwagoner.use_record_update_syntax" Actionable Dict.empty)
         , CustomRule rootForTeamHasExtensibleRecordSignature
             (Comment "elm.bandwagoner.use_extensible_record_signature" Essential Dict.empty)
-        , CustomRule rootForTeamUsesPatternMatchingInArgument
-            (Comment "elm.bandwagoner.use_pattern_matching_in_argument" Essential Dict.empty)
         ]
     }
 
@@ -30,15 +27,6 @@ replaceCoachUsesRecordUpdateSyntax =
     Analyzer.functionCalls
         { calledFrom = TopFunction "replaceCoach"
         , findExpressions = [ RecordUpdate ]
-        , find = Some
-        }
-
-
-rootForTeamUsesPatternMatchingInArgument : Comment -> Rule
-rootForTeamUsesPatternMatchingInArgument =
-    Analyzer.functionCalls
-        { calledFrom = TopFunction "rootForTeam"
-        , findExpressions = [ ArgumentWithPattern Record ]
         , find = Some
         }
 

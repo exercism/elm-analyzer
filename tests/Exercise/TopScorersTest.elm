@@ -172,7 +172,7 @@ ruleTests =
             \() ->
                 let
                     comment =
-                        Comment "Doesn't use Dict.filter" "elm.top-scorers.use_filter" Essential Dict.empty
+                        Comment "elm.top-scorers.use_filter" Essential Dict.empty
                 in
                 """
 module TopScorers exposing (..)
@@ -192,7 +192,7 @@ removeInsignificantPlayers goalThreshold playerGoalCounts =
             \() ->
                 let
                     comment =
-                        Comment "Doesn't use Dict.insert" "elm.top-scorers.use_insert" Essential Dict.empty
+                        Comment "elm.top-scorers.use_insert" Essential Dict.empty
                 in
                 """
 module TopScorers exposing (..)
@@ -211,7 +211,7 @@ resetPlayerGoalCount playerName playerGoalCounts =
             \() ->
                 let
                     comment =
-                        Comment "Uses List.sort" "elm.top-scorers.dont_use_sort" Essential Dict.empty
+                        Comment "elm.top-scorers.dont_use_sort" Essential Dict.empty
                 in
                 """
 module TopScorers exposing (..)
@@ -229,7 +229,7 @@ formatPlayers players =
             \() ->
                 let
                     comment =
-                        Comment "Doesn't use Dict.merge" "elm.top-scorers.use_merge" Essential Dict.empty
+                        Comment "elm.top-scorers.use_merge" Essential Dict.empty
                 in
                 """
 module TopScorers exposing (..)
@@ -249,7 +249,7 @@ combineGames game1 game2 =
             \() ->
                 let
                     comment =
-                        Comment "Doesn't use updateGoalCountForPlayer" "elm.top-scorers.use_foldl_and_updateGoalCountForPlayer" Essential Dict.empty
+                        Comment "elm.top-scorers.use_foldl_and_updateGoalCountForPlayer" Essential Dict.empty
                 in
                 """
 module TopScorers exposing (..)
@@ -280,7 +280,7 @@ aggregateScorers playerNames =
             \() ->
                 let
                     comment =
-                        Comment "Doesn't use List.foldl or List.foldr" "elm.top-scorers.use_foldl_and_updateGoalCountForPlayer" Essential Dict.empty
+                        Comment "elm.top-scorers.use_foldl_and_updateGoalCountForPlayer" Essential Dict.empty
                 in
                 """
 module TopScorers exposing (..)
@@ -303,7 +303,7 @@ aggregateScorers playerNames =
             \() ->
                 let
                     comment =
-                        Comment "Doesn't use Maybe.withDefault" "elm.top-scorers.use_withDefault" Essential Dict.empty
+                        Comment "elm.top-scorers.use_withDefault" Essential Dict.empty
                 in
                 """
 module TopScorers exposing (..)

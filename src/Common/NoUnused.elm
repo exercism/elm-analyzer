@@ -22,33 +22,32 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Nothing
-    , restrictToFiles = Nothing
+    { restrictToFiles = Nothing
     , rules =
         -- do not include Modules.rule since exercise modules are always unused
         -- do not include Exports.rule since exported functions are always unused
         -- do not include Dependencies.rule since elm.json is standardized
         [ ImportedRule (NoUnused.CustomTypeConstructors.rule [])
-            makeDecoder
-            (Comment "NoUnused.CustomTypeConstructors" "elm.common.no_unused.custom_type_constructors" Actionable Dict.empty)
+            (makeDecoder "NoUnused.CustomTypeConstructors")
+            (Comment "elm.common.no_unused.custom_type_constructors" Actionable Dict.empty)
         , ImportedRule NoUnused.CustomTypeConstructorArgs.rule
-            makeDecoder
-            (Comment "NoUnused.CustomTypeConstructorArgs" "elm.common.no_unused.custom_type_constructor_args" Actionable Dict.empty)
+            (makeDecoder "NoUnused.CustomTypeConstructorArgs")
+            (Comment "elm.common.no_unused.custom_type_constructor_args" Actionable Dict.empty)
         , ImportedRule NoUnused.Variables.rule
-            makeDecoder
-            (Comment "NoUnused.Variables" "elm.common.no_unused.variables" Actionable Dict.empty)
+            (makeDecoder "NoUnused.Variables")
+            (Comment "elm.common.no_unused.variables" Actionable Dict.empty)
         , ImportedRule NoUnused.Parameters.rule
-            makeDecoder
-            (Comment "NoUnused.Parameters" "elm.common.no_unused.parameters" Actionable Dict.empty)
+            (makeDecoder "NoUnused.Parameters")
+            (Comment "elm.common.no_unused.parameters" Actionable Dict.empty)
         , ImportedRule NoUnused.Patterns.rule
-            makeDecoder
-            (Comment "NoUnused.Patterns" "elm.common.no_unused.patterns" Actionable Dict.empty)
+            (makeDecoder "NoUnused.Patterns")
+            (Comment "elm.common.no_unused.patterns" Actionable Dict.empty)
         ]
     }
 
 
-makeDecoder : Comment -> Decoder Comment
-makeDecoder ({ name } as comment) =
+makeDecoder : String -> Comment -> Decoder Comment
+makeDecoder name comment =
     let
         formattedStringsDecoder : Decoder String
         formattedStringsDecoder =

@@ -235,7 +235,7 @@ usingSet : Test
 usingSet =
     let
         comment =
-            Comment "Uses the Set module" "elm.custom-set.do_not_use_set" Essential Dict.empty
+            Comment "elm.custom-set.do_not_use_set" Essential Dict.empty
     in
     describe "solutions that use the Set function" <|
         [ test "using Set directy" <|

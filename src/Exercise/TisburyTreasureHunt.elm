@@ -10,15 +10,14 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "tisbury-treasure-hunt"
-    , restrictToFiles = Just [ "src/TisburyTreasureHunt.elm" ]
+    { restrictToFiles = Just [ "src/TisburyTreasureHunt.elm" ]
     , rules =
         [ CustomRule specialCaseSwapPossibleShouldTupleInCase
-            (Comment "specialCaseSwapPossible doesn't use a tuple in a case" "elm.tisbury-treasure-hunt.use_tuple_in_case" Essential Dict.empty)
+            (Comment "elm.tisbury-treasure-hunt.use_tuple_in_case" Essential Dict.empty)
         , CustomRule treasureLocationMatchesPlaceLocationUsesPlaceLocationToTreasureLocation
-            (Comment "treasureLocationMatchesPlaceLocation doesn't use placeLocationToTreasureLocation" "elm.tisbury-treasure-hunt.use_placeLocationToTreasureLocation" Essential Dict.empty)
+            (Comment "elm.tisbury-treasure-hunt.use_placeLocationToTreasureLocation" Essential Dict.empty)
         , CustomRule countPlaceTreasuresUsesTupleSecond
-            (Comment "countPlaceTreasures doesn't use Tuple.second" "elm.tisbury-treasure-hunt.use_tuple_second" Actionable Dict.empty)
+            (Comment "elm.tisbury-treasure-hunt.use_tuple_second" Actionable Dict.empty)
         ]
     }
 

@@ -9,11 +9,10 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 
 ruleConfig : RuleConfig
 ruleConfig =
-    { slug = Just "list-ops"
-    , restrictToFiles = Just [ "src/ListOps.elm" ]
+    { restrictToFiles = Just [ "src/ListOps.elm" ]
     , rules =
         [ CustomRule doNotUseListModule
-            (Comment "Uses the List module" "elm.list-ops.do_not_use_list" Essential Dict.empty)
+            (Comment "elm.list-ops.do_not_use_list" Essential Dict.empty)
         ]
     }
 

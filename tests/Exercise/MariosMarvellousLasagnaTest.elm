@@ -86,7 +86,7 @@ noLet : Test
 noLet =
     let
         comment =
-            Comment "Doesn't use a let expression" "elm.marios-marvellous-lasagna.use_let" Essential Dict.empty
+            Comment "elm.marios-marvellous-lasagna.use_let" Essential Dict.empty
     in
     test "doesn't use a let expression" <|
         \() ->

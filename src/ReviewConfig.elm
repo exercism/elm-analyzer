@@ -4,6 +4,7 @@ import Common.NoDebug
 import Common.NoUnused
 import Common.Simplify
 import Common.UseCamelCase
+import Exercise.AnnalynsInfiltration
 import Exercise.Bandwagoner
 import Exercise.BettysBikeShop
 import Exercise.BlorkemonCards
@@ -45,6 +46,7 @@ ruleConfigs =
     , Exercise.TicketPlease.ruleConfig
     , Exercise.TisburyTreasureHunt.ruleConfig
     , Exercise.GottaSnatchEmAll.ruleConfig
+    , Exercise.AnnalynsInfiltration.ruleConfig
 
     -- Practice Exercises
     , Exercise.Strain.ruleConfig

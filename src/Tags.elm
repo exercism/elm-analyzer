@@ -2,7 +2,6 @@ module Tags exposing (commonTagsRule, expressionTagsRule, ruleConfig)
 
 import Elm.Syntax.Expression exposing (Expression(..), LetDeclaration(..))
 import Elm.Syntax.Node as Node exposing (Node(..))
-import Elm.Syntax.Pattern exposing (Pattern(..))
 import ElmSyntaxHelpers
 import Json.Encode as Encode exposing (Value)
 import Review.ModuleNameLookupTable as LookupTable exposing (ModuleNameLookupTable)

@@ -1,6 +1,5 @@
 module TagsTest exposing (tests)
 
-import Comment exposing (CommentType(..))
 import Review.Test
 import Tags
 import Test exposing (Test, describe, test)

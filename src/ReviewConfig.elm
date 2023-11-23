@@ -13,6 +13,7 @@ import Exercise.GottaSnatchEmAll
 import Exercise.ListOps
 import Exercise.MariosMarvellousLasagna
 import Exercise.MazeMaker
+import Exercise.RolePlayingGame
 import Exercise.Strain
 import Exercise.TicketPlease
 import Exercise.TisburyTreasureHunt
@@ -35,6 +36,7 @@ ruleConfigs =
 
     -- Concept Exercises
     , Exercise.BettysBikeShop.ruleConfig
+    , Exercise.RolePlayingGame.ruleConfig
     , Exercise.TopScorers.ruleConfig
     , Exercise.MariosMarvellousLasagna.ruleConfig
     , Exercise.BlorkemonCards.ruleConfig

@@ -48,7 +48,7 @@ doesNotReuseFunction =
         comment =
             Comment "elm.lucians-luscious-lasagna.reuse_functions" Essential Dict.empty
     in
-    test "canFreePrisoner doesn't use boolean operators" <|
+    test "elapsedTimeInMinutes does not use preparationTimeInMinutes" <|
         \() ->
             """
 module LuciansLusciousLasagna exposing (elapsedTimeInMinutes, expectedMinutesInOven, preparationTimeInMinutes)

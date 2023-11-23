@@ -50,6 +50,37 @@ hasGenericRecordTests =
         ]
 
 
+hasDestructuringPatternTests : Test
+hasDestructuringPatternTests =
+    describe "hasDestructuringPattern"
+        [ test "no destructuring" <|
+            \_ ->
+                Node.empty (ParenthesizedPattern (Node.empty (ListPattern [ Node.empty UnitPattern ])))
+                    |> ElmSyntaxHelpers.hasDestructuringPattern
+                    |> Expect.equal False
+        , test "tuple destructuring" <|
+            \_ ->
+                Node.empty (TuplePattern [])
+                    |> ElmSyntaxHelpers.hasDestructuringPattern
+                    |> Expect.equal True
+        , test "record destructuring" <|
+            \_ ->
+                Node.empty (RecordPattern [])
+                    |> ElmSyntaxHelpers.hasDestructuringPattern
+                    |> Expect.equal True
+        , test "named destructuring" <|
+            \_ ->
+                Node.empty (NamedPattern { moduleName = [], name = "Thing" } [])
+                    |> ElmSyntaxHelpers.hasDestructuringPattern
+                    |> Expect.equal True
+        , test "uncons destructuring" <|
+            \_ ->
+                Node.empty (UnConsPattern (Node.empty UnitPattern) (Node.empty UnitPattern))
+                    |> ElmSyntaxHelpers.hasDestructuringPattern
+                    |> Expect.equal True
+        ]
+
+
 traversePatternTests : Test
 traversePatternTests =
     describe "traversePattern"

@@ -20,14 +20,23 @@ if [ -f solution_cache.tar ]; then
     INPUT_DIR=/tmp/sol
 fi
 
-# Run analysis
 # Temporarily disable -e mode
 set +e
+
+# Run analysis
 npx elm-review $INPUT_DIR \
         --elmjson $INPUT_DIR/elm.json \
         --config . \
         --report=json \
-  | node ./bin/cli.js > $OUTPUT_DIR/analysis.json
+        --extract \
+  > /tmp/elm-review-report.json
+
+# Get comments
+cat /tmp/elm-review-report.json | node ./bin/cli.js > $OUTPUT_DIR/analysis.json
+
+# Get tags
+jq '.extracts .Tags' /tmp/elm-review-report.json > $OUTPUT_DIR/tags.json
+
 set -e
 
 echo Finished

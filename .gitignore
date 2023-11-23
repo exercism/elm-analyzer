@@ -2,4 +2,5 @@ elm-stuff
 bin/*.js
 src/main.js
 *analysis.json
+*tags.json
 node_modules

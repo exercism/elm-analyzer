@@ -37,8 +37,8 @@ function main {
     exit 1
   fi
 
-  jq -S . ${exercise}/expected_analysis.json > /tmp/expected.json
-  jq -S . ${exercise}/analysis.json > /tmp/actual.json
+  jq -S '.comments |= sort' ${exercise}/expected_analysis.json > /tmp/expected.json
+  jq -S '.comments |= sort' ${exercise}/analysis.json > /tmp/actual.json
   if ! diff /tmp/expected.json /tmp/actual.json ;then
     echo "🔥 ${exercise}: expected ${exercise}/analysis.json to equal ${exercise}/expected_analysis.json on successful run 🔥"
     exit 1

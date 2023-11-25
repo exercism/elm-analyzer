@@ -75,7 +75,9 @@ aggregateComments : List Comment -> Summary
 aggregateComments comments =
     let
         sortedComments =
-            List.sortBy commentTypeShowOrder comments
+            comments
+                |> List.Extra.unique
+                |> List.sortBy commentTypeShowOrder
 
         ( message, extraComments ) =
             case List.map .commentType comments |> List.Extra.minimumBy commentTypeSummaryOrder of

@@ -37,7 +37,7 @@ ruleConfig =
 
 commonTagsRule : Rule
 commonTagsRule =
-    Rule.newProjectRuleSchema "Tags" commonTagsProjectContext
+    Rule.newProjectRuleSchema "commonTags" commonTagsProjectContext
         |> Rule.withModuleVisitor (Rule.withSimpleModuleDefinitionVisitor (always []))
         |> Rule.withModuleContextUsingContextCreator
             { fromModuleToProject = fromModuleToProject
@@ -87,7 +87,7 @@ dataExtractor =
 
 expressionTagsRule : Rule
 expressionTagsRule =
-    Rule.newProjectRuleSchema "Tags" emptyProjectContext
+    Rule.newProjectRuleSchema "expressionTags" emptyProjectContext
         |> Rule.withModuleVisitor (Rule.withExpressionEnterVisitor expressionVisitor)
         |> Rule.withModuleContextUsingContextCreator
             { fromModuleToProject = fromModuleToProject

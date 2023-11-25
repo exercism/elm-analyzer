@@ -35,7 +35,7 @@ npx elm-review $INPUT_DIR \
 cat /tmp/elm-review-report.json | node ./bin/cli.js > $OUTPUT_DIR/analysis.json
 
 # Get tags
-jq '.extracts .Tags' /tmp/elm-review-report.json > $OUTPUT_DIR/tags.json
+jq '.extracts | to_entries | map(.value) | add' /tmp/elm-review-report.json > $OUTPUT_DIR/tags.json
 
 set -e
 

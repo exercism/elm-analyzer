@@ -15,7 +15,8 @@ type alias Tag =
 
 
 type alias ProjectContext =
-    Set Tag
+    { tags : Set Tag
+    }
 
 
 type alias ModuleContext =
@@ -36,24 +37,26 @@ ruleConfig =
 
 commonTagsRule : Rule
 commonTagsRule =
-    Rule.newProjectRuleSchema "Tags" commonTags
+    Rule.newProjectRuleSchema "Tags" commonTagsProjectContext
         |> Rule.withModuleVisitor (Rule.withSimpleModuleDefinitionVisitor (always []))
         |> Rule.withModuleContextUsingContextCreator
             { fromModuleToProject = fromModuleToProject
             , fromProjectToModule = fromProjectToModule
-            , foldProjectContexts = Set.union
+            , foldProjectContexts = foldProjectContexts
             }
         |> Rule.withDataExtractor dataExtractor
         |> Rule.fromProjectRuleSchema
 
 
-commonTags : Set Tag
-commonTags =
-    Set.fromList
-        [ "paradigm:functional"
-        , "technique:immutability"
-        , "uses:module"
-        ]
+commonTagsProjectContext : ProjectContext
+commonTagsProjectContext =
+    ProjectContext
+        (Set.fromList
+            [ "paradigm:functional"
+            , "technique:immutability"
+            , "uses:module"
+            ]
+        )
 
 
 fromProjectToModule : Rule.ContextCreator ProjectContext ModuleContext
@@ -69,25 +72,35 @@ fromProjectToModule =
 
 fromModuleToProject : Rule.ContextCreator ModuleContext ProjectContext
 fromModuleToProject =
-    Rule.initContextCreator (\{ tags } -> tags)
+    Rule.initContextCreator (\{ tags } -> ProjectContext tags)
+
+
+foldProjectContexts : ProjectContext -> ProjectContext -> ProjectContext
+foldProjectContexts a b =
+    ProjectContext (Set.union a.tags b.tags)
 
 
 dataExtractor : ProjectContext -> Value
 dataExtractor =
-    Set.toList >> Encode.list Encode.string
+    .tags >> Set.toList >> Encode.list Encode.string
 
 
 expressionTagsRule : Rule
 expressionTagsRule =
-    Rule.newProjectRuleSchema "Tags" Set.empty
+    Rule.newProjectRuleSchema "Tags" emptyProjectContext
         |> Rule.withModuleVisitor (Rule.withExpressionEnterVisitor expressionVisitor)
         |> Rule.withModuleContextUsingContextCreator
             { fromModuleToProject = fromModuleToProject
             , fromProjectToModule = fromProjectToModule
-            , foldProjectContexts = Set.union
+            , foldProjectContexts = foldProjectContexts
             }
         |> Rule.withDataExtractor dataExtractor
         |> Rule.fromProjectRuleSchema
+
+
+emptyProjectContext : ProjectContext
+emptyProjectContext =
+    ProjectContext Set.empty
 
 
 expressionVisitor : Node Expression -> ModuleContext -> ( List never, ModuleContext )

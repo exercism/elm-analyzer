@@ -11,6 +11,7 @@ tests =
     describe "TagsTest tests"
         [ commonTags
         , commentsTags
+        , typesTags
         , expressionTypeTags
         , expressionTags
         ]
@@ -96,6 +97,68 @@ f x = x
 """
                     |> Review.Test.run Tags.expressionTagsRule
                     |> Review.Test.expectDataExtract "[ \"construct:comment\", \"construct:documentation\" ]"
+        ]
+
+
+typesTags : Test
+typesTags =
+    describe "types"
+        [ test "type alias" <|
+            \() ->
+                """
+module A exposing (..)
+type alias MyString = String
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[ \"uses:type-alias\" ]"
+        , test "custom type" <|
+            \() ->
+                """
+module A exposing (..)
+type MyType = MyType
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[ \"uses:custom-type\" ]"
+        , test "union type" <|
+            \() ->
+                """
+module A exposing (..)
+type MyType = A | B
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[ \"uses:custom-type\", \"uses:union-type\" ]"
+        , test "generics type" <|
+            \() ->
+                """
+module A exposing (..)
+type MyType a = MyType
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[ \"construct:generic-type\", \"uses:custom-type\" ]"
+        , test "direct recursive type" <|
+            \() ->
+                """
+module A exposing (..)
+type MyType = A MyType
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[ \"construct:recursive-type\", \"uses:custom-type\" ]"
+        , test "nested recursive type" <|
+            \() ->
+                """
+module A exposing (..)
+type MyType = A | B | C { c: (String, MyType) }
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[ \"construct:recursive-type\", \"uses:custom-type\", \"uses:union-type\" ]"
+        , test "nested generic recursive type" <|
+            \() ->
+                """
+module A exposing (..)
+type MyType a x = A { c : ( String, { a | b : MyType a Int } ) }
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[ \"construct:generic-type\", \"construct:recursive-type\", \"uses:custom-type\" ]"
         ]
 
 
@@ -227,20 +290,17 @@ expressionTags =
                 expectData "f = Array.empty"
                     "[ \"construct:array\", \"technique:immutable-collection\" ]"
         , test "using Bytes function" <|
-            \() ->
-                expectData "f = Bytes.width"
-                    "[ \"construct:byte\" ]"
+            \() -> expectData "f = Bytes.width" "[ \"construct:byte\" ]"
         , test "using Bytes.Encode function" <|
-            \() ->
-                expectData "f = Bytes.Encode.encode"
-                    "[ \"construct:byte\" ]"
+            \() -> expectData "f = Bytes.Encode.encode" "[ \"construct:byte\" ]"
         , test "using List function" <|
-            \() ->
-                expectData "f = List.all" "[ \"construct:list\" ]"
+            \() -> expectData "f = List.all" "[ \"construct:list\" ]"
         , test "using Set function" <|
             \() ->
                 expectData "f = Set.empty"
                     "[ \"construct:set\", \"technique:immutable-collection\", \"technique:sorted-collection\" ]"
+        , test "using Time function" <|
+            \() -> expectData "f = Time.now" "[ \"construct:date-time\" ]"
         , test "using Dict function" <|
             \() ->
                 expectData "f = Dict.empty"

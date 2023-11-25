@@ -1,5 +1,6 @@
-module ElmSyntaxHelpers exposing (hasDestructuringPattern, hasGenericRecord, traversePattern, typeAnnotationsMatch)
+module ElmSyntaxHelpers exposing (hasDestructuringPattern, hasGenericRecord, hasTyped, traversePattern, typeAnnotationsMatch)
 
+import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Pattern exposing (Pattern(..))
 import Elm.Syntax.TypeAnnotation exposing (TypeAnnotation(..))
@@ -68,6 +69,36 @@ hasGenericRecord annotation =
 
         Record _ ->
             False
+
+        GenericType _ ->
+            False
+
+        Unit ->
+            False
+
+
+hasTyped : ModuleName -> String -> Node TypeAnnotation -> Bool
+hasTyped moduleName name annotation =
+    case Node.value annotation of
+        Typed (Node _ ( typeModule, typeName )) annotations ->
+            (typeModule == moduleName && typeName == name)
+                || List.any (hasTyped moduleName name) annotations
+
+        Record recordFields ->
+            recordFields
+                |> List.map (Node.value >> Tuple.second)
+                |> List.any (hasTyped moduleName name)
+
+        GenericRecord _ (Node _ recordFields) ->
+            recordFields
+                |> List.map (Node.value >> Tuple.second)
+                |> List.any (hasTyped moduleName name)
+
+        Tupled annotations ->
+            List.any (hasTyped moduleName name) annotations
+
+        FunctionTypeAnnotation a b ->
+            hasTyped moduleName name a || hasTyped moduleName name b
 
         GenericType _ ->
             False

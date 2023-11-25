@@ -50,6 +50,34 @@ hasGenericRecordTests =
         ]
 
 
+hasTypedTests : Test
+hasTypedTests =
+    describe "hasTyped"
+        [ test "no typed" <|
+            \_ ->
+                Node.empty
+                    (Tupled
+                        [ Node.empty (FunctionTypeAnnotation (Node.empty Unit) (Node.empty (GenericType "x")))
+                        , Node.empty (Record [ Node.empty ( Node.empty "x", Node.empty Unit ) ])
+                        , Node.empty (Typed (Node.empty ( [ "X" ], "y" )) [])
+                        ]
+                    )
+                    |> ElmSyntaxHelpers.hasTyped [ "X" ] "x"
+                    |> Expect.equal False
+        , test "one typed" <|
+            \_ ->
+                Node.empty
+                    (Tupled
+                        [ Node.empty (FunctionTypeAnnotation (Node.empty Unit) (Node.empty (GenericType "x")))
+                        , Node.empty (Record [ Node.empty ( Node.empty "x", Node.empty Unit ) ])
+                        , Node.empty (Typed (Node.empty ( [ "X" ], "x" )) [])
+                        ]
+                    )
+                    |> ElmSyntaxHelpers.hasTyped [ "X" ] "x"
+                    |> Expect.equal True
+        ]
+
+
 hasDestructuringPatternTests : Test
 hasDestructuringPatternTests =
     describe "hasDestructuringPattern"

@@ -3,7 +3,10 @@ module Tags exposing (commonTagsRule, expressionTagsRule, ruleConfig)
 import Elm.Syntax.Declaration exposing (Declaration(..))
 import Elm.Syntax.Expression exposing (Expression(..), LetDeclaration(..))
 import Elm.Syntax.Module exposing (Module)
+import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node(..))
+import Elm.Syntax.Type exposing (Type)
+import Elm.Syntax.TypeAnnotation exposing (TypeAnnotation(..))
 import ElmSyntaxHelpers
 import Json.Encode as Encode exposing (Value)
 import Review.ModuleNameLookupTable as LookupTable exposing (ModuleNameLookupTable)
@@ -118,13 +121,53 @@ dataExtractor =
 
 
 declarationVisitor : Node Declaration -> ModuleContext -> ( List never, ModuleContext )
-declarationVisitor node context =
+declarationVisitor node ({ tags } as context) =
     case Node.value node of
         FunctionDeclaration { documentation } ->
             documentationVisitor documentation context
 
+        AliasDeclaration _ ->
+            ( [], { context | tags = Set.insert "uses:type-alias" tags } )
+
+        CustomTypeDeclaration customType ->
+            ( [], { context | tags = Set.union (analyzeCustomType customType) tags } )
+
         _ ->
             ( [], context )
+
+
+analyzeCustomType : Type -> Set String
+analyzeCustomType { name, generics, constructors } =
+    let
+        unionTags =
+            case constructors of
+                _ :: _ :: _ ->
+                    [ "uses:union-type" ]
+
+                _ ->
+                    []
+
+        genericsTags =
+            case generics of
+                [] ->
+                    []
+
+                _ ->
+                    [ "construct:generic-type" ]
+
+        isRecursive =
+            constructors
+                |> List.concatMap (Node.value >> .arguments)
+                |> List.any (ElmSyntaxHelpers.hasTyped [] (Node.value name))
+
+        recursiveTags =
+            if isRecursive then
+                [ "construct:recursive-type" ]
+
+            else
+                []
+    in
+    Set.fromList ("uses:custom-type" :: genericsTags ++ unionTags ++ recursiveTags)
 
 
 documentationVisitor : Maybe documentation -> ModuleContext -> ( List never, ModuleContext )
@@ -294,6 +337,9 @@ matchExpression (Node _ expression) =
 
         FunctionOrValue [ "Set" ] _ ->
             Set.fromList [ "construct:set", "technique:immutable-collection", "technique:sorted-collection" ]
+
+        FunctionOrValue [ "Time" ] _ ->
+            Set.fromList [ "construct:date-time" ]
 
         FunctionOrValue [ "Dict" ] _ ->
             Set.fromList [ "construct:dictionary", "technique:immutable-collection", "technique:sorted-collection" ]

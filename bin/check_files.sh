@@ -44,6 +44,23 @@ function main {
     exit 1
   fi
 
+  if [[ ! -f "${exercise}/expected_tags.json" ]]; then
+    echo "🔥 ${exercise}: expected expected_tags.json to exist 🔥"
+    exit 1
+  fi
+
+  if [[ ! -f "${exercise}/tags.json" ]]; then
+    echo "🔥 ${exercise}: expected tags.json to exist on successful run 🔥"
+    exit 1
+  fi
+
+  jq -S 'sort' ${exercise}/expected_tags.json > /tmp/expected.json
+  jq -S 'sort' ${exercise}/tags.json > /tmp/actual.json
+  if ! diff /tmp/expected.json /tmp/actual.json ;then
+    echo "🔥 ${exercise}: expected ${exercise}/tags.json to equal ${exercise}/expected_tags.json on successful run 🔥"
+    exit 1
+  fi
+
   echo "🏁 ${exercise}: expected files present and correct after successful run 🏁"
 }
 

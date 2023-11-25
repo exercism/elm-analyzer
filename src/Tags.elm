@@ -11,18 +11,14 @@ import RuleConfig exposing (AnalyzerRule(..), RuleConfig)
 import Set exposing (Set)
 
 
-type alias Tag =
-    String
-
-
 type alias ProjectContext =
-    { tags : Set Tag
+    { tags : Set String
     }
 
 
 type alias ModuleContext =
     { lookupTable : ModuleNameLookupTable
-    , tags : Set Tag
+    , tags : Set String
     }
 
 
@@ -72,7 +68,7 @@ commonModuleVisitor _ context =
     ( [], { context | tags = commonTags } )
 
 
-commonTags : Set Tag
+commonTags : Set String
 commonTags =
     Set.fromList
         [ "paradigm:functional"
@@ -130,7 +126,7 @@ expressionVisitor ((Node range expression) as node) ({ lookupTable, tags } as co
             ( [], { context | tags = Set.union tags (matchExpression node) } )
 
 
-matchExpression : Node Expression -> Set Tag
+matchExpression : Node Expression -> Set String
 matchExpression (Node range expression) =
     case expression of
         FunctionOrValue [ "Set" ] _ ->

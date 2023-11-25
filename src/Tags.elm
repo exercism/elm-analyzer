@@ -1,6 +1,7 @@
 module Tags exposing (commonTagsRule, expressionTagsRule, ruleConfig)
 
 import Elm.Syntax.Expression exposing (Expression(..), LetDeclaration(..))
+import Elm.Syntax.Module exposing (Module)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import ElmSyntaxHelpers
 import Json.Encode as Encode exposing (Value)
@@ -37,8 +38,8 @@ ruleConfig =
 
 commonTagsRule : Rule
 commonTagsRule =
-    Rule.newProjectRuleSchema "commonTags" commonTagsProjectContext
-        |> Rule.withModuleVisitor (Rule.withSimpleModuleDefinitionVisitor (always []))
+    Rule.newProjectRuleSchema "commonTags" emptyProjectContext
+        |> Rule.withModuleVisitor (Rule.withModuleDefinitionVisitor commonModuleVisitor)
         |> Rule.withModuleContextUsingContextCreator
             { fromModuleToProject = fromModuleToProject
             , fromProjectToModule = fromProjectToModule
@@ -46,43 +47,6 @@ commonTagsRule =
             }
         |> Rule.withDataExtractor dataExtractor
         |> Rule.fromProjectRuleSchema
-
-
-commonTagsProjectContext : ProjectContext
-commonTagsProjectContext =
-    ProjectContext
-        (Set.fromList
-            [ "paradigm:functional"
-            , "technique:immutability"
-            , "uses:module"
-            ]
-        )
-
-
-fromProjectToModule : Rule.ContextCreator ProjectContext ModuleContext
-fromProjectToModule =
-    Rule.initContextCreator
-        (\lookupTable _ ->
-            { lookupTable = lookupTable
-            , tags = Set.empty
-            }
-        )
-        |> Rule.withModuleNameLookupTable
-
-
-fromModuleToProject : Rule.ContextCreator ModuleContext ProjectContext
-fromModuleToProject =
-    Rule.initContextCreator (\{ tags } -> ProjectContext tags)
-
-
-foldProjectContexts : ProjectContext -> ProjectContext -> ProjectContext
-foldProjectContexts a b =
-    ProjectContext (Set.union a.tags b.tags)
-
-
-dataExtractor : ProjectContext -> Value
-dataExtractor =
-    .tags >> Set.toList >> Encode.list Encode.string
 
 
 expressionTagsRule : Rule
@@ -101,6 +65,54 @@ expressionTagsRule =
 emptyProjectContext : ProjectContext
 emptyProjectContext =
     ProjectContext Set.empty
+
+
+commonModuleVisitor : Node Module -> ModuleContext -> ( List never, ModuleContext )
+commonModuleVisitor _ context =
+    ( [], { context | tags = commonTags } )
+
+
+commonTags : Set Tag
+commonTags =
+    Set.fromList
+        [ "paradigm:functional"
+        , "technique:immutability"
+        , "uses:module"
+        ]
+
+
+fromProjectToModule : Rule.ContextCreator ProjectContext ModuleContext
+fromProjectToModule =
+    Rule.initContextCreator
+        (\lookupTable _ ->
+            { lookupTable = lookupTable
+            , tags = Set.empty
+            }
+        )
+        |> Rule.withModuleNameLookupTable
+
+
+fromModuleToProject : Rule.ContextCreator ModuleContext ProjectContext
+fromModuleToProject =
+    Rule.initContextCreator
+        (\isFileIgnored { tags } ->
+            if isFileIgnored then
+                emptyProjectContext
+
+            else
+                ProjectContext tags
+        )
+        |> Rule.withIsFileIgnored
+
+
+foldProjectContexts : ProjectContext -> ProjectContext -> ProjectContext
+foldProjectContexts a b =
+    ProjectContext (Set.union a.tags b.tags)
+
+
+dataExtractor : ProjectContext -> Value
+dataExtractor =
+    .tags >> Set.toList >> Encode.list Encode.string
 
 
 expressionVisitor : Node Expression -> ModuleContext -> ( List never, ModuleContext )

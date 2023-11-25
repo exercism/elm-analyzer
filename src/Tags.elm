@@ -113,22 +113,133 @@ dataExtractor =
 
 expressionVisitor : Node Expression -> ModuleContext -> ( List never, ModuleContext )
 expressionVisitor ((Node range expression) as node) ({ lookupTable, tags } as context) =
+    let
+        matches n =
+            Set.union (matchExpressionType n) (matchExpression n)
+    in
     case expression of
         FunctionOrValue _ name ->
             case LookupTable.moduleNameFor lookupTable node of
                 Nothing ->
-                    ( [], { context | tags = Set.union tags (matchExpression node) } )
+                    ( [], { context | tags = Set.union tags (matches node) } )
 
                 Just originalModuleName ->
-                    ( [], { context | tags = Set.union tags (matchExpression (Node range (FunctionOrValue originalModuleName name))) } )
+                    ( [], { context | tags = Set.union tags (matches (Node range (FunctionOrValue originalModuleName name))) } )
 
         _ ->
-            ( [], { context | tags = Set.union tags (matchExpression node) } )
+            ( [], { context | tags = Set.union tags (matches node) } )
+
+
+{-| Only looks at the type of the expression, not the content
+-}
+matchExpressionType : Node Expression -> Set String
+matchExpressionType (Node range expression) =
+    case expression of
+        Application _ ->
+            Set.singleton "uses:function-application"
+
+        OperatorApplication _ _ _ _ ->
+            Set.singleton "uses:function-application"
+
+        PrefixOperator _ ->
+            Set.singleton "uses:prefix-operator"
+
+        UnitExpr ->
+            Set.singleton "uses:unit"
+
+        Floatable _ ->
+            Set.fromList [ "construct:float", "construct:floating-point-number" ]
+
+        Integer _ ->
+            Set.fromList [ "construct:integral-number", "construct:int" ]
+
+        Hex _ ->
+            Set.fromList [ "construct:hexadecimal-number", "construct:integral-number", "construct:int" ]
+
+        Negation _ ->
+            Set.singleton "construct:unary-minus"
+
+        Literal _ ->
+            if range.end.row > range.start.row then
+                Set.fromList [ "construct:string", "construct:multiline-string" ]
+
+            else
+                Set.singleton "construct:string"
+
+        LambdaExpression _ ->
+            Set.singleton "construct:lambda"
+
+        IfBlock _ _ _ ->
+            Set.fromList [ "construct:if", "construct:boolean" ]
+
+        LetExpression _ ->
+            Set.singleton "construct:assignment"
+
+        CharLiteral _ ->
+            Set.singleton "construct:char"
+
+        TupledExpression _ ->
+            Set.singleton "construct:tuple"
+
+        CaseExpression _ ->
+            Set.singleton "construct:pattern-matching"
+
+        RecordExpr _ ->
+            Set.singleton "construct:record"
+
+        RecordAccess _ _ ->
+            Set.fromList [ "construct:record", "uses:record-access" ]
+
+        RecordAccessFunction _ ->
+            Set.fromList [ "construct:record", "uses:record-access", "uses:record-access-function" ]
+
+        RecordUpdateExpression _ _ ->
+            Set.fromList [ "construct:record", "uses:record-update" ]
+
+        ListExpr _ ->
+            Set.singleton "construct:list"
+
+        GLSLExpression _ ->
+            Set.singleton "uses:glsl"
+
+        FunctionOrValue _ _ ->
+            Set.empty
+
+        ParenthesizedExpression _ ->
+            Set.empty
+
+        -- not possible to get in practice
+        Operator _ ->
+            Set.empty
 
 
 matchExpression : Node Expression -> Set String
-matchExpression (Node range expression) =
+matchExpression (Node _ expression) =
     case expression of
+        FunctionOrValue [ "Bitwise" ] "and" ->
+            Set.fromList [ "construct:bit-manipulation", "construct:bitwise-and" ]
+
+        FunctionOrValue [ "Bitwise" ] "or" ->
+            Set.fromList [ "construct:bit-manipulation", "construct:bitwise-or" ]
+
+        FunctionOrValue [ "Bitwise" ] "xor" ->
+            Set.fromList [ "construct:bit-manipulation", "construct:bitwise-xor" ]
+
+        FunctionOrValue [ "Bitwise" ] "complement" ->
+            Set.fromList [ "construct:bit-manipulation", "construct:bitwise-not" ]
+
+        FunctionOrValue [ "Bitwise" ] "shiftLeftBy" ->
+            Set.fromList [ "construct:bit-manipulation", "technique:bit-shifting", "construct:bitwise-left-shift" ]
+
+        FunctionOrValue [ "Bitwise" ] "shiftRightBy" ->
+            Set.fromList [ "construct:bit-manipulation", "technique:bit-shifting", "construct:bitwise-right-shift" ]
+
+        FunctionOrValue [ "Bitwise" ] "shiftRightZfBy" ->
+            Set.fromList [ "construct:bit-manipulation", "technique:bit-shifting" ]
+
+        FunctionOrValue [ "Array" ] _ ->
+            Set.fromList [ "construct:array", "technique:immutable-collection" ]
+
         FunctionOrValue [ "Set" ] _ ->
             Set.fromList [ "construct:set", "technique:immutable-collection", "technique:sorted-collection" ]
 
@@ -143,6 +254,12 @@ matchExpression (Node range expression) =
 
         FunctionOrValue [ "Debug" ] _ ->
             Set.singleton "uses:debug"
+
+        PrefixOperator "&&" ->
+            Set.fromList [ "construct:construct:boolean", "technique:boolean-logic" ]
+
+        OperatorApplication "&&" _ _ _ ->
+            Set.fromList [ "construct:construct:boolean", "technique:boolean-logic" ]
 
         PrefixOperator "+" ->
             Set.singleton "construct:add"
@@ -186,37 +303,9 @@ matchExpression (Node range expression) =
         OperatorApplication "/=" _ _ _ ->
             Set.fromList [ "construct:inequality", "technique:equality-comparison", "construct:boolean" ]
 
-        UnitExpr ->
-            Set.singleton "uses:unit"
-
-        Floatable _ ->
-            Set.fromList [ "construct:float", "construct:floating-point-number" ]
-
-        Integer _ ->
-            Set.fromList [ "construct:integral-number", "construct:int" ]
-
-        Hex _ ->
-            Set.fromList [ "construct:hexadecimal-number", "construct:integral-number", "construct:int" ]
-
-        Negation _ ->
-            Set.singleton "construct:unary-minus"
-
-        Literal _ ->
-            if range.end.row > range.start.row then
-                Set.fromList [ "construct:string", "construct:multiline-string" ]
-
-            else
-                Set.singleton "construct:string"
-
-        LambdaExpression _ ->
-            Set.singleton "construct:lambda"
-
-        IfBlock _ _ _ ->
-            Set.fromList [ "construct:if", "construct:boolean" ]
-
         LetExpression { declarations } ->
             if List.any (Node.value >> usesProperDestructuring) declarations then
-                Set.fromList [ "uses:destructure", "construct:pattern-matching" ]
+                Set.fromList [ "construct:destructuring", "construct:pattern-matching" ]
 
             else
                 Set.empty

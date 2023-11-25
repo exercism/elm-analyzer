@@ -1,5 +1,6 @@
 module TagsTest exposing (tests)
 
+import Expect exposing (Expectation)
 import Review.Test
 import Tags
 import Test exposing (Test, describe, test)
@@ -9,6 +10,7 @@ tests : Test
 tests =
     describe "TagsTest tests"
         [ commonTags
+        , expressionTypeTags
         , expressionTags
         ]
 
@@ -47,11 +49,9 @@ twoFer name =
         ]
 
 
-expressionTags : Test
-expressionTags =
-    let
-        commonStart =
-            """
+commonStart : String
+commonStart =
+    """
 module A exposing (..)
 
 import Set
@@ -61,14 +61,120 @@ import Regex
 import Debug
      """
 
-        expectData function data =
-            commonStart
-                ++ function
-                |> Review.Test.run Tags.expressionTagsRule
-                |> Review.Test.expectDataExtract data
-    in
+
+expectData : String -> String -> Expectation
+expectData function data =
+    commonStart
+        ++ function
+        |> Review.Test.run Tags.expressionTagsRule
+        |> Review.Test.expectDataExtract data
+
+
+expressionTypeTags : Test
+expressionTypeTags =
+    describe "matching expression types"
+        [ test "FunctionOrValue is too general for a tag" <|
+            \() -> expectData "f x = x" "[]"
+        , test "ParenthesizedExpression is too general for a tag" <|
+            \() -> expectData "f x = (x)" "[]"
+        , test "GLSLExpression" <|
+            \() -> expectData "f = [glsl| void main () {} |]" "[ \"uses:glsl\" ]"
+        , test "Application" <|
+            \() -> expectData "f x y = x y" "[ \"uses:function-application\" ]"
+        , test "PrefixOperator" <|
+            \() -> expectData "f = (^)" "[ \"uses:prefix-operator\" ]"
+        , test "using ()" <|
+            \() -> expectData "f = ()" "[ \"uses:unit\" ]"
+        , test "using float" <|
+            \() ->
+                expectData "f = 3.14" "[ \"construct:float\", \"construct:floating-point-number\" ]"
+        , test "using float scientific notation" <|
+            \() ->
+                expectData "f = 314e-2" "[ \"construct:float\", \"construct:floating-point-number\" ]"
+        , test "using int" <|
+            \() ->
+                expectData "f = 42" "[ \"construct:int\", \"construct:integral-number\" ]"
+        , test "using int with hex notation" <|
+            \() ->
+                expectData "f = 0x42"
+                    "[ \"construct:hexadecimal-number\", \"construct:int\", \"construct:integral-number\" ]"
+        , test "using negation and int" <|
+            \() ->
+                expectData "f = -42"
+                    "[ \"construct:int\", \"construct:integral-number\", \"construct:unary-minus\" ]"
+        , test "using a string literal" <|
+            \() ->
+                expectData "f = \"hello\"" "[ \"construct:string\" ]"
+        , test "using mutiline string literal" <|
+            \() ->
+                expectData "f = \"\"\"\nhello\nworld\"\"\""
+                    "[ \"construct:multiline-string\", \"construct:string\" ]"
+        , test "using lambda" <|
+            \() -> expectData "f x = (\\_ -> x)" "[ \"construct:lambda\" ]"
+        , test "using if block" <|
+            \() ->
+                expectData "f x y z = if x then y else z"
+                    "[ \"construct:boolean\", \"construct:if\" ]"
+        , test "using let block" <|
+            \() ->
+                expectData "f x y = let z = y in z" "[ \"construct:assignment\" ]"
+        , test "using char" <|
+            \() -> expectData "f = 'a'" "[ \"construct:char\" ]"
+        , test "using tuple" <|
+            \() -> expectData "f a b = (a, b)" "[ \"construct:tuple\" ]"
+        , test "using list" <|
+            \() -> expectData "f a b = [a, b]" "[ \"construct:list\" ]"
+        , test "using case" <|
+            \() -> expectData "f a = case a of\n b -> b" "[ \"construct:pattern-matching\" ]"
+        , test "using record" <|
+            \() -> expectData "f b = {a = b}" "[ \"construct:record\" ]"
+        , test "using record access" <|
+            \() -> expectData "f rec = rec.field" "[ \"construct:record\", \"uses:record-access\" ]"
+        , test "using record access function" <|
+            \() ->
+                expectData "f = .field"
+                    "[ \"construct:record\", \"uses:record-access\", \"uses:record-access-function\" ]"
+        , test "using record update" <|
+            \() -> expectData "f a = {a | b = a}" "[ \"construct:record\", \"uses:record-update\" ]"
+        ]
+
+
+expressionTags : Test
+expressionTags =
     describe "matching expressions"
-        [ test "using Set function" <|
+        [ test "using Bitwise.and" <|
+            \() ->
+                expectData "f = Bitwise.and"
+                    "[ \"construct:bit-manipulation\", \"construct:bitwise-and\" ]"
+        , test "using Bitwise.or" <|
+            \() ->
+                expectData "f = Bitwise.or"
+                    "[ \"construct:bit-manipulation\", \"construct:bitwise-or\" ]"
+        , test "using Bitwise.xor" <|
+            \() ->
+                expectData "f = Bitwise.xor"
+                    "[ \"construct:bit-manipulation\", \"construct:bitwise-xor\" ]"
+        , test "using Bitwise.complement" <|
+            \() ->
+                expectData "f = Bitwise.complement"
+                    "[ \"construct:bit-manipulation\", \"construct:bitwise-not\" ]"
+        , test "using Bitwise.shiftLeftBy" <|
+            \() ->
+                expectData "f = Bitwise.shiftLeftBy"
+                    "[ \"construct:bit-manipulation\", \"construct:bitwise-left-shift\" , \"technique:bit-shifting\"]"
+        , test "using Bitwise.shiftRightBy" <|
+            \() ->
+                expectData "f = Bitwise.shiftRightBy"
+                    "[ \"construct:bit-manipulation\", \"construct:bitwise-right-shift\", \"technique:bit-shifting\" ]"
+        , test "using Bitwise.shiftRightZfBy" <|
+            \() ->
+                expectData "f = Bitwise.shiftRightZfBy"
+                    "[ \"construct:bit-manipulation\", \"technique:bit-shifting\" ]"
+        , test "using Array function" <|
+            \() ->
+                expectData "f = Array.empty"
+                    "[ \"construct:array\", \"technique:immutable-collection\" ]"
+        , test "using Set function" <|
             \() ->
                 expectData "f = Set.empty"
                     "[ \"construct:set\", \"technique:immutable-collection\", \"technique:sorted-collection\" ]"
@@ -87,133 +193,101 @@ import Debug
         , test "using inline +" <|
             \() ->
                 expectData "f a b = a + b"
-                    "[ \"construct:add\" ]"
+                    "[ \"construct:add\" , \"uses:function-application\"]"
         , test "using prefix +" <|
             \() ->
                 expectData "f = (+)"
-                    "[ \"construct:add\" ]"
+                    "[ \"construct:add\", \"uses:prefix-operator\" ]"
         , test "using inline -" <|
             \() ->
                 expectData "f a b = a - b"
-                    "[ \"construct:subtract\" ]"
+                    "[ \"construct:subtract\" , \"uses:function-application\"]"
         , test "using prefix -" <|
             \() ->
                 expectData "f = (-)"
-                    "[ \"construct:subtract\" ]"
+                    "[ \"construct:subtract\", \"uses:prefix-operator\" ]"
         , test "using inline *" <|
             \() ->
                 expectData "f a b = a * b"
-                    "[ \"construct:multiply\" ]"
+                    "[ \"construct:multiply\" , \"uses:function-application\"]"
         , test "using prefix *" <|
             \() ->
                 expectData "f = (*)"
-                    "[ \"construct:multiply\" ]"
+                    "[ \"construct:multiply\", \"uses:prefix-operator\" ]"
         , test "using inline /" <|
             \() ->
                 expectData "f a b = a / b"
-                    "[ \"construct:divide\" ]"
+                    "[ \"construct:divide\" , \"uses:function-application\"]"
         , test "using prefix /" <|
             \() ->
                 expectData "f = (/)"
-                    "[ \"construct:divide\" ]"
+                    "[ \"construct:divide\", \"uses:prefix-operator\" ]"
         , test "using inline //" <|
             \() ->
                 expectData "f a b = a // b"
-                    "[ \"construct:divide\" ]"
+                    "[ \"construct:divide\" , \"uses:function-application\"]"
         , test "using prefix //" <|
             \() ->
                 expectData "f = (//)"
-                    "[ \"construct:divide\" ]"
+                    "[ \"construct:divide\", \"uses:prefix-operator\" ]"
         , test "using inline ==" <|
             \() ->
                 expectData "f a b = a == b"
-                    "[ \"construct:boolean\", \"construct:equality\", \"technique:equality-comparison\" ]"
+                    "[ \"construct:boolean\", \"construct:equality\", \"technique:equality-comparison\" , \"uses:function-application\"]"
         , test "using prefix ==" <|
             \() ->
                 expectData "f = (==)"
-                    "[ \"construct:boolean\", \"construct:equality\", \"technique:equality-comparison\" ]"
+                    "[ \"construct:boolean\", \"construct:equality\", \"technique:equality-comparison\", \"uses:prefix-operator\" ]"
         , test "using inline /=" <|
             \() ->
                 expectData "f a b = a /= b"
-                    "[ \"construct:boolean\", \"construct:inequality\", \"technique:equality-comparison\" ]"
-        , test "using ()" <|
+                    "[ \"construct:boolean\", \"construct:inequality\", \"technique:equality-comparison\" , \"uses:function-application\"]"
+        , test "using prefix /=" <|
             \() ->
-                expectData "f = ()"
-                    "[ \"uses:unit\" ]"
-        , test "using float" <|
-            \() ->
-                expectData "f = 3.14"
-                    "[ \"construct:float\", \"construct:floating-point-number\" ]"
-        , test "using float scientific notation" <|
-            \() ->
-                expectData "f = 314e-2"
-                    "[ \"construct:float\", \"construct:floating-point-number\" ]"
-        , test "using int" <|
-            \() ->
-                expectData "f = 42"
-                    "[ \"construct:int\", \"construct:integral-number\" ]"
-        , test "using int with hex notation" <|
-            \() ->
-                expectData "f = 0x42"
-                    "[ \"construct:hexadecimal-number\", \"construct:int\", \"construct:integral-number\" ]"
-        , test "using negation and int" <|
-            \() ->
-                expectData "f = -42"
-                    "[ \"construct:int\", \"construct:integral-number\", \"construct:unary-minus\" ]"
-        , test "using a string literal" <|
-            \() ->
-                expectData "f = \"hello\""
-                    "[ \"construct:string\" ]"
-        , test "using mutiline string literal" <|
-            \() ->
-                expectData "f = \"\"\"\nhello\nworld\"\"\""
-                    "[ \"construct:multiline-string\", \"construct:string\" ]"
-        , test "using lambda" <|
-            \() ->
-                expectData "f x = (\\_ -> x)"
-                    "[ \"construct:lambda\" ]"
-        , test "using if block" <|
-            \() ->
-                expectData "f x y z = if x then y else z"
-                    "[ \"construct:boolean\", \"construct:if\" ]"
+                expectData "f = (/=)"
+                    "[ \"construct:boolean\", \"construct:inequality\", \"technique:equality-comparison\", \"uses:prefix-operator\" ]"
         , test "let block without proper destructuring" <|
             \() ->
                 expectData "f x y = let z = y in z"
-                    "[]"
+                    "[ \"construct:assignment\" ]"
         , test "let block with tuple destructuring" <|
             \() ->
                 expectData "f y = let (a, b) = y in a"
-                    "[ \"construct:pattern-matching\", \"uses:destructure\"]"
+                    "[ \"construct:assignment\", \"construct:destructuring\", \"construct:pattern-matching\"]"
         , test "let block with record destructuring" <|
             \() ->
                 expectData "f y = let {a, b} = y in a"
-                    "[ \"construct:pattern-matching\", \"uses:destructure\"]"
+                    "[ \"construct:assignment\", \"construct:destructuring\", \"construct:pattern-matching\"]"
         , test "let block with uncons destructuring" <|
             \() ->
                 expectData "f y = let a :: b = y in a"
-                    "[ \"construct:pattern-matching\", \"uses:destructure\"]"
+                    "[ \"construct:assignment\", \"construct:destructuring\", \"construct:pattern-matching\"]"
         , test "let block with named destructuring" <|
             \() ->
                 expectData "f y = let Thing a = y in a"
-                    "[ \"construct:pattern-matching\", \"uses:destructure\"]"
+                    "[ \"construct:assignment\", \"construct:destructuring\", \"construct:pattern-matching\"]"
         , test "let block with nested destructuring" <|
             \() ->
                 expectData "f y = let (Thing a) = y in a"
-                    "[ \"construct:pattern-matching\", \"uses:destructure\"]"
+                    "[ \"construct:assignment\", \"construct:destructuring\", \"construct:pattern-matching\"]"
         , test "let block with a function with record destructuring" <|
             \() ->
-                expectData "f y = let f2 { a } = a in f2 y"
-                    "[ \"construct:pattern-matching\", \"uses:destructure\"]"
+                expectData "f y = let f2 { a } = a in f2"
+                    "[ \"construct:assignment\", \"construct:destructuring\", \"construct:pattern-matching\"]"
         , test "let block with a function with tuple destructuring" <|
             \() ->
-                expectData "f y = let f2 (a, b) = a in f2 y"
-                    "[ \"construct:pattern-matching\", \"uses:destructure\"]"
+                expectData "f y = let f2 (a, b) = a in b"
+                    "[ \"construct:assignment\", \"construct:destructuring\", \"construct:pattern-matching\"]"
         , test "let block with a function with uncons destructuring" <|
             \() ->
-                expectData "f y = let f2 (a :: b) = a in f2 y"
-                    "[ \"construct:pattern-matching\", \"uses:destructure\"]"
+                expectData "f y = let f2 (a :: b) = a in b"
+                    "[ \"construct:assignment\", \"construct:destructuring\", \"construct:pattern-matching\"]"
         , test "let block with a function with named destructuring" <|
             \() ->
-                expectData "f y = let f2 (Thing a) = a in f2 y"
-                    "[ \"construct:pattern-matching\", \"uses:destructure\"]"
+                expectData "f y = let f2 (Thing a) = a in f2"
+                    "[ \"construct:assignment\", \"construct:destructuring\", \"construct:pattern-matching\"]"
+        , test "function application" <|
+            \() ->
+                expectData "f x y = x y"
+                    "[ \"uses:function-application\"]"
         ]

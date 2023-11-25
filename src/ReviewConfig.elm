@@ -11,8 +11,10 @@ import Exercise.BlorkemonCards
 import Exercise.CustomSet
 import Exercise.GottaSnatchEmAll
 import Exercise.ListOps
+import Exercise.LuciansLusciousLasagna
 import Exercise.MariosMarvellousLasagna
 import Exercise.MazeMaker
+import Exercise.RolePlayingGame
 import Exercise.Strain
 import Exercise.TicketPlease
 import Exercise.TisburyTreasureHunt
@@ -39,6 +41,7 @@ ruleConfigs =
 
     -- Concept Exercises
     , Exercise.BettysBikeShop.ruleConfig
+    , Exercise.RolePlayingGame.ruleConfig
     , Exercise.TopScorers.ruleConfig
     , Exercise.MariosMarvellousLasagna.ruleConfig
     , Exercise.BlorkemonCards.ruleConfig
@@ -51,6 +54,7 @@ ruleConfigs =
     , Exercise.TisburyTreasureHunt.ruleConfig
     , Exercise.GottaSnatchEmAll.ruleConfig
     , Exercise.AnnalynsInfiltration.ruleConfig
+    , Exercise.LuciansLusciousLasagna.ruleConfig
 
     -- Practice Exercises
     , Exercise.Strain.ruleConfig

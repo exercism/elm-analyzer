@@ -10,6 +10,7 @@ tests : Test
 tests =
     describe "TagsTest tests"
         [ commonTags
+        , commentsTags
         , expressionTypeTags
         , expressionTags
         ]
@@ -46,6 +47,55 @@ twoFer name =
 """
                     |> Review.Test.run Tags.commonTagsRule
                     |> Review.Test.expectDataExtract data
+        ]
+
+
+commentsTags : Test
+commentsTags =
+    describe "comments"
+        [ test "module documentation" <|
+            \() ->
+                """
+module A exposing (..)
+{-| This a module documentation blurb
+-}
+
+f x = x
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[ \"construct:comment\", \"construct:documentation\" ]"
+        , test "top level comment" <|
+            \() ->
+                """
+module A exposing (..)
+
+-- this is a top level comment
+f x = x
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[ \"construct:comment\" ]"
+        , test "internal comment" <|
+            \() ->
+                """
+module A exposing (..)
+
+f x =
+    -- this is an internal comment
+    x
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[ \"construct:comment\" ]"
+        , test "function documentation" <|
+            \() ->
+                """
+module A exposing (..)
+
+{-| This is a function documentation comment
+-}
+f x = x
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[ \"construct:comment\", \"construct:documentation\" ]"
         ]
 
 

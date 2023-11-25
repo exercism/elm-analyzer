@@ -1,5 +1,6 @@
 module Tags exposing (commonTagsRule, expressionTagsRule, ruleConfig)
 
+import Elm.Syntax.Declaration exposing (Declaration(..))
 import Elm.Syntax.Expression exposing (Expression(..), LetDeclaration(..))
 import Elm.Syntax.Module exposing (Module)
 import Elm.Syntax.Node as Node exposing (Node(..))
@@ -48,7 +49,12 @@ commonTagsRule =
 expressionTagsRule : Rule
 expressionTagsRule =
     Rule.newProjectRuleSchema "expressionTags" emptyProjectContext
-        |> Rule.withModuleVisitor (Rule.withExpressionEnterVisitor expressionVisitor)
+        |> Rule.withModuleVisitor
+            (Rule.withDeclarationEnterVisitor declarationVisitor
+                >> Rule.withExpressionEnterVisitor expressionVisitor
+                >> Rule.withModuleDocumentationVisitor documentationVisitor
+                >> Rule.withCommentsVisitor commentsVisitor
+            )
         |> Rule.withModuleContextUsingContextCreator
             { fromModuleToProject = fromModuleToProject
             , fromProjectToModule = fromProjectToModule
@@ -109,6 +115,40 @@ foldProjectContexts a b =
 dataExtractor : ProjectContext -> Value
 dataExtractor =
     .tags >> Set.toList >> Encode.list Encode.string
+
+
+declarationVisitor : Node Declaration -> ModuleContext -> ( List never, ModuleContext )
+declarationVisitor node context =
+    case Node.value node of
+        FunctionDeclaration { documentation } ->
+            documentationVisitor documentation context
+
+        _ ->
+            ( [], context )
+
+
+documentationVisitor : Maybe documentation -> ModuleContext -> ( List never, ModuleContext )
+documentationVisitor maybeDoc ({ tags } as context) =
+    let
+        docTags =
+            Set.fromList [ "construct:comment", "construct:documentation" ]
+    in
+    case maybeDoc of
+        Nothing ->
+            ( [], context )
+
+        Just _ ->
+            ( [], { context | tags = Set.union docTags tags } )
+
+
+commentsVisitor : List (Node String) -> ModuleContext -> ( List never, ModuleContext )
+commentsVisitor comments ({ tags } as context) =
+    case comments of
+        [] ->
+            ( [], context )
+
+        _ ->
+            ( [], { context | tags = Set.insert "construct:comment" tags } )
 
 
 expressionVisitor : Node Expression -> ModuleContext -> ( List never, ModuleContext )

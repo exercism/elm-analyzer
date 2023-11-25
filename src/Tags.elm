@@ -202,8 +202,17 @@ matchExpressionType (Node range expression) =
         GLSLExpression _ ->
             Set.singleton "uses:glsl"
 
-        FunctionOrValue _ _ ->
-            Set.empty
+        FunctionOrValue _ value ->
+            case String.uncons value of
+                Nothing ->
+                    Set.empty
+
+                Just ( first, _ ) ->
+                    if Char.isUpper first then
+                        Set.singleton "construct:constructor"
+
+                    else
+                        Set.empty
 
         ParenthesizedExpression _ ->
             Set.empty
@@ -240,11 +249,17 @@ matchExpression (Node _ expression) =
         FunctionOrValue [ "Array" ] _ ->
             Set.fromList [ "construct:array", "technique:immutable-collection" ]
 
+        FunctionOrValue ("Bytes" :: _) _ ->
+            Set.singleton "construct:byte"
+
         FunctionOrValue [ "Set" ] _ ->
             Set.fromList [ "construct:set", "technique:immutable-collection", "technique:sorted-collection" ]
 
         FunctionOrValue [ "Dict" ] _ ->
             Set.fromList [ "construct:dictionary", "technique:immutable-collection", "technique:sorted-collection" ]
+
+        FunctionOrValue [ "List" ] _ ->
+            Set.singleton "construct:list"
 
         FunctionOrValue [ "Random" ] _ ->
             Set.singleton "technique:randomness"
@@ -256,10 +271,34 @@ matchExpression (Node _ expression) =
             Set.singleton "uses:debug"
 
         PrefixOperator "&&" ->
-            Set.fromList [ "construct:construct:boolean", "technique:boolean-logic" ]
+            Set.fromList [ "construct:boolean", "construct:logical-and", "technique:boolean-logic" ]
 
         OperatorApplication "&&" _ _ _ ->
-            Set.fromList [ "construct:construct:boolean", "technique:boolean-logic" ]
+            Set.fromList [ "construct:boolean", "construct:logical-and", "technique:boolean-logic" ]
+
+        PrefixOperator "||" ->
+            Set.fromList [ "construct:boolean", "construct:logical-or", "technique:boolean-logic" ]
+
+        OperatorApplication "||" _ _ _ ->
+            Set.fromList [ "construct:boolean", "construct:logical-or", "technique:boolean-logic" ]
+
+        FunctionOrValue [ "Basics" ] "not" ->
+            Set.fromList [ "construct:boolean", "construct:logical-not", "technique:boolean-logic" ]
+
+        FunctionOrValue [ "Basics" ] "xor" ->
+            Set.fromList [ "construct:boolean", "technique:boolean-logic" ]
+
+        FunctionOrValue [ "Basics" ] "True" ->
+            Set.singleton "construct:boolean"
+
+        FunctionOrValue [ "Basics" ] "False" ->
+            Set.singleton "construct:boolean"
+
+        FunctionOrValue [ "Basics" ] "isNaN" ->
+            Set.fromList [ "construct:boolean", "construct:float", "construct:floating-point-number" ]
+
+        FunctionOrValue [ "Basics" ] "isInfinite" ->
+            Set.fromList [ "construct:boolean", "construct:float", "construct:floating-point-number" ]
 
         PrefixOperator "+" ->
             Set.singleton "construct:add"

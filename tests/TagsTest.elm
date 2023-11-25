@@ -73,7 +73,9 @@ expectData function data =
 expressionTypeTags : Test
 expressionTypeTags =
     describe "matching expression types"
-        [ test "FunctionOrValue is too general for a tag" <|
+        [ test "Type constructors " <|
+            \() -> expectData "f = Just" "[ \"construct:constructor\"]"
+        , test "other functions and values too general for a tag" <|
             \() -> expectData "f x = x" "[]"
         , test "ParenthesizedExpression is too general for a tag" <|
             \() -> expectData "f x = (x)" "[]"
@@ -174,6 +176,17 @@ expressionTags =
             \() ->
                 expectData "f = Array.empty"
                     "[ \"construct:array\", \"technique:immutable-collection\" ]"
+        , test "using Bytes function" <|
+            \() ->
+                expectData "f = Bytes.width"
+                    "[ \"construct:byte\" ]"
+        , test "using Bytes.Encode function" <|
+            \() ->
+                expectData "f = Bytes.Encode.encode"
+                    "[ \"construct:byte\" ]"
+        , test "using List function" <|
+            \() ->
+                expectData "f = List.all" "[ \"construct:list\" ]"
         , test "using Set function" <|
             \() ->
                 expectData "f = Set.empty"
@@ -286,8 +299,40 @@ expressionTags =
             \() ->
                 expectData "f y = let f2 (Thing a) = a in f2"
                     "[ \"construct:assignment\", \"construct:destructuring\", \"construct:pattern-matching\"]"
-        , test "function application" <|
+        , test "using inline &&" <|
             \() ->
-                expectData "f x y = x y"
-                    "[ \"uses:function-application\"]"
+                expectData "f a b = a && b"
+                    "[ \"construct:boolean\", \"construct:logical-and\", \"technique:boolean-logic\", \"uses:function-application\"]"
+        , test "using prefix &&" <|
+            \() ->
+                expectData "f = (&&)"
+                    "[ \"construct:boolean\", \"construct:logical-and\", \"technique:boolean-logic\", \"uses:prefix-operator\" ]"
+        , test "using inline ||" <|
+            \() ->
+                expectData "f a b = a || b"
+                    "[ \"construct:boolean\", \"construct:logical-or\", \"technique:boolean-logic\", \"uses:function-application\"]"
+        , test "using prefix ||" <|
+            \() ->
+                expectData "f = (||)"
+                    "[ \"construct:boolean\", \"construct:logical-or\", \"technique:boolean-logic\", \"uses:prefix-operator\" ]"
+        , test "using not" <|
+            \() ->
+                expectData "f x = not x"
+                    "[ \"construct:boolean\", \"construct:logical-not\", \"technique:boolean-logic\", \"uses:function-application\" ]"
+        , test "using xor" <|
+            \() ->
+                expectData "f x y = xor x y"
+                    "[ \"construct:boolean\", \"technique:boolean-logic\", \"uses:function-application\" ]"
+        , test "using True" <|
+            \() -> expectData "f = True" "[ \"construct:boolean\", \"construct:constructor\" ]"
+        , test "using False" <|
+            \() -> expectData "f = False" "[ \"construct:boolean\", \"construct:constructor\" ]"
+        , test "using isNaN" <|
+            \() ->
+                expectData "f x = isNaN x"
+                    "[ \"construct:boolean\", \"construct:float\", \"construct:floating-point-number\", \"uses:function-application\" ]"
+        , test "using isInfinite" <|
+            \() ->
+                expectData "f x = isInfinite x"
+                    "[ \"construct:boolean\", \"construct:float\", \"construct:floating-point-number\", \"uses:function-application\" ]"
         ]

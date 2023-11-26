@@ -1,9 +1,8 @@
 module Tags exposing (commonTagsRule, expressionTagsRule, ruleConfig)
 
 import Elm.Syntax.Declaration exposing (Declaration(..))
-import Elm.Syntax.Expression exposing (Expression(..), LetDeclaration(..))
+import Elm.Syntax.Expression exposing (Expression(..), FunctionImplementation, LetDeclaration(..))
 import Elm.Syntax.Module exposing (Module)
-import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Type exposing (Type)
 import Elm.Syntax.TypeAnnotation exposing (TypeAnnotation(..))
@@ -123,8 +122,15 @@ dataExtractor =
 declarationVisitor : Node Declaration -> ModuleContext -> ( List never, ModuleContext )
 declarationVisitor node ({ tags } as context) =
     case Node.value node of
-        FunctionDeclaration { documentation } ->
-            documentationVisitor documentation context
+        FunctionDeclaration { documentation, declaration } ->
+            let
+                ( _, docContext ) =
+                    documentationVisitor documentation context
+
+                argTags =
+                    functionImplementationTags declaration
+            in
+            ( [], { context | tags = Set.union tags (Set.union docContext.tags argTags) } )
 
         AliasDeclaration _ ->
             ( [], { context | tags = Set.insert "uses:type-alias" tags } )
@@ -192,6 +198,15 @@ commentsVisitor comments ({ tags } as context) =
 
         _ ->
             ( [], { context | tags = Set.insert "construct:comment" tags } )
+
+
+functionImplementationTags : Node FunctionImplementation -> Set String
+functionImplementationTags (Node _ { arguments }) =
+    if List.any ElmSyntaxHelpers.hasDestructuringPattern arguments then
+        Set.fromList [ "construct:destructuring", "construct:pattern-matching" ]
+
+    else
+        Set.empty
 
 
 expressionVisitor : Node Expression -> ModuleContext -> ( List never, ModuleContext )
@@ -429,7 +444,21 @@ matchExpression (Node _ expression) =
             Set.fromList [ "construct:inequality", "technique:equality-comparison", "construct:boolean" ]
 
         LetExpression { declarations } ->
-            if List.any (Node.value >> usesProperDestructuring) declarations then
+            if List.any (Node.value >> letUsesDestructuring) declarations then
+                Set.fromList [ "construct:destructuring", "construct:pattern-matching" ]
+
+            else
+                Set.empty
+
+        LambdaExpression { args } ->
+            if List.any ElmSyntaxHelpers.hasDestructuringPattern args then
+                Set.fromList [ "construct:destructuring", "construct:pattern-matching" ]
+
+            else
+                Set.empty
+
+        CaseExpression { cases } ->
+            if List.any (Tuple.first >> ElmSyntaxHelpers.hasDestructuringPattern) cases then
                 Set.fromList [ "construct:destructuring", "construct:pattern-matching" ]
 
             else
@@ -439,8 +468,8 @@ matchExpression (Node _ expression) =
             Set.empty
 
 
-usesProperDestructuring : LetDeclaration -> Bool
-usesProperDestructuring letDeclaration =
+letUsesDestructuring : LetDeclaration -> Bool
+letUsesDestructuring letDeclaration =
     case letDeclaration of
         LetDestructuring _ _ ->
             True

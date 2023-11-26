@@ -14,6 +14,7 @@ tests =
         , typesTags
         , expressionTypeTags
         , expressionTags
+        , destructuringTags
         ]
 
 
@@ -369,7 +370,49 @@ expressionTags =
             \() ->
                 expectData "f = (/=)"
                     "[ \"construct:boolean\", \"construct:inequality\", \"technique:equality-comparison\", \"uses:prefix-operator\" ]"
-        , test "let block without proper destructuring" <|
+        , test "using inline &&" <|
+            \() ->
+                expectData "f a b = a && b"
+                    "[ \"construct:boolean\", \"construct:logical-and\", \"technique:boolean-logic\", \"uses:function-application\"]"
+        , test "using prefix &&" <|
+            \() ->
+                expectData "f = (&&)"
+                    "[ \"construct:boolean\", \"construct:logical-and\", \"technique:boolean-logic\", \"uses:prefix-operator\" ]"
+        , test "using inline ||" <|
+            \() ->
+                expectData "f a b = a || b"
+                    "[ \"construct:boolean\", \"construct:logical-or\", \"technique:boolean-logic\", \"uses:function-application\"]"
+        , test "using prefix ||" <|
+            \() ->
+                expectData "f = (||)"
+                    "[ \"construct:boolean\", \"construct:logical-or\", \"technique:boolean-logic\", \"uses:prefix-operator\" ]"
+        , test "using not" <|
+            \() ->
+                expectData "f x = not x"
+                    "[ \"construct:boolean\", \"construct:logical-not\", \"technique:boolean-logic\", \"uses:function-application\" ]"
+        , test "using xor" <|
+            \() ->
+                expectData "f x y = xor x y"
+                    "[ \"construct:boolean\", \"technique:boolean-logic\", \"uses:function-application\" ]"
+        , test "using True" <|
+            \() -> expectData "f = True" "[ \"construct:boolean\", \"construct:constructor\" ]"
+        , test "using False" <|
+            \() -> expectData "f = False" "[ \"construct:boolean\", \"construct:constructor\" ]"
+        , test "using isNaN" <|
+            \() ->
+                expectData "f x = isNaN x"
+                    "[ \"construct:boolean\", \"construct:float\", \"construct:floating-point-number\", \"uses:function-application\" ]"
+        , test "using isInfinite" <|
+            \() ->
+                expectData "f x = isInfinite x"
+                    "[ \"construct:boolean\", \"construct:float\", \"construct:floating-point-number\", \"uses:function-application\" ]"
+        ]
+
+
+destructuringTags : Test
+destructuringTags =
+    describe "destructuring"
+        [ test "let block without proper destructuring" <|
             \() ->
                 expectData "f x y = let z = y in z"
                     "[ \"construct:assignment\" ]"
@@ -409,40 +452,73 @@ expressionTags =
             \() ->
                 expectData "f y = let f2 (Thing a) = a in f2"
                     "[ \"construct:assignment\", \"construct:destructuring\", \"construct:pattern-matching\"]"
-        , test "using inline &&" <|
+        , test "top-level function without proper destructuring" <|
             \() ->
-                expectData "f a b = a && b"
-                    "[ \"construct:boolean\", \"construct:logical-and\", \"technique:boolean-logic\", \"uses:function-application\"]"
-        , test "using prefix &&" <|
+                expectData "f x y = x" "[]"
+        , test "top-level function with tuple destructuring" <|
             \() ->
-                expectData "f = (&&)"
-                    "[ \"construct:boolean\", \"construct:logical-and\", \"technique:boolean-logic\", \"uses:prefix-operator\" ]"
-        , test "using inline ||" <|
+                expectData "f (a, b) = a"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+        , test "top-level function with record destructuring" <|
             \() ->
-                expectData "f a b = a || b"
-                    "[ \"construct:boolean\", \"construct:logical-or\", \"technique:boolean-logic\", \"uses:function-application\"]"
-        , test "using prefix ||" <|
+                expectData "f {a, b} = a"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+        , test "top-level function with uncons destructuring" <|
             \() ->
-                expectData "f = (||)"
-                    "[ \"construct:boolean\", \"construct:logical-or\", \"technique:boolean-logic\", \"uses:prefix-operator\" ]"
-        , test "using not" <|
+                expectData "f (a :: b) = a"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+        , test "top-level function with named destructuring" <|
             \() ->
-                expectData "f x = not x"
-                    "[ \"construct:boolean\", \"construct:logical-not\", \"technique:boolean-logic\", \"uses:function-application\" ]"
-        , test "using xor" <|
+                expectData "f (Thing a) = a"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+        , test "top-level function with nested destructuring" <|
             \() ->
-                expectData "f x y = xor x y"
-                    "[ \"construct:boolean\", \"technique:boolean-logic\", \"uses:function-application\" ]"
-        , test "using True" <|
-            \() -> expectData "f = True" "[ \"construct:boolean\", \"construct:constructor\" ]"
-        , test "using False" <|
-            \() -> expectData "f = False" "[ \"construct:boolean\", \"construct:constructor\" ]"
-        , test "using isNaN" <|
+                expectData "f (Thing { a }) = a"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+        , test "lambda without proper destructuring" <|
             \() ->
-                expectData "f x = isNaN x"
-                    "[ \"construct:boolean\", \"construct:float\", \"construct:floating-point-number\", \"uses:function-application\" ]"
-        , test "using isInfinite" <|
+                expectData "f = \\x y -> x" "[\"construct:lambda\"]"
+        , test "lambda with tuple destructuring" <|
             \() ->
-                expectData "f x = isInfinite x"
-                    "[ \"construct:boolean\", \"construct:float\", \"construct:floating-point-number\", \"uses:function-application\" ]"
+                expectData "f = \\(a, b) -> a"
+                    "[ \"construct:destructuring\", \"construct:lambda\", \"construct:pattern-matching\"]"
+        , test "lambda with record destructuring" <|
+            \() ->
+                expectData "f = \\{a, b} -> a"
+                    "[ \"construct:destructuring\", \"construct:lambda\", \"construct:pattern-matching\"]"
+        , test "lambda with uncons destructuring" <|
+            \() ->
+                expectData "f = \\(a :: b) -> a"
+                    "[ \"construct:destructuring\", \"construct:lambda\", \"construct:pattern-matching\"]"
+        , test "lambda with named destructuring" <|
+            \() ->
+                expectData "f = \\(Thing a) -> a"
+                    "[ \"construct:destructuring\", \"construct:lambda\", \"construct:pattern-matching\"]"
+        , test "lambda with nested destructuring" <|
+            \() ->
+                expectData "f = \\(Thing { a }) -> a"
+                    "[ \"construct:destructuring\", \"construct:lambda\", \"construct:pattern-matching\"]"
+        , test "case without proper destructuring" <|
+            \() ->
+                expectData "f x = case x of\n x -> x" "[\"construct:pattern-matching\"]"
+        , test "case with tuple destructuring" <|
+            \() ->
+                expectData "f x = case x of\n (a, b) -> a"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+        , test "case with record destructuring" <|
+            \() ->
+                expectData "f x = case x of\n {a, b} -> a"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+        , test "case with uncons destructuring" <|
+            \() ->
+                expectData "f x = case x of\n (a :: b) -> a"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+        , test "case with named destructuring" <|
+            \() ->
+                expectData "f x = case x of\n (Thing a) -> a"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+        , test "case with nested destructuring" <|
+            \() ->
+                expectData "f x = case x of\n (Thing { a }) -> a"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
         ]

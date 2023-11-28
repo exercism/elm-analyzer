@@ -120,9 +120,9 @@ aggregateCommentsTest =
         , test "order of comments in summary is fixed" <|
             \() ->
                 Expect.equal
-                    (Comment.aggregateComments [ essential, informative, celebratory, actionable, informative ])
+                    (Comment.aggregateComments [ essential, informative, celebratory, actionable ])
                     (Summary "Check the comments for things to fix.\u{202F}🛠 "
-                        [ celebratory, essential, actionable, informative, informative, Comment.feedbackComment ]
+                        [ celebratory, essential, actionable, informative, Comment.feedbackComment ]
                     )
         , test "secondary order is alphabetical, but feedback is always last" <|
             \() ->
@@ -147,6 +147,13 @@ aggregateCommentsTest =
                         , informative
                         , Comment.feedbackComment
                         ]
+                    )
+        , test "duplicate comments are removed" <|
+            \() ->
+                Expect.equal
+                    (Comment.aggregateComments [ essential, essential, celebratory, celebratory ])
+                    (Summary "Check the comments for things to fix.\u{202F}🛠 "
+                        [ celebratory, essential, Comment.feedbackComment ]
                     )
         ]
 

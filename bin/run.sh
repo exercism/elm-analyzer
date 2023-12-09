@@ -10,6 +10,7 @@ set -o pipefail # Catch failures in pipes.
 # Remove trailing slash for elm-review
 INPUT_DIR=${2%/}
 OUTPUT_DIR=${3%/}
+OUTPUT_TAGS=${4:-false}
 
 # Check if script running in docker
 if [ -f solution_cache.tar ]; then
@@ -30,13 +31,14 @@ npx elm-review $INPUT_DIR \
         --report=json \
         --extract \
   > /tmp/elm-review-report.json
+set -e
 
-# Get comments
+# Output comments
 cat /tmp/elm-review-report.json | node ./bin/cli.js > $OUTPUT_DIR/analysis.json
 
-# Get tags
-jq '.extracts | to_entries | map(.value) | add | sort' /tmp/elm-review-report.json > $OUTPUT_DIR/tags.json
-
-set -e
+if [ $OUTPUT_TAGS = "--tags" ]; then
+  # Output tags
+  jq '.extracts | to_entries | map(.value) | add | sort' /tmp/elm-review-report.json > $OUTPUT_DIR/tags.json
+fi
 
 echo Finished

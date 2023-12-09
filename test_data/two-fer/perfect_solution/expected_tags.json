@@ -1,5 +1,7 @@
 [
+  "construct:string",
   "paradigm:functional",
   "technique:immutability",
+  "uses:function-application",
   "uses:module"
 ]

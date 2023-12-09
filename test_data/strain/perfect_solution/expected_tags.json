@@ -1,5 +1,12 @@
 [
+  "construct:boolean",
+  "construct:if",
+  "construct:lambda",
+  "construct:list",
+  "construct:logical-not",
   "paradigm:functional",
+  "technique:boolean-logic",
   "technique:immutability",
+  "uses:function-application",
   "uses:module"
 ]

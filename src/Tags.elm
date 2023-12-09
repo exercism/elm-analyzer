@@ -5,7 +5,6 @@ import Elm.Syntax.Expression exposing (Expression(..), FunctionImplementation, L
 import Elm.Syntax.Module exposing (Module)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Type exposing (Type)
-import Elm.Syntax.TypeAnnotation exposing (TypeAnnotation(..))
 import ElmSyntaxHelpers
 import Json.Encode as Encode exposing (Value)
 import Review.ModuleNameLookupTable as LookupTable exposing (ModuleNameLookupTable)
@@ -354,7 +353,7 @@ matchExpression (Node _ expression) =
             Set.fromList [ "construct:set", "technique:immutable-collection", "technique:sorted-collection" ]
 
         FunctionOrValue [ "Time" ] _ ->
-            Set.fromList [ "construct:date-time" ]
+            Set.singleton "construct:date-time"
 
         FunctionOrValue [ "Dict" ] _ ->
             Set.fromList [ "construct:dictionary", "technique:immutable-collection", "technique:sorted-collection" ]

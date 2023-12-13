@@ -25,12 +25,16 @@ import Exercise.ValentinesDay
 import Exercise.ZebraPuzzle
 import Review.Rule as Rule exposing (Rule)
 import RuleConfig exposing (RuleConfig)
+import Tags
 
 
 ruleConfigs : List RuleConfig
 ruleConfigs =
-    [ -- Common Rules
-      Common.NoUnused.ruleConfig
+    [ -- Tags
+      Tags.ruleConfig
+
+    -- Common Rules
+    , Common.NoUnused.ruleConfig
     , Common.Simplify.ruleConfig
     , Common.NoDebug.ruleConfig
     , Common.UseCamelCase.ruleConfig

@@ -14,6 +14,7 @@ type alias RuleConfig =
 type AnalyzerRule
     = CustomRule (Comment -> Rule) Comment
     | ImportedRule Rule (Comment -> Decoder Comment) Comment
+    | TagRule Rule
 
 
 analyzerRuleToRule : AnalyzerRule -> Rule
@@ -23,6 +24,9 @@ analyzerRuleToRule analyzerRule =
             toRule comment
 
         ImportedRule rule _ _ ->
+            rule
+
+        TagRule rule ->
             rule
 
 
@@ -35,15 +39,21 @@ analyzerRuleToDecoder analyzerRule =
         ImportedRule _ toDecoder comment ->
             Just (toDecoder comment)
 
+        TagRule _ ->
+            Nothing
 
-analyzerRuleToComment : AnalyzerRule -> Comment
+
+analyzerRuleToComment : AnalyzerRule -> Maybe Comment
 analyzerRuleToComment analyzerRule =
     case analyzerRule of
         CustomRule _ comment ->
-            comment
+            Just comment
 
         ImportedRule _ _ comment ->
-            comment
+            Just comment
+
+        TagRule _ ->
+            Nothing
 
 
 getRules : RuleConfig -> List Rule
@@ -63,7 +73,7 @@ getDecoders =
 
 getComments : List RuleConfig -> List Comment
 getComments =
-    List.concatMap (.rules >> List.map analyzerRuleToComment)
+    List.concatMap (.rules >> List.filterMap analyzerRuleToComment)
 
 
 makeConfig : List RuleConfig -> List Rule

@@ -50,6 +50,65 @@ hasGenericRecordTests =
         ]
 
 
+hasTypedTests : Test
+hasTypedTests =
+    describe "hasTyped"
+        [ test "no typed" <|
+            \_ ->
+                Node.empty
+                    (Tupled
+                        [ Node.empty (FunctionTypeAnnotation (Node.empty Unit) (Node.empty (GenericType "x")))
+                        , Node.empty (Record [ Node.empty ( Node.empty "x", Node.empty Unit ) ])
+                        , Node.empty (Typed (Node.empty ( [ "X" ], "y" )) [])
+                        ]
+                    )
+                    |> ElmSyntaxHelpers.hasTyped [ "X" ] "x"
+                    |> Expect.equal False
+        , test "one typed" <|
+            \_ ->
+                Node.empty
+                    (Tupled
+                        [ Node.empty (FunctionTypeAnnotation (Node.empty Unit) (Node.empty (GenericType "x")))
+                        , Node.empty (Record [ Node.empty ( Node.empty "x", Node.empty Unit ) ])
+                        , Node.empty (Typed (Node.empty ( [ "X" ], "x" )) [])
+                        ]
+                    )
+                    |> ElmSyntaxHelpers.hasTyped [ "X" ] "x"
+                    |> Expect.equal True
+        ]
+
+
+hasDestructuringPatternTests : Test
+hasDestructuringPatternTests =
+    describe "hasDestructuringPattern"
+        [ test "no destructuring" <|
+            \_ ->
+                Node.empty (ParenthesizedPattern (Node.empty (ListPattern [ Node.empty UnitPattern ])))
+                    |> ElmSyntaxHelpers.hasDestructuringPattern
+                    |> Expect.equal False
+        , test "tuple destructuring" <|
+            \_ ->
+                Node.empty (TuplePattern [])
+                    |> ElmSyntaxHelpers.hasDestructuringPattern
+                    |> Expect.equal True
+        , test "record destructuring" <|
+            \_ ->
+                Node.empty (RecordPattern [])
+                    |> ElmSyntaxHelpers.hasDestructuringPattern
+                    |> Expect.equal True
+        , test "named destructuring" <|
+            \_ ->
+                Node.empty (NamedPattern { moduleName = [], name = "Thing" } [])
+                    |> ElmSyntaxHelpers.hasDestructuringPattern
+                    |> Expect.equal True
+        , test "uncons destructuring" <|
+            \_ ->
+                Node.empty (UnConsPattern (Node.empty UnitPattern) (Node.empty UnitPattern))
+                    |> ElmSyntaxHelpers.hasDestructuringPattern
+                    |> Expect.equal True
+        ]
+
+
 traversePatternTests : Test
 traversePatternTests =
     describe "traversePattern"

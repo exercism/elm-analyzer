@@ -1,5 +1,6 @@
-module ElmSyntaxHelpers exposing (hasGenericRecord, traversePattern, typeAnnotationsMatch)
+module ElmSyntaxHelpers exposing (hasDestructuringPattern, hasGenericRecord, hasTyped, traversePattern, typeAnnotationsMatch)
 
+import Elm.Syntax.ModuleName exposing (ModuleName)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Pattern exposing (Pattern(..))
 import Elm.Syntax.TypeAnnotation exposing (TypeAnnotation(..))
@@ -74,6 +75,61 @@ hasGenericRecord annotation =
 
         Unit ->
             False
+
+
+hasTyped : ModuleName -> String -> Node TypeAnnotation -> Bool
+hasTyped moduleName name annotation =
+    case Node.value annotation of
+        Typed (Node _ ( typeModule, typeName )) annotations ->
+            (typeModule == moduleName && typeName == name)
+                || List.any (hasTyped moduleName name) annotations
+
+        Record recordFields ->
+            recordFields
+                |> List.map (Node.value >> Tuple.second)
+                |> List.any (hasTyped moduleName name)
+
+        GenericRecord _ (Node _ recordFields) ->
+            recordFields
+                |> List.map (Node.value >> Tuple.second)
+                |> List.any (hasTyped moduleName name)
+
+        Tupled annotations ->
+            List.any (hasTyped moduleName name) annotations
+
+        FunctionTypeAnnotation a b ->
+            hasTyped moduleName name a || hasTyped moduleName name b
+
+        GenericType _ ->
+            False
+
+        Unit ->
+            False
+
+
+hasDestructuringPattern : Node Pattern -> Bool
+hasDestructuringPattern fullPattern =
+    let
+        destructuringPattern pattern =
+            case Node.value pattern of
+                RecordPattern _ ->
+                    True
+
+                UnConsPattern _ _ ->
+                    True
+
+                TuplePattern _ ->
+                    True
+
+                NamedPattern _ _ ->
+                    True
+
+                _ ->
+                    False
+    in
+    fullPattern
+        |> traversePattern
+        |> List.any destructuringPattern
 
 
 traversePattern : Node Pattern -> List (Node Pattern)

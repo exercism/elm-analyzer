@@ -1,0 +1,11 @@
+[
+  "construct:boolean",
+  "construct:comment",
+  "construct:list",
+  "construct:logical-not",
+  "paradigm:functional",
+  "technique:boolean-logic",
+  "technique:immutability",
+  "uses:function-application",
+  "uses:module"
+]

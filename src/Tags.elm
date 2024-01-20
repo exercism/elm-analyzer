@@ -4,8 +4,10 @@ import Elm.Syntax.Declaration exposing (Declaration(..))
 import Elm.Syntax.Expression exposing (Expression(..), FunctionImplementation, LetDeclaration(..))
 import Elm.Syntax.Module exposing (Module)
 import Elm.Syntax.Node as Node exposing (Node(..))
+import Elm.Syntax.Signature exposing (Signature)
 import Elm.Syntax.Type exposing (Type)
-import ElmSyntaxHelpers
+import Elm.Syntax.TypeAnnotation exposing (TypeAnnotation(..))
+import ElmSyntaxHelpers exposing (hasAnythingGeneric)
 import Json.Encode as Encode exposing (Value)
 import Review.ModuleNameLookupTable as LookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Rule)
@@ -121,15 +123,29 @@ dataExtractor =
 declarationVisitor : Node Declaration -> ModuleContext -> ( List never, ModuleContext )
 declarationVisitor node ({ tags } as context) =
     case Node.value node of
-        FunctionDeclaration { documentation, declaration } ->
+        FunctionDeclaration { documentation, declaration, signature } ->
             let
                 ( _, docContext ) =
                     documentationVisitor documentation context
 
                 argTags =
                     functionImplementationTags declaration
+
+                signTags =
+                    case signature of
+                        Nothing ->
+                            Set.empty
+
+                        Just sign ->
+                            signatureTags sign
+
+                newTags =
+                    tags
+                        |> Set.union docContext.tags
+                        |> Set.union argTags
+                        |> Set.union signTags
             in
-            ( [], { context | tags = Set.union tags (Set.union docContext.tags argTags) } )
+            ( [], { context | tags = newTags } )
 
         AliasDeclaration _ ->
             ( [], { context | tags = Set.insert "uses:type-alias" tags } )
@@ -139,6 +155,15 @@ declarationVisitor node ({ tags } as context) =
 
         _ ->
             ( [], context )
+
+
+signatureTags : Node Signature -> Set String
+signatureTags (Node _ { typeAnnotation }) =
+    if hasAnythingGeneric typeAnnotation then
+        Set.singleton "construct:generic-type"
+
+    else
+        Set.empty
 
 
 analyzeCustomType : Type -> Set String

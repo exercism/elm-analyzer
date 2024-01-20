@@ -50,6 +50,27 @@ hasGenericRecordTests =
         ]
 
 
+hasAnythingGeneric : Test
+hasAnythingGeneric =
+    describe "hasAnythingGeneric"
+        [ test "nothing generic" <|
+            \_ ->
+                Node.empty (Tupled [ Node.empty Unit ])
+                    |> ElmSyntaxHelpers.hasAnythingGeneric
+                    |> Expect.equal False
+        , test "one GenericRecord" <|
+            \_ ->
+                Node.empty (Tupled [ Node.empty Unit, Node.empty (GenericRecord (Node.empty "a") (Node.empty [])) ])
+                    |> ElmSyntaxHelpers.hasAnythingGeneric
+                    |> Expect.equal True
+        , test "one GenericType" <|
+            \_ ->
+                Node.empty (Tupled [ Node.empty Unit, Node.empty (FunctionTypeAnnotation (Node.empty (GenericType "a")) (Node.empty Unit)) ])
+                    |> ElmSyntaxHelpers.hasAnythingGeneric
+                    |> Expect.equal True
+        ]
+
+
 hasTypedTests : Test
 hasTypedTests =
     describe "hasTyped"

@@ -15,6 +15,7 @@ tests =
         , expressionTypeTags
         , expressionTags
         , destructuringTags
+        , signatureTags
         ]
 
 
@@ -521,4 +522,16 @@ destructuringTags =
             \() ->
                 expectData "f x = case x of\n (Thing { a }) -> a"
                     "[ \"construct:destructuring\", \"construct:pattern-matching\", \"construct:switch\"]"
+        ]
+
+
+signatureTags : Test
+signatureTags =
+    describe "signature"
+        [ test "signature with generic type" <|
+            \() ->
+                expectData "x : X (Y, Z y) \nx = z" "[ \"construct:generic-type\"]"
+        , test "signature with generic record type" <|
+            \() ->
+                expectData "x : { a | y : Y } \nx = z" "[ \"construct:generic-type\"]"
         ]

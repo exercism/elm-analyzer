@@ -425,6 +425,12 @@ matchExpression (Node _ expression) =
         FunctionOrValue [ "Basics" ] "isInfinite" ->
             Set.fromList [ "construct:boolean", "construct:float", "construct:floating-point-number" ]
 
+        FunctionOrValue [ "Basics" ] "modBy" ->
+            Set.fromList [ "construct:integral-number", "construct:int", "construct:modulo" ]
+
+        FunctionOrValue [ "Basics" ] "remainderBy" ->
+            Set.fromList [ "construct:integral-number", "construct:int", "construct:modulo" ]
+
         PrefixOperator "+" ->
             Set.singleton "construct:add"
 

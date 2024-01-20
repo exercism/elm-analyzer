@@ -407,6 +407,14 @@ expressionTags =
             \() ->
                 expectData "f x = isInfinite x"
                     "[ \"construct:boolean\", \"construct:float\", \"construct:floating-point-number\", \"uses:function-application\" ]"
+        , test "using modBy" <|
+            \() ->
+                expectData "f x y = modBy x y"
+                    "[ \"construct:int\", \"construct:integral-number\", \"construct:modulo\", \"uses:function-application\" ]"
+        , test "using remainderBy" <|
+            \() ->
+                expectData "f x y = remainderBy x y"
+                    "[ \"construct:int\", \"construct:integral-number\", \"construct:modulo\", \"uses:function-application\" ]"
         ]
 
 

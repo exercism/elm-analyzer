@@ -11,6 +11,7 @@ tests =
     describe "TagsTest tests"
         [ commonTags
         , commentsTags
+        , moduleDefinitionTags
         , typesTags
         , expressionTypeTags
         , expressionTags
@@ -100,6 +101,37 @@ f x = x
 """
                     |> Review.Test.run Tags.expressionTagsRule
                     |> Review.Test.expectDataExtract "[ \"construct:comment\", \"construct:documentation\" ]"
+        ]
+
+
+moduleDefinitionTags : Test
+moduleDefinitionTags =
+    describe "module definition"
+        [ test "all functions are exposed" <|
+            \() ->
+                """
+module A exposing (..)
+f x = x
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[]"
+        , test "one function is not exposed" <|
+            \() ->
+                """
+module A exposing (g)
+f x = x
+g x = x
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[ \"construct:local-function\" ]"
+        , test "functions in let blocks are not considered local" <|
+            \() ->
+                """
+module A exposing (f)
+f = let g x = x in g
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[ \"construct:assignment\" ]"
         ]
 
 

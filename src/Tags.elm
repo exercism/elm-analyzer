@@ -1,8 +1,9 @@
 module Tags exposing (commonTagsRule, expressionTagsRule, ruleConfig)
 
 import Elm.Syntax.Declaration exposing (Declaration(..))
+import Elm.Syntax.Exposing as Exposing exposing (TopLevelExpose(..))
 import Elm.Syntax.Expression exposing (Expression(..), FunctionImplementation, LetDeclaration(..))
-import Elm.Syntax.Module exposing (Module)
+import Elm.Syntax.Module exposing (Module(..), exposingList)
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Signature exposing (Signature)
 import Elm.Syntax.Type exposing (Type)
@@ -22,8 +23,14 @@ type alias ProjectContext =
 
 type alias ModuleContext =
     { lookupTable : ModuleNameLookupTable
+    , exposedFunctions : ExposedFunctions
     , tags : Set String
     }
+
+
+type ExposedFunctions
+    = All
+    | Some (List String)
 
 
 ruleConfig : RuleConfig
@@ -53,7 +60,8 @@ expressionTagsRule : Rule
 expressionTagsRule =
     Rule.newProjectRuleSchema "expressionTags" emptyProjectContext
         |> Rule.withModuleVisitor
-            (Rule.withDeclarationEnterVisitor declarationVisitor
+            (Rule.withModuleDefinitionVisitor moduleDefinitionVisitor
+                >> Rule.withDeclarationEnterVisitor declarationVisitor
                 >> Rule.withExpressionEnterVisitor expressionVisitor
                 >> Rule.withModuleDocumentationVisitor documentationVisitor
                 >> Rule.withCommentsVisitor commentsVisitor
@@ -92,6 +100,7 @@ fromProjectToModule =
     Rule.initContextCreator
         (\lookupTable _ ->
             { lookupTable = lookupTable
+            , exposedFunctions = All
             , tags = Set.empty
             }
         )
@@ -121,6 +130,36 @@ dataExtractor =
     .tags >> Set.toList >> Encode.list Encode.string
 
 
+moduleDefinitionVisitor : Node Module -> ModuleContext -> ( List never, ModuleContext )
+moduleDefinitionVisitor (Node _ moduleNode) context =
+    case moduleNode of
+        PortModule _ ->
+            ( [], context )
+
+        EffectModule _ ->
+            ( [], context )
+
+        NormalModule { exposingList } ->
+            case Node.value exposingList of
+                Exposing.All _ ->
+                    ( [], { context | exposedFunctions = All } )
+
+                Exposing.Explicit exposed ->
+                    let
+                        getExposedFunctions expose =
+                            case Node.value expose of
+                                FunctionExpose name ->
+                                    Just name
+
+                                _ ->
+                                    Nothing
+
+                        list =
+                            List.filterMap getExposedFunctions exposed
+                    in
+                    ( [], { context | exposedFunctions = Some list } )
+
+
 declarationVisitor : Node Declaration -> ModuleContext -> ( List never, ModuleContext )
 declarationVisitor node ({ tags } as context) =
     case Node.value node of
@@ -129,8 +168,8 @@ declarationVisitor node ({ tags } as context) =
                 ( _, docContext ) =
                     documentationVisitor documentation context
 
-                argTags =
-                    functionImplementationTags declaration
+                functionImplTags =
+                    functionImplementationTags declaration context
 
                 signTags =
                     case signature of
@@ -143,7 +182,7 @@ declarationVisitor node ({ tags } as context) =
                 newTags =
                     tags
                         |> Set.union docContext.tags
-                        |> Set.union argTags
+                        |> Set.union functionImplTags
                         |> Set.union signTags
             in
             ( [], { context | tags = newTags } )
@@ -225,13 +264,29 @@ commentsVisitor comments ({ tags } as context) =
             ( [], { context | tags = Set.insert "construct:comment" tags } )
 
 
-functionImplementationTags : Node FunctionImplementation -> Set String
-functionImplementationTags (Node _ { arguments }) =
-    if List.any ElmSyntaxHelpers.hasDestructuringPattern arguments then
-        Set.fromList [ "construct:destructuring", "construct:pattern-matching" ]
+functionImplementationTags : Node FunctionImplementation -> ModuleContext -> Set String
+functionImplementationTags (Node _ { name, arguments }) { exposedFunctions } =
+    let
+        argTags =
+            if List.any ElmSyntaxHelpers.hasDestructuringPattern arguments then
+                Set.fromList [ "construct:destructuring", "construct:pattern-matching" ]
 
-    else
-        Set.empty
+            else
+                Set.empty
+
+        nameTags =
+            case exposedFunctions of
+                All ->
+                    Set.empty
+
+                Some names ->
+                    if List.member (Node.value name) names then
+                        Set.empty
+
+                    else
+                        Set.singleton "construct:local-function"
+    in
+    Set.union argTags nameTags
 
 
 expressionVisitor : Node Expression -> ModuleContext -> ( List never, ModuleContext )

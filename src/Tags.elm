@@ -81,6 +81,7 @@ commonTags : Set String
 commonTags =
     Set.fromList
         [ "paradigm:functional"
+        , "construct:type-inference"
         , "technique:immutability"
         , "uses:module"
         ]
@@ -270,10 +271,6 @@ matchExpressionType (Node range expression) =
             Set.singleton "uses:unit"
 
         Floatable x ->
-            let
-                _ =
-                    Debug.log "Floatable" x
-            in
             Set.fromList [ "construct:float", "construct:floating-point-number" ]
 
         Integer _ ->

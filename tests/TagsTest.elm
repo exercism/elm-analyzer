@@ -25,6 +25,7 @@ commonTags =
         data =
             """
 [
+    "construct:type-inference",
     "paradigm:functional",
     "technique:immutability",
     "uses:module"

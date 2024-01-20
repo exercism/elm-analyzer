@@ -17,6 +17,7 @@ tests =
         , expressionTags
         , destructuringTags
         , signatureTags
+        , recursionTags
         ]
 
 
@@ -592,4 +593,35 @@ signatureTags =
         , test "signature with generic record type" <|
             \() ->
                 expectData "x : { a | y : Y } \nx = z" "[ \"construct:generic-type\"]"
+        ]
+
+
+recursionTags : Test
+recursionTags =
+    describe "recursion"
+        [ test "recursive function" <|
+            \() ->
+                """
+module A exposing (..)
+f = f
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[\"technique:recursion\"]"
+        , test "recursive function somewhere deeper" <|
+            \() ->
+                """
+module A exposing (..)
+f x = let g = f in g
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[\"construct:assignment\", \"technique:recursion\"]"
+        , test "does not confuse names" <|
+            \() ->
+                """
+module A exposing (..)
+import B
+f = B.f
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[]"
         ]

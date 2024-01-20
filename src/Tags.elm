@@ -24,6 +24,7 @@ type alias ProjectContext =
 type alias ModuleContext =
     { lookupTable : ModuleNameLookupTable
     , exposedFunctions : ExposedFunctions
+    , inFunction : Maybe String
     , tags : Set String
     }
 
@@ -61,7 +62,8 @@ expressionTagsRule =
     Rule.newProjectRuleSchema "expressionTags" emptyProjectContext
         |> Rule.withModuleVisitor
             (Rule.withModuleDefinitionVisitor moduleDefinitionVisitor
-                >> Rule.withDeclarationEnterVisitor declarationVisitor
+                >> Rule.withDeclarationEnterVisitor declarationEnterVisitor
+                >> Rule.withDeclarationExitVisitor declarationExitVisitor
                 >> Rule.withExpressionEnterVisitor expressionVisitor
                 >> Rule.withModuleDocumentationVisitor documentationVisitor
                 >> Rule.withCommentsVisitor commentsVisitor
@@ -101,6 +103,7 @@ fromProjectToModule =
         (\lookupTable _ ->
             { lookupTable = lookupTable
             , exposedFunctions = All
+            , inFunction = Nothing
             , tags = Set.empty
             }
         )
@@ -160,8 +163,8 @@ moduleDefinitionVisitor (Node _ moduleNode) context =
                     ( [], { context | exposedFunctions = Some list } )
 
 
-declarationVisitor : Node Declaration -> ModuleContext -> ( List never, ModuleContext )
-declarationVisitor node ({ tags } as context) =
+declarationEnterVisitor : Node Declaration -> ModuleContext -> ( List never, ModuleContext )
+declarationEnterVisitor node ({ tags } as context) =
     case Node.value node of
         FunctionDeclaration { documentation, declaration, signature } ->
             let
@@ -184,8 +187,11 @@ declarationVisitor node ({ tags } as context) =
                         |> Set.union docContext.tags
                         |> Set.union functionImplTags
                         |> Set.union signTags
+
+                functionName =
+                    declaration |> Node.value |> .name |> Node.value
             in
-            ( [], { context | tags = newTags } )
+            ( [], { context | tags = newTags, inFunction = Just functionName } )
 
         AliasDeclaration _ ->
             ( [], { context | tags = Set.insert "uses:type-alias" tags } )
@@ -195,6 +201,11 @@ declarationVisitor node ({ tags } as context) =
 
         _ ->
             ( [], context )
+
+
+declarationExitVisitor : Node Declaration -> ModuleContext -> ( List never, ModuleContext )
+declarationExitVisitor _ context =
+    ( [], { context | inFunction = Nothing } )
 
 
 signatureTags : Node Signature -> Set String
@@ -290,7 +301,7 @@ functionImplementationTags (Node _ { name, arguments }) { exposedFunctions } =
 
 
 expressionVisitor : Node Expression -> ModuleContext -> ( List never, ModuleContext )
-expressionVisitor ((Node range expression) as node) ({ lookupTable, tags } as context) =
+expressionVisitor ((Node range expression) as node) ({ lookupTable, tags, inFunction } as context) =
     let
         matches n =
             Set.union (matchExpressionType n) (matchExpression n)
@@ -302,7 +313,18 @@ expressionVisitor ((Node range expression) as node) ({ lookupTable, tags } as co
                     ( [], { context | tags = Set.union tags (matches node) } )
 
                 Just originalModuleName ->
-                    ( [], { context | tags = Set.union tags (matches (Node range (FunctionOrValue originalModuleName name))) } )
+                    let
+                        expressionTags =
+                            Set.union tags (matches (Node range (FunctionOrValue originalModuleName name)))
+
+                        recursionTag =
+                            if originalModuleName == [] && inFunction == Just name then
+                                Set.singleton "technique:recursion"
+
+                            else
+                                Set.empty
+                    in
+                    ( [], { context | tags = Set.union expressionTags recursionTag } )
 
         _ ->
             ( [], { context | tags = Set.union tags (matches node) } )

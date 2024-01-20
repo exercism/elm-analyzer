@@ -294,7 +294,7 @@ matchExpressionType (Node range expression) =
             Set.fromList [ "construct:record", "uses:record-update" ]
 
         ListExpr _ ->
-            Set.singleton "construct:list"
+            Set.fromList [ "construct:linked-list", "construct:list" ]
 
         GLSLExpression _ ->
             Set.singleton "uses:glsl"
@@ -359,7 +359,7 @@ matchExpression (Node _ expression) =
             Set.fromList [ "construct:dictionary", "technique:immutable-collection", "technique:sorted-collection" ]
 
         FunctionOrValue [ "List" ] _ ->
-            Set.singleton "construct:list"
+            Set.fromList [ "construct:linked-list", "construct:list" ]
 
         FunctionOrValue [ "Random" ] _ ->
             Set.singleton "technique:randomness"

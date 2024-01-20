@@ -239,7 +239,7 @@ expressionTypeTags =
         , test "using tuple" <|
             \() -> expectData "f a b = (a, b)" "[ \"construct:tuple\" ]"
         , test "using list" <|
-            \() -> expectData "f a b = [a, b]" "[ \"construct:list\" ]"
+            \() -> expectData "f a b = [a, b]" "[ \"construct:linked-list\", \"construct:list\" ]"
         , test "using case" <|
             \() -> expectData "f a = case a of\n b -> b" "[ \"construct:pattern-matching\" ]"
         , test "using record" <|
@@ -295,7 +295,7 @@ expressionTags =
         , test "using Bytes.Encode function" <|
             \() -> expectData "f = Bytes.Encode.encode" "[ \"construct:byte\" ]"
         , test "using List function" <|
-            \() -> expectData "f = List.all" "[ \"construct:list\" ]"
+            \() -> expectData "f = List.all" "[ \"construct:linked-list\", \"construct:list\" ]"
         , test "using Set function" <|
             \() ->
                 expectData "f = Set.empty"

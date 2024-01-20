@@ -3,11 +3,10 @@ module Tags exposing (commonTagsRule, expressionTagsRule, ruleConfig)
 import Elm.Syntax.Declaration exposing (Declaration(..))
 import Elm.Syntax.Exposing as Exposing exposing (TopLevelExpose(..))
 import Elm.Syntax.Expression exposing (Expression(..), FunctionImplementation, LetDeclaration(..))
-import Elm.Syntax.Module exposing (Module(..), exposingList)
+import Elm.Syntax.Module exposing (Module(..))
 import Elm.Syntax.Node as Node exposing (Node(..))
 import Elm.Syntax.Signature exposing (Signature)
 import Elm.Syntax.Type exposing (Type)
-import Elm.Syntax.TypeAnnotation exposing (TypeAnnotation(..))
 import ElmSyntaxHelpers exposing (hasAnythingGeneric)
 import Json.Encode as Encode exposing (Value)
 import Review.ModuleNameLookupTable as LookupTable exposing (ModuleNameLookupTable)
@@ -347,7 +346,7 @@ matchExpressionType (Node range expression) =
         UnitExpr ->
             Set.singleton "uses:unit"
 
-        Floatable x ->
+        Floatable _ ->
             Set.fromList [ "construct:float", "construct:floating-point-number" ]
 
         Integer _ ->
@@ -447,7 +446,7 @@ matchExpression (Node _ expression) =
             Set.fromList [ "construct:bit-manipulation", "technique:bit-shifting" ]
 
         FunctionOrValue [ "String" ] _ ->
-            Set.fromList [ "construct:string" ]
+            Set.singleton "construct:string"
 
         FunctionOrValue [ "Array" ] _ ->
             Set.fromList [ "construct:array", "technique:immutable-collection" ]
@@ -472,7 +471,7 @@ matchExpression (Node _ expression) =
                 special =
                     case function of
                         "sortWith" ->
-                            Set.fromList [ "technique:ordering" ]
+                            Set.singleton "technique:ordering"
 
                         _ ->
                             Set.empty
@@ -525,16 +524,16 @@ matchExpression (Node _ expression) =
             Set.fromList [ "construct:integral-number", "construct:int", "construct:modulo" ]
 
         FunctionOrValue [ "Basics" ] "compare" ->
-            Set.fromList [ "technique:ordering" ]
+            Set.singleton "technique:ordering"
 
         FunctionOrValue [ "Basics" ] "LT" ->
-            Set.fromList [ "technique:ordering" ]
+            Set.singleton "technique:ordering"
 
         FunctionOrValue [ "Basics" ] "EQ" ->
-            Set.fromList [ "technique:ordering" ]
+            Set.singleton "technique:ordering"
 
         FunctionOrValue [ "Basics" ] "GT" ->
-            Set.fromList [ "technique:ordering" ]
+            Set.singleton "technique:ordering"
 
         PrefixOperator "+" ->
             Set.singleton "construct:add"

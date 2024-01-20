@@ -269,7 +269,11 @@ matchExpressionType (Node range expression) =
         UnitExpr ->
             Set.singleton "uses:unit"
 
-        Floatable _ ->
+        Floatable x ->
+            let
+                _ =
+                    Debug.log "Floatable" x
+            in
             Set.fromList [ "construct:float", "construct:floating-point-number" ]
 
         Integer _ ->
@@ -384,7 +388,7 @@ matchExpression (Node _ expression) =
             Set.fromList [ "construct:dictionary", "technique:immutable-collection", "technique:sorted-collection" ]
 
         FunctionOrValue [ "List" ] _ ->
-            Set.fromList [ "construct:linked-list", "construct:list" ]
+            Set.fromList [ "construct:linked-list", "construct:list", "technique:immutable-collection" ]
 
         FunctionOrValue [ "Random" ] _ ->
             Set.singleton "technique:randomness"

@@ -296,7 +296,7 @@ expressionTags =
         , test "using Bytes.Encode function" <|
             \() -> expectData "f = Bytes.Encode.encode" "[ \"construct:byte\" ]"
         , test "using List function" <|
-            \() -> expectData "f = List.all" "[ \"construct:linked-list\", \"construct:list\" ]"
+            \() -> expectData "f = List.all" "[ \"construct:linked-list\", \"construct:list\", \"technique:immutable-collection\" ]"
         , test "using Set function" <|
             \() ->
                 expectData "f = Set.empty"

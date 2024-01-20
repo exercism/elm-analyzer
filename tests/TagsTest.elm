@@ -416,6 +416,19 @@ expressionTags =
             \() ->
                 expectData "f x y = remainderBy x y"
                     "[ \"construct:int\", \"construct:integral-number\", \"construct:modulo\", \"uses:function-application\" ]"
+        , test "using compare" <|
+            \() ->
+                expectData "f = compare" "[ \"technique:ordering\" ]"
+        , test "using LT" <|
+            \() -> expectData "x = LT" "[ \"construct:constructor\", \"technique:ordering\" ]"
+        , test "using GT" <|
+            \() -> expectData "x = GT" "[ \"construct:constructor\", \"technique:ordering\" ]"
+        , test "using EQ" <|
+            \() -> expectData "x = EQ" "[ \"construct:constructor\", \"technique:ordering\" ]"
+        , test "using List.sortWith" <|
+            \() ->
+                expectData "x = List.sortWith"
+                    "[ \"construct:linked-list\", \"construct:list\", \"technique:immutable-collection\", \"technique:ordering\" ]"
         ]
 
 

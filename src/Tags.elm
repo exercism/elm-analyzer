@@ -384,8 +384,20 @@ matchExpression (Node _ expression) =
         FunctionOrValue [ "Dict" ] _ ->
             Set.fromList [ "construct:dictionary", "technique:immutable-collection", "technique:sorted-collection" ]
 
-        FunctionOrValue [ "List" ] _ ->
-            Set.fromList [ "construct:linked-list", "construct:list", "technique:immutable-collection" ]
+        FunctionOrValue [ "List" ] function ->
+            let
+                common =
+                    Set.fromList [ "construct:linked-list", "construct:list", "technique:immutable-collection" ]
+
+                special =
+                    case function of
+                        "sortWith" ->
+                            Set.fromList [ "technique:ordering" ]
+
+                        _ ->
+                            Set.empty
+            in
+            Set.union common special
 
         FunctionOrValue [ "Random" ] _ ->
             Set.singleton "technique:randomness"
@@ -431,6 +443,18 @@ matchExpression (Node _ expression) =
 
         FunctionOrValue [ "Basics" ] "remainderBy" ->
             Set.fromList [ "construct:integral-number", "construct:int", "construct:modulo" ]
+
+        FunctionOrValue [ "Basics" ] "compare" ->
+            Set.fromList [ "technique:ordering" ]
+
+        FunctionOrValue [ "Basics" ] "LT" ->
+            Set.fromList [ "technique:ordering" ]
+
+        FunctionOrValue [ "Basics" ] "EQ" ->
+            Set.fromList [ "technique:ordering" ]
+
+        FunctionOrValue [ "Basics" ] "GT" ->
+            Set.fromList [ "technique:ordering" ]
 
         PrefixOperator "+" ->
             Set.singleton "construct:add"

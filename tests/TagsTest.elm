@@ -373,19 +373,19 @@ expressionTags =
         , test "using inline &&" <|
             \() ->
                 expectData "f a b = a && b"
-                    "[ \"construct:boolean\", \"construct:logical-and\", \"technique:boolean-logic\", \"uses:function-application\"]"
+                    "[ \"construct:boolean\", \"construct:logical-and\", \"technique:boolean-logic\", \"technique:short-circuiting\", \"uses:function-application\"]"
         , test "using prefix &&" <|
             \() ->
                 expectData "f = (&&)"
-                    "[ \"construct:boolean\", \"construct:logical-and\", \"technique:boolean-logic\", \"uses:prefix-operator\" ]"
+                    "[ \"construct:boolean\", \"construct:logical-and\", \"technique:boolean-logic\", \"technique:short-circuiting\", \"uses:prefix-operator\" ]"
         , test "using inline ||" <|
             \() ->
                 expectData "f a b = a || b"
-                    "[ \"construct:boolean\", \"construct:logical-or\", \"technique:boolean-logic\", \"uses:function-application\"]"
+                    "[ \"construct:boolean\", \"construct:logical-or\", \"technique:boolean-logic\", \"technique:short-circuiting\", \"uses:function-application\"]"
         , test "using prefix ||" <|
             \() ->
                 expectData "f = (||)"
-                    "[ \"construct:boolean\", \"construct:logical-or\", \"technique:boolean-logic\", \"uses:prefix-operator\" ]"
+                    "[ \"construct:boolean\", \"construct:logical-or\", \"technique:boolean-logic\", \"technique:short-circuiting\", \"uses:prefix-operator\" ]"
         , test "using not" <|
             \() ->
                 expectData "f x = not x"

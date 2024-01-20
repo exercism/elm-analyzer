@@ -371,16 +371,16 @@ matchExpression (Node _ expression) =
             Set.singleton "uses:debug"
 
         PrefixOperator "&&" ->
-            Set.fromList [ "construct:boolean", "construct:logical-and", "technique:boolean-logic" ]
+            Set.fromList [ "construct:boolean", "construct:logical-and", "technique:boolean-logic", "technique:short-circuiting" ]
 
         OperatorApplication "&&" _ _ _ ->
-            Set.fromList [ "construct:boolean", "construct:logical-and", "technique:boolean-logic" ]
+            Set.fromList [ "construct:boolean", "construct:logical-and", "technique:boolean-logic", "technique:short-circuiting" ]
 
         PrefixOperator "||" ->
-            Set.fromList [ "construct:boolean", "construct:logical-or", "technique:boolean-logic" ]
+            Set.fromList [ "construct:boolean", "construct:logical-or", "technique:boolean-logic", "technique:short-circuiting" ]
 
         OperatorApplication "||" _ _ _ ->
-            Set.fromList [ "construct:boolean", "construct:logical-or", "technique:boolean-logic" ]
+            Set.fromList [ "construct:boolean", "construct:logical-or", "technique:boolean-logic", "technique:short-circuiting" ]
 
         FunctionOrValue [ "Basics" ] "not" ->
             Set.fromList [ "construct:boolean", "construct:logical-not", "technique:boolean-logic" ]

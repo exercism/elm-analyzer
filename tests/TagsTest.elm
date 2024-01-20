@@ -461,6 +461,10 @@ expressionTags =
             \() ->
                 expectData "x = List.sortWith"
                     "[ \"construct:linked-list\", \"construct:list\", \"technique:immutable-collection\", \"technique:ordering\" ]"
+        , test "using a String function" <|
+            \() ->
+                expectData "x = String.reverse"
+                    "[ \"construct:string\" ]"
         ]
 
 

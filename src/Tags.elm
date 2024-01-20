@@ -424,6 +424,9 @@ matchExpression (Node _ expression) =
         FunctionOrValue [ "Bitwise" ] "shiftRightZfBy" ->
             Set.fromList [ "construct:bit-manipulation", "technique:bit-shifting" ]
 
+        FunctionOrValue [ "String" ] _ ->
+            Set.fromList [ "construct:string" ]
+
         FunctionOrValue [ "Array" ] _ ->
             Set.fromList [ "construct:array", "technique:immutable-collection" ]
 

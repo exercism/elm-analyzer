@@ -241,7 +241,7 @@ expressionTypeTags =
         , test "using list" <|
             \() -> expectData "f a b = [a, b]" "[ \"construct:linked-list\", \"construct:list\" ]"
         , test "using case" <|
-            \() -> expectData "f a = case a of\n b -> b" "[ \"construct:pattern-matching\" ]"
+            \() -> expectData "f a = case a of\n b -> b" "[ \"construct:pattern-matching\", \"construct:switch\"]"
         , test "using record" <|
             \() -> expectData "f b = {a = b}" "[ \"construct:record\" ]"
         , test "using record access" <|
@@ -500,25 +500,25 @@ destructuringTags =
                     "[ \"construct:destructuring\", \"construct:lambda\", \"construct:pattern-matching\"]"
         , test "case without proper destructuring" <|
             \() ->
-                expectData "f x = case x of\n x -> x" "[\"construct:pattern-matching\"]"
+                expectData "f x = case x of\n x -> x" "[\"construct:pattern-matching\", \"construct:switch\"]"
         , test "case with tuple destructuring" <|
             \() ->
                 expectData "f x = case x of\n (a, b) -> a"
-                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\", \"construct:switch\"]"
         , test "case with record destructuring" <|
             \() ->
                 expectData "f x = case x of\n {a, b} -> a"
-                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\", \"construct:switch\"]"
         , test "case with uncons destructuring" <|
             \() ->
                 expectData "f x = case x of\n (a :: b) -> a"
-                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\", \"construct:switch\"]"
         , test "case with named destructuring" <|
             \() ->
                 expectData "f x = case x of\n (Thing a) -> a"
-                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\", \"construct:switch\"]"
         , test "case with nested destructuring" <|
             \() ->
                 expectData "f x = case x of\n (Thing { a }) -> a"
-                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\", \"construct:switch\"]"
         ]

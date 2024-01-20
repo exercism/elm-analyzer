@@ -279,7 +279,7 @@ matchExpressionType (Node range expression) =
             Set.singleton "construct:tuple"
 
         CaseExpression _ ->
-            Set.singleton "construct:pattern-matching"
+            Set.fromList [ "construct:pattern-matching", "construct:switch" ]
 
         RecordExpr _ ->
             Set.singleton "construct:record"

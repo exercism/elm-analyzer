@@ -1,11 +1,13 @@
 module Tags exposing (commonTagsRule, expressionTagsRule, ruleConfig)
 
 import Elm.Syntax.Declaration exposing (Declaration(..))
+import Elm.Syntax.Exposing as Exposing exposing (TopLevelExpose(..))
 import Elm.Syntax.Expression exposing (Expression(..), FunctionImplementation, LetDeclaration(..))
-import Elm.Syntax.Module exposing (Module)
+import Elm.Syntax.Module exposing (Module(..))
 import Elm.Syntax.Node as Node exposing (Node(..))
+import Elm.Syntax.Signature exposing (Signature)
 import Elm.Syntax.Type exposing (Type)
-import ElmSyntaxHelpers
+import ElmSyntaxHelpers exposing (hasAnythingGeneric)
 import Json.Encode as Encode exposing (Value)
 import Review.ModuleNameLookupTable as LookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Rule)
@@ -20,8 +22,15 @@ type alias ProjectContext =
 
 type alias ModuleContext =
     { lookupTable : ModuleNameLookupTable
+    , exposedFunctions : ExposedFunctions
+    , inFunction : Maybe String
     , tags : Set String
     }
+
+
+type ExposedFunctions
+    = All
+    | Some (List String)
 
 
 ruleConfig : RuleConfig
@@ -51,7 +60,9 @@ expressionTagsRule : Rule
 expressionTagsRule =
     Rule.newProjectRuleSchema "expressionTags" emptyProjectContext
         |> Rule.withModuleVisitor
-            (Rule.withDeclarationEnterVisitor declarationVisitor
+            (Rule.withModuleDefinitionVisitor moduleDefinitionVisitor
+                >> Rule.withDeclarationEnterVisitor declarationEnterVisitor
+                >> Rule.withDeclarationExitVisitor declarationExitVisitor
                 >> Rule.withExpressionEnterVisitor expressionVisitor
                 >> Rule.withModuleDocumentationVisitor documentationVisitor
                 >> Rule.withCommentsVisitor commentsVisitor
@@ -79,6 +90,7 @@ commonTags : Set String
 commonTags =
     Set.fromList
         [ "paradigm:functional"
+        , "construct:type-inference"
         , "technique:immutability"
         , "uses:module"
         ]
@@ -89,6 +101,8 @@ fromProjectToModule =
     Rule.initContextCreator
         (\lookupTable _ ->
             { lookupTable = lookupTable
+            , exposedFunctions = All
+            , inFunction = Nothing
             , tags = Set.empty
             }
         )
@@ -118,18 +132,65 @@ dataExtractor =
     .tags >> Set.toList >> Encode.list Encode.string
 
 
-declarationVisitor : Node Declaration -> ModuleContext -> ( List never, ModuleContext )
-declarationVisitor node ({ tags } as context) =
+moduleDefinitionVisitor : Node Module -> ModuleContext -> ( List never, ModuleContext )
+moduleDefinitionVisitor (Node _ moduleNode) context =
+    case moduleNode of
+        PortModule _ ->
+            ( [], context )
+
+        EffectModule _ ->
+            ( [], context )
+
+        NormalModule { exposingList } ->
+            case Node.value exposingList of
+                Exposing.All _ ->
+                    ( [], { context | exposedFunctions = All } )
+
+                Exposing.Explicit exposed ->
+                    let
+                        getExposedFunctions expose =
+                            case Node.value expose of
+                                FunctionExpose name ->
+                                    Just name
+
+                                _ ->
+                                    Nothing
+
+                        list =
+                            List.filterMap getExposedFunctions exposed
+                    in
+                    ( [], { context | exposedFunctions = Some list } )
+
+
+declarationEnterVisitor : Node Declaration -> ModuleContext -> ( List never, ModuleContext )
+declarationEnterVisitor node ({ tags } as context) =
     case Node.value node of
-        FunctionDeclaration { documentation, declaration } ->
+        FunctionDeclaration { documentation, declaration, signature } ->
             let
                 ( _, docContext ) =
                     documentationVisitor documentation context
 
-                argTags =
-                    functionImplementationTags declaration
+                functionImplTags =
+                    functionImplementationTags declaration context
+
+                signTags =
+                    case signature of
+                        Nothing ->
+                            Set.empty
+
+                        Just sign ->
+                            signatureTags sign
+
+                newTags =
+                    tags
+                        |> Set.union docContext.tags
+                        |> Set.union functionImplTags
+                        |> Set.union signTags
+
+                functionName =
+                    declaration |> Node.value |> .name |> Node.value
             in
-            ( [], { context | tags = Set.union tags (Set.union docContext.tags argTags) } )
+            ( [], { context | tags = newTags, inFunction = Just functionName } )
 
         AliasDeclaration _ ->
             ( [], { context | tags = Set.insert "uses:type-alias" tags } )
@@ -139,6 +200,20 @@ declarationVisitor node ({ tags } as context) =
 
         _ ->
             ( [], context )
+
+
+declarationExitVisitor : Node Declaration -> ModuleContext -> ( List never, ModuleContext )
+declarationExitVisitor _ context =
+    ( [], { context | inFunction = Nothing } )
+
+
+signatureTags : Node Signature -> Set String
+signatureTags (Node _ { typeAnnotation }) =
+    if hasAnythingGeneric typeAnnotation then
+        Set.singleton "construct:generic-type"
+
+    else
+        Set.empty
 
 
 analyzeCustomType : Type -> Set String
@@ -199,17 +274,33 @@ commentsVisitor comments ({ tags } as context) =
             ( [], { context | tags = Set.insert "construct:comment" tags } )
 
 
-functionImplementationTags : Node FunctionImplementation -> Set String
-functionImplementationTags (Node _ { arguments }) =
-    if List.any ElmSyntaxHelpers.hasDestructuringPattern arguments then
-        Set.fromList [ "construct:destructuring", "construct:pattern-matching" ]
+functionImplementationTags : Node FunctionImplementation -> ModuleContext -> Set String
+functionImplementationTags (Node _ { name, arguments }) { exposedFunctions } =
+    let
+        argTags =
+            if List.any ElmSyntaxHelpers.hasDestructuringPattern arguments then
+                Set.fromList [ "construct:destructuring", "construct:pattern-matching" ]
 
-    else
-        Set.empty
+            else
+                Set.empty
+
+        nameTags =
+            case exposedFunctions of
+                All ->
+                    Set.empty
+
+                Some names ->
+                    if List.member (Node.value name) names then
+                        Set.empty
+
+                    else
+                        Set.singleton "construct:local-function"
+    in
+    Set.union argTags nameTags
 
 
 expressionVisitor : Node Expression -> ModuleContext -> ( List never, ModuleContext )
-expressionVisitor ((Node range expression) as node) ({ lookupTable, tags } as context) =
+expressionVisitor ((Node range expression) as node) ({ lookupTable, tags, inFunction } as context) =
     let
         matches n =
             Set.union (matchExpressionType n) (matchExpression n)
@@ -221,7 +312,18 @@ expressionVisitor ((Node range expression) as node) ({ lookupTable, tags } as co
                     ( [], { context | tags = Set.union tags (matches node) } )
 
                 Just originalModuleName ->
-                    ( [], { context | tags = Set.union tags (matches (Node range (FunctionOrValue originalModuleName name))) } )
+                    let
+                        expressionTags =
+                            Set.union tags (matches (Node range (FunctionOrValue originalModuleName name)))
+
+                        recursionTag =
+                            if originalModuleName == [] && inFunction == Just name then
+                                Set.singleton "technique:recursion"
+
+                            else
+                                Set.empty
+                    in
+                    ( [], { context | tags = Set.union expressionTags recursionTag } )
 
         _ ->
             ( [], { context | tags = Set.union tags (matches node) } )
@@ -279,7 +381,7 @@ matchExpressionType (Node range expression) =
             Set.singleton "construct:tuple"
 
         CaseExpression _ ->
-            Set.singleton "construct:pattern-matching"
+            Set.fromList [ "construct:pattern-matching", "construct:switch" ]
 
         RecordExpr _ ->
             Set.singleton "construct:record"
@@ -294,7 +396,7 @@ matchExpressionType (Node range expression) =
             Set.fromList [ "construct:record", "uses:record-update" ]
 
         ListExpr _ ->
-            Set.singleton "construct:list"
+            Set.fromList [ "construct:linked-list", "construct:list" ]
 
         GLSLExpression _ ->
             Set.singleton "uses:glsl"
@@ -343,6 +445,9 @@ matchExpression (Node _ expression) =
         FunctionOrValue [ "Bitwise" ] "shiftRightZfBy" ->
             Set.fromList [ "construct:bit-manipulation", "technique:bit-shifting" ]
 
+        FunctionOrValue [ "String" ] _ ->
+            Set.singleton "construct:string"
+
         FunctionOrValue [ "Array" ] _ ->
             Set.fromList [ "construct:array", "technique:immutable-collection" ]
 
@@ -358,8 +463,20 @@ matchExpression (Node _ expression) =
         FunctionOrValue [ "Dict" ] _ ->
             Set.fromList [ "construct:dictionary", "technique:immutable-collection", "technique:sorted-collection" ]
 
-        FunctionOrValue [ "List" ] _ ->
-            Set.singleton "construct:list"
+        FunctionOrValue [ "List" ] function ->
+            let
+                common =
+                    Set.fromList [ "construct:linked-list", "construct:list", "technique:immutable-collection" ]
+
+                special =
+                    case function of
+                        "sortWith" ->
+                            Set.singleton "technique:ordering"
+
+                        _ ->
+                            Set.empty
+            in
+            Set.union common special
 
         FunctionOrValue [ "Random" ] _ ->
             Set.singleton "technique:randomness"
@@ -371,16 +488,16 @@ matchExpression (Node _ expression) =
             Set.singleton "uses:debug"
 
         PrefixOperator "&&" ->
-            Set.fromList [ "construct:boolean", "construct:logical-and", "technique:boolean-logic" ]
+            Set.fromList [ "construct:boolean", "construct:logical-and", "technique:boolean-logic", "technique:short-circuiting" ]
 
         OperatorApplication "&&" _ _ _ ->
-            Set.fromList [ "construct:boolean", "construct:logical-and", "technique:boolean-logic" ]
+            Set.fromList [ "construct:boolean", "construct:logical-and", "technique:boolean-logic", "technique:short-circuiting" ]
 
         PrefixOperator "||" ->
-            Set.fromList [ "construct:boolean", "construct:logical-or", "technique:boolean-logic" ]
+            Set.fromList [ "construct:boolean", "construct:logical-or", "technique:boolean-logic", "technique:short-circuiting" ]
 
         OperatorApplication "||" _ _ _ ->
-            Set.fromList [ "construct:boolean", "construct:logical-or", "technique:boolean-logic" ]
+            Set.fromList [ "construct:boolean", "construct:logical-or", "technique:boolean-logic", "technique:short-circuiting" ]
 
         FunctionOrValue [ "Basics" ] "not" ->
             Set.fromList [ "construct:boolean", "construct:logical-not", "technique:boolean-logic" ]
@@ -399,6 +516,24 @@ matchExpression (Node _ expression) =
 
         FunctionOrValue [ "Basics" ] "isInfinite" ->
             Set.fromList [ "construct:boolean", "construct:float", "construct:floating-point-number" ]
+
+        FunctionOrValue [ "Basics" ] "modBy" ->
+            Set.fromList [ "construct:integral-number", "construct:int", "construct:modulo" ]
+
+        FunctionOrValue [ "Basics" ] "remainderBy" ->
+            Set.fromList [ "construct:integral-number", "construct:int", "construct:modulo" ]
+
+        FunctionOrValue [ "Basics" ] "compare" ->
+            Set.singleton "technique:ordering"
+
+        FunctionOrValue [ "Basics" ] "LT" ->
+            Set.singleton "technique:ordering"
+
+        FunctionOrValue [ "Basics" ] "EQ" ->
+            Set.singleton "technique:ordering"
+
+        FunctionOrValue [ "Basics" ] "GT" ->
+            Set.singleton "technique:ordering"
 
         PrefixOperator "+" ->
             Set.singleton "construct:add"

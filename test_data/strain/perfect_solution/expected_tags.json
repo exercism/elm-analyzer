@@ -4,9 +4,13 @@
   "construct:lambda",
   "construct:list",
   "construct:logical-not",
-  "paradigm:functional",
+  "construct:generic-type",
+  "construct:linked-list",
+  "construct:type-inference",  "paradigm:functional",
+  "construct:local-function",
   "technique:boolean-logic",
   "technique:immutability",
+  "technique:immutable-collection",
   "uses:function-application",
   "uses:module"
 ]

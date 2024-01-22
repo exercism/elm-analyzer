@@ -3,9 +3,12 @@
   "construct:comment",
   "construct:list",
   "construct:logical-not",
-  "paradigm:functional",
+  "construct:type-inference",
+  "construct:generic-type",
+  "construct:linked-list",  "paradigm:functional",
   "technique:boolean-logic",
   "technique:immutability",
+  "technique:immutable-collection",
   "uses:function-application",
   "uses:module"
 ]

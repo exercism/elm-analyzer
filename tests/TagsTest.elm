@@ -11,10 +11,13 @@ tests =
     describe "TagsTest tests"
         [ commonTags
         , commentsTags
+        , moduleDefinitionTags
         , typesTags
         , expressionTypeTags
         , expressionTags
         , destructuringTags
+        , signatureTags
+        , recursionTags
         ]
 
 
@@ -24,6 +27,7 @@ commonTags =
         data =
             """
 [
+    "construct:type-inference",
     "paradigm:functional",
     "technique:immutability",
     "uses:module"
@@ -98,6 +102,37 @@ f x = x
 """
                     |> Review.Test.run Tags.expressionTagsRule
                     |> Review.Test.expectDataExtract "[ \"construct:comment\", \"construct:documentation\" ]"
+        ]
+
+
+moduleDefinitionTags : Test
+moduleDefinitionTags =
+    describe "module definition"
+        [ test "all functions are exposed" <|
+            \() ->
+                """
+module A exposing (..)
+f x = x
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[]"
+        , test "one function is not exposed" <|
+            \() ->
+                """
+module A exposing (g)
+f x = x
+g x = x
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[ \"construct:local-function\" ]"
+        , test "functions in let blocks are not considered local" <|
+            \() ->
+                """
+module A exposing (f)
+f = let g x = x in g
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[ \"construct:assignment\" ]"
         ]
 
 
@@ -239,9 +274,9 @@ expressionTypeTags =
         , test "using tuple" <|
             \() -> expectData "f a b = (a, b)" "[ \"construct:tuple\" ]"
         , test "using list" <|
-            \() -> expectData "f a b = [a, b]" "[ \"construct:list\" ]"
+            \() -> expectData "f a b = [a, b]" "[ \"construct:linked-list\", \"construct:list\" ]"
         , test "using case" <|
-            \() -> expectData "f a = case a of\n b -> b" "[ \"construct:pattern-matching\" ]"
+            \() -> expectData "f a = case a of\n b -> b" "[ \"construct:pattern-matching\", \"construct:switch\"]"
         , test "using record" <|
             \() -> expectData "f b = {a = b}" "[ \"construct:record\" ]"
         , test "using record access" <|
@@ -295,7 +330,7 @@ expressionTags =
         , test "using Bytes.Encode function" <|
             \() -> expectData "f = Bytes.Encode.encode" "[ \"construct:byte\" ]"
         , test "using List function" <|
-            \() -> expectData "f = List.all" "[ \"construct:list\" ]"
+            \() -> expectData "f = List.all" "[ \"construct:linked-list\", \"construct:list\", \"technique:immutable-collection\" ]"
         , test "using Set function" <|
             \() ->
                 expectData "f = Set.empty"
@@ -373,19 +408,19 @@ expressionTags =
         , test "using inline &&" <|
             \() ->
                 expectData "f a b = a && b"
-                    "[ \"construct:boolean\", \"construct:logical-and\", \"technique:boolean-logic\", \"uses:function-application\"]"
+                    "[ \"construct:boolean\", \"construct:logical-and\", \"technique:boolean-logic\", \"technique:short-circuiting\", \"uses:function-application\"]"
         , test "using prefix &&" <|
             \() ->
                 expectData "f = (&&)"
-                    "[ \"construct:boolean\", \"construct:logical-and\", \"technique:boolean-logic\", \"uses:prefix-operator\" ]"
+                    "[ \"construct:boolean\", \"construct:logical-and\", \"technique:boolean-logic\", \"technique:short-circuiting\", \"uses:prefix-operator\" ]"
         , test "using inline ||" <|
             \() ->
                 expectData "f a b = a || b"
-                    "[ \"construct:boolean\", \"construct:logical-or\", \"technique:boolean-logic\", \"uses:function-application\"]"
+                    "[ \"construct:boolean\", \"construct:logical-or\", \"technique:boolean-logic\", \"technique:short-circuiting\", \"uses:function-application\"]"
         , test "using prefix ||" <|
             \() ->
                 expectData "f = (||)"
-                    "[ \"construct:boolean\", \"construct:logical-or\", \"technique:boolean-logic\", \"uses:prefix-operator\" ]"
+                    "[ \"construct:boolean\", \"construct:logical-or\", \"technique:boolean-logic\", \"technique:short-circuiting\", \"uses:prefix-operator\" ]"
         , test "using not" <|
             \() ->
                 expectData "f x = not x"
@@ -406,6 +441,31 @@ expressionTags =
             \() ->
                 expectData "f x = isInfinite x"
                     "[ \"construct:boolean\", \"construct:float\", \"construct:floating-point-number\", \"uses:function-application\" ]"
+        , test "using modBy" <|
+            \() ->
+                expectData "f x y = modBy x y"
+                    "[ \"construct:int\", \"construct:integral-number\", \"construct:modulo\", \"uses:function-application\" ]"
+        , test "using remainderBy" <|
+            \() ->
+                expectData "f x y = remainderBy x y"
+                    "[ \"construct:int\", \"construct:integral-number\", \"construct:modulo\", \"uses:function-application\" ]"
+        , test "using compare" <|
+            \() ->
+                expectData "f = compare" "[ \"technique:ordering\" ]"
+        , test "using LT" <|
+            \() -> expectData "x = LT" "[ \"construct:constructor\", \"technique:ordering\" ]"
+        , test "using GT" <|
+            \() -> expectData "x = GT" "[ \"construct:constructor\", \"technique:ordering\" ]"
+        , test "using EQ" <|
+            \() -> expectData "x = EQ" "[ \"construct:constructor\", \"technique:ordering\" ]"
+        , test "using List.sortWith" <|
+            \() ->
+                expectData "x = List.sortWith"
+                    "[ \"construct:linked-list\", \"construct:list\", \"technique:immutable-collection\", \"technique:ordering\" ]"
+        , test "using a String function" <|
+            \() ->
+                expectData "x = String.reverse"
+                    "[ \"construct:string\" ]"
         ]
 
 
@@ -500,25 +560,68 @@ destructuringTags =
                     "[ \"construct:destructuring\", \"construct:lambda\", \"construct:pattern-matching\"]"
         , test "case without proper destructuring" <|
             \() ->
-                expectData "f x = case x of\n x -> x" "[\"construct:pattern-matching\"]"
+                expectData "f x = case x of\n x -> x" "[\"construct:pattern-matching\", \"construct:switch\"]"
         , test "case with tuple destructuring" <|
             \() ->
                 expectData "f x = case x of\n (a, b) -> a"
-                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\", \"construct:switch\"]"
         , test "case with record destructuring" <|
             \() ->
                 expectData "f x = case x of\n {a, b} -> a"
-                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\", \"construct:switch\"]"
         , test "case with uncons destructuring" <|
             \() ->
                 expectData "f x = case x of\n (a :: b) -> a"
-                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\", \"construct:switch\"]"
         , test "case with named destructuring" <|
             \() ->
                 expectData "f x = case x of\n (Thing a) -> a"
-                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\", \"construct:switch\"]"
         , test "case with nested destructuring" <|
             \() ->
                 expectData "f x = case x of\n (Thing { a }) -> a"
-                    "[ \"construct:destructuring\", \"construct:pattern-matching\"]"
+                    "[ \"construct:destructuring\", \"construct:pattern-matching\", \"construct:switch\"]"
+        ]
+
+
+signatureTags : Test
+signatureTags =
+    describe "signature"
+        [ test "signature with generic type" <|
+            \() ->
+                expectData "x : X (Y, Z y) \nx = z" "[ \"construct:generic-type\"]"
+        , test "signature with generic record type" <|
+            \() ->
+                expectData "x : { a | y : Y } \nx = z" "[ \"construct:generic-type\"]"
+        ]
+
+
+recursionTags : Test
+recursionTags =
+    describe "recursion"
+        [ test "recursive function" <|
+            \() ->
+                """
+module A exposing (..)
+f = f
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[\"technique:recursion\"]"
+        , test "recursive function somewhere deeper" <|
+            \() ->
+                """
+module A exposing (..)
+f x = let g = f in g
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[\"construct:assignment\", \"technique:recursion\"]"
+        , test "does not confuse names" <|
+            \() ->
+                """
+module A exposing (..)
+import B
+f = B.f
+"""
+                    |> Review.Test.run Tags.expressionTagsRule
+                    |> Review.Test.expectDataExtract "[]"
         ]

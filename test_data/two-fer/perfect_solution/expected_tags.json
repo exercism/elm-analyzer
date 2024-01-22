@@ -1,5 +1,6 @@
 [
   "construct:string",
+  "construct:type-inference",
   "paradigm:functional",
   "technique:immutability",
   "uses:function-application",

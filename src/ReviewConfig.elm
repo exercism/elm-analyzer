@@ -15,6 +15,7 @@ import Exercise.LuciansLusciousLasagna
 import Exercise.MariosMarvellousLasagna
 import Exercise.MazeMaker
 import Exercise.RolePlayingGame
+import Exercise.Sieve
 import Exercise.Strain
 import Exercise.TicketPlease
 import Exercise.TisburyTreasureHunt
@@ -61,6 +62,7 @@ ruleConfigs =
     , Exercise.CustomSet.ruleConfig
     , Exercise.ListOps.ruleConfig
     , Exercise.ZebraPuzzle.ruleConfig
+    , Exercise.Sieve.ruleConfig
     ]
 
 

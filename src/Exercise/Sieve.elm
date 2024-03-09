@@ -1,4 +1,4 @@
-module Exercise.Sieve exposing (doNotUseDivision, doNotUseModulo, ruleConfig)
+module Exercise.Sieve exposing (doNotUseDivisionOrModulo, ruleConfig)
 
 import Analyzer exposing (CalledExpression(..), CalledFrom(..), Find(..))
 import Comment exposing (Comment, CommentType(..))
@@ -11,27 +11,21 @@ ruleConfig : RuleConfig
 ruleConfig =
     { restrictToFiles = Just [ "src/Sieve.elm" ]
     , rules =
-        [ CustomRule doNotUseDivision
-            (Comment "elm.sieve.do_not_use_division" Essential Dict.empty)
-        , CustomRule doNotUseModulo
-            (Comment "elm.sieve.do_not_use_modulo" Essential Dict.empty)
+        [ CustomRule doNotUseDivisionOrModulo
+            (Comment "elm.sieve.do_not_use_division_or_modulo" Essential Dict.empty)
         ]
     }
 
 
-doNotUseDivision : Comment -> Rule
-doNotUseDivision =
+doNotUseDivisionOrModulo : Comment -> Rule
+doNotUseDivisionOrModulo =
     Analyzer.functionCalls
         { calledFrom = Anywhere
-        , findExpressions = [ Operator "//", Operator "/" ]
-        , find = None
-        }
-
-
-doNotUseModulo : Comment -> Rule
-doNotUseModulo =
-    Analyzer.functionCalls
-        { calledFrom = Anywhere
-        , findExpressions = [ FromExternalModule [ "Basics" ] "modBy", FromExternalModule [ "Basics" ] "remainderBy" ]
+        , findExpressions =
+            [ Operator "//"
+            , Operator "/"
+            , FromExternalModule [ "Basics" ] "modBy"
+            , FromExternalModule [ "Basics" ] "remainderBy"
+            ]
         , find = None
         }

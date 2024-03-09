@@ -14,8 +14,7 @@ tests : Test
 tests =
     describe "SieveTest"
         [ exampleSolution
-        , usingDivision
-        , usingModulo
+        , usingDivisionOrModulo
         ]
 
 
@@ -101,11 +100,11 @@ runSieve maybePrime sieve =
 """
 
 
-usingDivision : Test
-usingDivision =
+usingDivisionOrModulo : Test
+usingDivisionOrModulo =
     let
         comment =
-            Comment "elm.sieve.do_not_use_division" Essential Dict.empty
+            Comment "elm.sieve.do_not_use_division_or_modulo" Essential Dict.empty
     in
     describe "solutions that use division" <|
         [ test "using (/)" <|
@@ -127,7 +126,7 @@ run smallPrimes list =
                 rest
                 |> run newPrimes
 """
-                    |> Review.Test.run (Sieve.doNotUseDivision comment)
+                    |> Review.Test.run (Sieve.doNotUseDivisionOrModulo comment)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder comment "toFloat n / toFloat p"
                             |> Review.Test.atExactly { start = { row = 14, column = 85 }, end = { row = 14, column = 106 } }
@@ -151,20 +150,10 @@ run smallPrimes list =
                 rest
                 |> run newPrimes
 """
-                    |> Review.Test.run (Sieve.doNotUseDivision comment)
+                    |> Review.Test.run (Sieve.doNotUseDivisionOrModulo comment)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder comment "n // p" ]
-        ]
-
-
-usingModulo : Test
-usingModulo =
-    let
-        comment =
-            Comment "elm.sieve.do_not_use_modulo" Essential Dict.empty
-    in
-    describe "solutions that use modulo" <|
-        [ test "using modBy" <|
+        , test "using modBy" <|
             \() ->
                 """
 module Sieve exposing (primes)
@@ -183,7 +172,7 @@ run smallPrimes list =
                 rest
                 |> run newPrimes
 """
-                    |> Review.Test.run (Sieve.doNotUseModulo comment)
+                    |> Review.Test.run (Sieve.doNotUseDivisionOrModulo comment)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder comment "modBy" ]
         , test "using remainderBy" <|
@@ -205,7 +194,7 @@ run smallPrimes list =
                 rest
                 |> run newPrimes
 """
-                    |> Review.Test.run (Sieve.doNotUseModulo comment)
+                    |> Review.Test.run (Sieve.doNotUseDivisionOrModulo comment)
                     |> Review.Test.expectErrors
                         [ TestHelper.createExpectedErrorUnder comment "remainderBy" ]
         ]

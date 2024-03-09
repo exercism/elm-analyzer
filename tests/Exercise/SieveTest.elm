@@ -39,8 +39,7 @@ primes limit =
     let
         -- an array, with indices from 0 until limit, each with a Bool value representing primeness
         initialSieve =
-            Array.initialize (limit + 1) (
- -> n >= 2)
+            Array.initialize (limit + 1) (\\n -> n >= 2)
 
         initialPrime =
             Just 2

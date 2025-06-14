@@ -16,6 +16,7 @@ import Exercise.MariosMarvellousLasagna
 import Exercise.MazeMaker
 import Exercise.RolePlayingGame
 import Exercise.Sieve
+import Exercise.SplitSecondStopwatch
 import Exercise.Strain
 import Exercise.TicketPlease
 import Exercise.TisburyTreasureHunt
@@ -63,6 +64,7 @@ ruleConfigs =
     , Exercise.ListOps.ruleConfig
     , Exercise.ZebraPuzzle.ruleConfig
     , Exercise.Sieve.ruleConfig
+    , Exercise.SplitSecondStopwatch.ruleConfig
     ]
 
 

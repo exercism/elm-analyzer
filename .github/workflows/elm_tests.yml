@@ -16,7 +16,7 @@ jobs:
       # Re-use node_modules between runs until package.json or package-lock.json changes.
       - name: Cache node_modules
         id: cache-node_modules
-        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+        uses: actions/cache@7de21022a7b6824c106a9847befcbd8154b45b6a
         with:
           path: node_modules
           key: node_modules-${{ hashFiles('package.json', 'package-lock.json') }}
@@ -28,7 +28,7 @@ jobs:
       # review/elm.json changes. The Elm compiler saves downloaded Elm packages
       # to ~/.elm, and elm-tooling saves downloaded tool executables there.
       - name: Cache ~/.elm
-        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+        uses: actions/cache@7de21022a7b6824c106a9847befcbd8154b45b6a
         with:
           path: ~/.elm
           key: elm-${{ hashFiles('elm-tooling.json', 'elm.json', 'review/elm.json') }}
@@ -83,7 +83,7 @@ jobs:
 
       - name: Cache node_modules
         id: cache-node_modules
-        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+        uses: actions/cache@7de21022a7b6824c106a9847befcbd8154b45b6a
         with:
           path: node_modules
           key: node_modules-${{ hashFiles('package.json', 'package-lock.json') }}
@@ -92,7 +92,7 @@ jobs:
             node_modules-
 
       - name: Cache ~/.elm
-        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+        uses: actions/cache@7de21022a7b6824c106a9847befcbd8154b45b6a
         with:
           path: ~/.elm
           key: elm-${{ hashFiles('elm-tooling.json', 'elm.json', 'review/elm.json') }}

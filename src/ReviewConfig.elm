@@ -10,6 +10,7 @@ import Exercise.BettysBikeShop
 import Exercise.BlorkemonCards
 import Exercise.CustomSet
 import Exercise.GottaSnatchEmAll
+import Exercise.KurokosClock
 import Exercise.ListOps
 import Exercise.LuciansLusciousLasagna
 import Exercise.MariosMarvellousLasagna
@@ -56,6 +57,7 @@ ruleConfigs =
     , Exercise.GottaSnatchEmAll.ruleConfig
     , Exercise.AnnalynsInfiltration.ruleConfig
     , Exercise.LuciansLusciousLasagna.ruleConfig
+    , Exercise.KurokosClock.ruleConfig
 
     -- Practice Exercises
     , Exercise.Strain.ruleConfig

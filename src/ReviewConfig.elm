@@ -9,6 +9,7 @@ import Exercise.Bandwagoner
 import Exercise.BettysBikeShop
 import Exercise.BlorkemonCards
 import Exercise.CustomSet
+import Exercise.GithupApi
 import Exercise.GottaSnatchEmAll
 import Exercise.ListOps
 import Exercise.LuciansLusciousLasagna
@@ -56,6 +57,7 @@ ruleConfigs =
     , Exercise.GottaSnatchEmAll.ruleConfig
     , Exercise.AnnalynsInfiltration.ruleConfig
     , Exercise.LuciansLusciousLasagna.ruleConfig
+    , Exercise.GithupApi.ruleConfig
 
     -- Practice Exercises
     , Exercise.Strain.ruleConfig

@@ -10,6 +10,7 @@ import Exercise.BettysBikeShop
 import Exercise.BirdCount
 import Exercise.BlorkemonCards
 import Exercise.CustomSet
+import Exercise.GithupApi
 import Exercise.GottaSnatchEmAll
 import Exercise.ListOps
 import Exercise.LuciansLusciousLasagna
@@ -58,6 +59,7 @@ ruleConfigs =
     , Exercise.GottaSnatchEmAll.ruleConfig
     , Exercise.AnnalynsInfiltration.ruleConfig
     , Exercise.LuciansLusciousLasagna.ruleConfig
+    , Exercise.GithupApi.ruleConfig
     , Exercise.Secrets.ruleConfig
     , Exercise.BirdCount.ruleConfig
 

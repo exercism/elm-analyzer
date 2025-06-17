@@ -12,6 +12,7 @@ import Exercise.BlorkemonCards
 import Exercise.CustomSet
 import Exercise.GithupApi
 import Exercise.GottaSnatchEmAll
+import Exercise.KurokosClock
 import Exercise.ListOps
 import Exercise.LuciansLusciousLasagna
 import Exercise.MariosMarvellousLasagna
@@ -59,6 +60,7 @@ ruleConfigs =
     , Exercise.GottaSnatchEmAll.ruleConfig
     , Exercise.AnnalynsInfiltration.ruleConfig
     , Exercise.LuciansLusciousLasagna.ruleConfig
+    , Exercise.KurokosClock.ruleConfig
     , Exercise.GithupApi.ruleConfig
     , Exercise.Secrets.ruleConfig
     , Exercise.BirdCount.ruleConfig

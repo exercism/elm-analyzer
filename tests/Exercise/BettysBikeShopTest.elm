@@ -15,7 +15,7 @@ tests =
     describe "BettysBikeShopTest"
         [ exemplar
         , otherSolutions
-        , noFuctionSignature
+        , noFunctionSignature
         , noImportString
         ]
 
@@ -103,8 +103,8 @@ addPoundsSymbol =
         ]
 
 
-noFuctionSignature : Test
-noFuctionSignature =
+noFunctionSignature : Test
+noFunctionSignature =
     let
         comment =
             Comment "elm.bettys-bike-shop.use_signature" Essential Dict.empty

@@ -7,6 +7,7 @@ import Common.UseCamelCase
 import Exercise.AnnalynsInfiltration
 import Exercise.Bandwagoner
 import Exercise.BettysBikeShop
+import Exercise.BirdCount
 import Exercise.BlorkemonCards
 import Exercise.CustomSet
 import Exercise.GottaSnatchEmAll
@@ -58,6 +59,7 @@ ruleConfigs =
     , Exercise.AnnalynsInfiltration.ruleConfig
     , Exercise.LuciansLusciousLasagna.ruleConfig
     , Exercise.Secrets.ruleConfig
+    , Exercise.BirdCount.ruleConfig
 
     -- Practice Exercises
     , Exercise.Strain.ruleConfig

@@ -7,8 +7,10 @@ import Common.UseCamelCase
 import Exercise.AnnalynsInfiltration
 import Exercise.Bandwagoner
 import Exercise.BettysBikeShop
+import Exercise.BirdCount
 import Exercise.BlorkemonCards
 import Exercise.CustomSet
+import Exercise.GithupApi
 import Exercise.GottaSnatchEmAll
 import Exercise.KurokosClock
 import Exercise.ListOps
@@ -16,6 +18,7 @@ import Exercise.LuciansLusciousLasagna
 import Exercise.MariosMarvellousLasagna
 import Exercise.MazeMaker
 import Exercise.RolePlayingGame
+import Exercise.Secrets
 import Exercise.Sieve
 import Exercise.Strain
 import Exercise.TicketPlease
@@ -58,6 +61,9 @@ ruleConfigs =
     , Exercise.AnnalynsInfiltration.ruleConfig
     , Exercise.LuciansLusciousLasagna.ruleConfig
     , Exercise.KurokosClock.ruleConfig
+    , Exercise.GithupApi.ruleConfig
+    , Exercise.Secrets.ruleConfig
+    , Exercise.BirdCount.ruleConfig
 
     -- Practice Exercises
     , Exercise.Strain.ruleConfig

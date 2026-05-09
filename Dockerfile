@@ -1,4 +1,4 @@
-FROM node:lts-alpine AS builder
+FROM node:lts-alpine3.23@sha256:d1b3b4da11eefd5941e7f0b9cf17783fc99d9c6fc34884a665f40a06dbdfc94f AS builder
 
 # Working directory as specified by exercism
 WORKDIR /opt/analyzer
@@ -33,7 +33,7 @@ RUN bin/build.sh \
   && tar cf /opt/analyzer/solution_cache.tar -C test_data/two-fer/perfect_solution elm-stuff elm.json
 
 # Lightweight runner container
-FROM node:lts-alpine
+FROM node:lts-alpine3.23@sha256:d1b3b4da11eefd5941e7f0b9cf17783fc99d9c6fc34884a665f40a06dbdfc94f
 WORKDIR /opt/analyzer
 ENV PATH="/opt/analyzer/bin:${PATH}"
 ENV ELM_HOME="/opt/analyzer/.elm"
